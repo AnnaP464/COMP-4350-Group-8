@@ -1,16 +1,3 @@
-# Sprint 0 Worksheet
-
-### Contributors
-
-##### Anna Pavlova
-##### Noah McInnes
-##### Sudipta Sarker
-
-## <!-- Program Name --> [GitHub](https://github.com/AnnaP464/COMP-4350-Group-8)
-
-## [Presentation Slides](https://docs.google.com/presentation/d/1q339stCL1ECQrOGEpG8imXiD9Uz1BBI-26ulNVp7nAc/edit?usp=sharing)<!-- Presentation Link Goes Here !!!!!!!!!!!!!!!!-->
-
-
 ### Project Summary
 
 <!-- Program Name -->_____________ will allow people looking to volunteer to find oppertunities to help out with in the community. <!-- Program Name --> _____________ will assist both the organizers and volunteers by easing the selection process for volunteer jobs and will gameify the process of volunteering to make it more enjoyable. 
@@ -65,6 +52,3 @@ Github Triggers/Hooks - The project is already hosted on github, it makes sense 
 Our group has settled on using discord to maintain a common idea of the project as well as call when we want to discuss a potential change of plans or upcoming deadline. Google Docs works well when it comes to more informal documents that are not submission-critical. 
 
 We have so far allocated work based on personal interest, and personal experience. Making sure to clear up who is assigned what during inperson or online meetings. When we begin implementing the application, assigning github issues will be a potential way for us to keep track of which feature resides with each of us.
-
-
-
