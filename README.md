@@ -1,10 +1,9 @@
 # Project Proposal
 
----
 
 # <!-- Program Name -->
 
-## Contributors
+### Contributors
 
 ##### Anna Pavlova
 ##### Noah McInnes
@@ -25,12 +24,28 @@
 
 ### User Stories
 
+1) As a volunteer i want to search through the available postings to see if they line up with my schedule, this would help me make sure that i can adapt my schedule.
 
+2) As an organizer i want to see the status of the activity at a glance so that i will know how many people will show up, this will aid in planning for additional help if necessary.
+
+3) As a volunteer i want to be able to see my history of attended postings, this would help me keep track of my hours volunteered.
 
 ### Tech Stack
 
+Front End - React
 
+Back End -
+
+Database -
+
+Testing - Github Triggers/Hooks
+
+API - 
 
 ### Technology Rationale
+
+React - Our team has previous experience with React and similar technology (Angular).
+
+GitHub - The project is already hosted on github, it makes sense to take advantage of the triggers and hooks to help automate the formatting, testing and building.
 
 
