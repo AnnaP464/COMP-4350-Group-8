@@ -1,10 +1,15 @@
+
+
+# HiveHand
+#### Helping hands in a hive
+
 ### Project Summary
 
-<!-- Program Name -->_____________ will allow people looking to volunteer to find oppertunities to help out with in the community. <!-- Program Name --> _____________ will assist both the organizers and volunteers by easing the selection process for volunteer jobs and will gameify the process of volunteering to make it more enjoyable. 
+HiveHand will allow people looking to volunteer to find oppertunities to help out with in the community. HiveHand will assist both the organizers and volunteers by easing the selection process for volunteer jobs and will gameify the process of volunteering to make it more enjoyable. 
 
-The goal of <!-- Program Name -->_____________ is to help connect people with in the community and create an environment for networking. Currentlyif you want to volunteer for any given reason you need to seek out organization that offer a specific activity, usually on their own website, making for a very cluttered experience and slowing down the process for both volunteers and organizers, and ultimately limiting the amount of people participating.
+The goal of HiveHand is to help connect people with in the community and create an environment for networking. Currentlyif you want to volunteer for any given reason you need to seek out organization that offer a specific activity, usually on their own website, making for a very cluttered experience and slowing down the process for both volunteers and organizers, and ultimately limiting the amount of people participating.
 
-<!-- Program Name -->_____________ will be a hub that will allow a large number of both volunteers and activity postings to circulate, and help people with tracking those activities in an efficent interface focused on clarity and ease of use.
+HiveHand will be a hub that will allow a large number of both volunteers and activity postings to circulate, and help people with tracking those activities in an efficent interface focused on clarity and ease of use.
 
 ### Core Features & Acceptance Criteria
 
@@ -39,18 +44,18 @@ The goal of <!-- Program Name -->_____________ is to help connect people with in
 ##### Front End 
 React - Our team has previous experience with React and similar technology (Angular).
 
-
 ##### Back End
+Next.js - it has types, which keeps code more structured, it will keep the language we use consistent between the front end and back end. And some of us have previous expereince with angular which next.js is based on.
 
 ##### Database
+PostgreSQL - Our team has previous experience with relational databases and SQL has similar syntax across versions.
 
-##### Testing
-Github Triggers/Hooks - The project is already hosted on github, it makes sense to take advantage of the triggers and hooks to help automate the formatting, testing and building.
+##### Testing Formatting/Unit/Integration Tests
+Formatting - Github Triggers/Hooks - The project is already hosted on github, it makes sense to take advantage of the triggers and hooks to help automate the formatting, testing and building.
 
-##### API 
+Integration & Unit Testing - Jest - An all in one framework for javascript testing, that will take care of most of our needs without a need for other programs.
 
 ### Work Coordination
-
 Our group has settled on using discord to maintain a common idea of the project as well as call when we want to discuss a potential change of plans or upcoming deadline. Google Docs works well when it comes to more informal documents that are not submission-critical. 
 
 We have so far allocated work based on personal interest, and personal experience. Making sure to clear up who is assigned what during inperson or online meetings. When we begin implementing the application, assigning github issues will be a potential way for us to keep track of which feature resides with each of us.
