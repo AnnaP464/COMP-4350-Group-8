@@ -9,12 +9,16 @@ The goal of <!-- Program Name -->_____________ is to help connect people with in
 ### Core Features & Acceptance Criteria
 
 1) Have a profile available for all users, both volunteers and organizers will have profiles that have a small description of the type of work offered for organizers, upcomming events, contact information and a history of past jobs done for volunteers.
-- A clearly
+
+- A running total of all the activities will be viewable within seconds of and all the information from previous jobs will be available in case the user wants to work with an organizer again.
 
 2) Organizers should be able to create a volunteer listing with a description of the job, location, time, and an upper bound for the amount of help needed. These listings would become visible to potential volunteers and pop up if searched for or in a queue of upcoming events. A volunteer will be able to sign up if there are slots available as well as recind their application if a scheduling error comes up. 
 - For a reliable searching experience we expect the result to load within a few seconds to maintain a smooth browsing experince, and an updated list of tasks. Aswell as making sure to provide visibility to organizers quickly.
 
-3) We hope to scale the application to be able to handle a high throughput of traffic and be able to handle spikes in activity without degrading service significantly.
+3) A map to display tasks with in the local area. A widget or a page to display pins to help volunteers choose their tasks based on ease of access and let organizers clarify where they are holding the event.
+- a working updated map you can view. It is updated as tasks are created.
+
+4) We hope to scale the application to be able to handle a high throughput of traffic and be able to handle spikes in activity without degrading service significantly.
 - A goal for our final itteration will be 100 users and 1000 concurrent requests per minute
 
 ### Additional Features
@@ -29,8 +33,6 @@ The goal of <!-- Program Name -->_____________ is to help connect people with in
 2) As an organizer i want to see the status of the activity at a glance so that i will know how many people will show up, this will aid in planning for additional help if necessary.
 
 3) As a volunteer i want to be able to see my history of attended postings, this would help me keep track of my hours volunteered.
-
-- A running total of all the activities will be viewable within seconds of and all the information from previous jobs will be available in case the user wants to work with an organizer again.
 
 ### Tech Stack
 
