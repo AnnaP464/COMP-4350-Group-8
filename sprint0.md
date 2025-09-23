@@ -47,27 +47,24 @@ The goal of <!-- Program Name -->_____________ is to help connect people with in
 
 ### Tech Stack
 
-Front End - React
-
-Back End - 
-
-Database - 
-
-Testing - Github Triggers/Hooks
-
-API - 
-
-### Technology Rationale
-
+##### Front End 
 React - Our team has previous experience with React and similar technology (Angular).
 
-GitHub - The project is already hosted on github, it makes sense to take advantage of the triggers and hooks to help automate the formatting, testing and building.
+
+##### Back End
+
+##### Database
+
+##### Testing
+Github Triggers/Hooks - The project is already hosted on github, it makes sense to take advantage of the triggers and hooks to help automate the formatting, testing and building.
+
+##### API 
 
 ### Work Coordination
 
 Our group has settled on using discord to maintain a common idea of the project as well as call when we want to discuss a potential change of plans or upcoming deadline. Google Docs works well when it comes to more informal documents that are not submission-critical. 
 
-We have so far allocated work based on personal interest, and personal experience. Making sure to clear up who is assigned what during inperson or online meetings.
+We have so far allocated work based on personal interest, and personal experience. Making sure to clear up who is assigned what during inperson or online meetings. When we begin implementing the application, assigning github issues will be a potential way for us to keep track of which feature resides with each of us.
 
 
 
