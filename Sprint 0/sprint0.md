@@ -23,6 +23,9 @@ style FE fill:#ffca99,stroke:#333,stroke-width:2px,color:#0
     logic([Application Logic])
   end
 
+style BE fill:#ffca99,stroke:#333,stroke-width:2px,color:#0
+
+
   subgraph db ["Database"]
     data([PostgreSQL + PostGIS])
   end
