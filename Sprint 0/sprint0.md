@@ -15,6 +15,8 @@ flowchart LR
     app([UI])
   end
 
+style FE fill:#f9f,stroke:#333,stroke-width:2px,color:#0000ff
+
   subgraph BE ["Backend (Node.js + Express)"]
     direction TB
     api([API Routes])
