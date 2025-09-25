@@ -33,11 +33,11 @@ HiveHand will be a hub that will allow a large number of both volunteers and act
 
 ### User Stories
 
-1) As a volunteer i want to search through the available postings to see if they line up with my schedule, this would help me make sure that i can adapt my schedule. 
+1) As a volunteer I want to search through the available postings to see if they line up with my schedule, this would help me make sure that i can adapt my schedule. 
 
-2) As an organizer i want to see the status of the activity at a glance so that i will know how many people will show up, this will aid in planning for additional help if necessary.
+2) As an organizer I want to see the status of the activity at a glance so that i will know how many people will show up, this will aid in planning for additional help if necessary.
 
-3) As a volunteer i want to be able to see my history of attended postings, this would help me keep track of my hours volunteered.
+3) As a volunteer I want to be able to see my history of attended postings, this would help me keep track of my hours volunteered.
 
 ### Tech Stack
 
@@ -45,7 +45,7 @@ HiveHand will be a hub that will allow a large number of both volunteers and act
 React - Our team has previous experience with React and similar technology (Angular).
 
 ##### Back End
-Next.js - it has types, which keeps code more structured, it will keep the language we use consistent between the front end and back end. And some of us have previous expereince with angular which next.js is based on.
+Next.js - It has types, which keeps code more structured, it will keep the language we use consistent between the front end and back end. And some of us have previous expereince with angular which next.js is based on.
 
 ##### Database
 PostgreSQL - Our team has previous experience with relational databases and SQL has similar syntax across versions.
