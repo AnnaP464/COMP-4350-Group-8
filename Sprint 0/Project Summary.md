@@ -52,11 +52,13 @@ React - Our team has previous experience with React and similar technology (Angu
 ##### Back End
 Node.js
 - Same language (TypeScript/JavaScript) on both sides reduces context switching and speeds up development. Great for I/O-heavy apps (lots of short API calls, DB reads/writes).
+
 Express.js
 - Lightweight and unopinionated, so we can ship quickly: define REST endpoints, and keep clear “routes -> logic ->  DB” structure.
 ##### Database
 PostgreSQL 
 - We anticipate rich relationships in our data (volunteers -> shifts -> events -> organizers). We get constraints (e.g., capacity limits), transactions (no race conditions), and powerful queries for search/reporting.
+
 PostGIS 
 - Native geospatial support for “near me,” distance/radius queries, and map pins that update as events are created.
 ##### Blockchain
