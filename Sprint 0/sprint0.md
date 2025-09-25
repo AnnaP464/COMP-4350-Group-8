@@ -46,6 +46,7 @@ style BE fill:#ffca99,stroke:#333,stroke-width:2px,color:#0
   classDef bigLabel font-size:16px,font-weight:bold,fill:#f9f9f9,stroke:#333,stroke-width:2px;
   class BE bigLabel
   class FE bigLabel
+  linkStyle default stroke:#ff0000,stroke-width:2px;
 ```
 
 ## [Project Summary](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%200/Project%20Summary.md)
