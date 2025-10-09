@@ -12,6 +12,8 @@ HiveHand is a platform for hosting and finding volunteering oppertunities. Volun
 
 ---
 ## [Sprint 0](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%200/sprint0.md)
+
+## [Sprint 1]()
 ## Tech Stack
 
 ##### Front End 
