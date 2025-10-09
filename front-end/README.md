@@ -1,4 +1,4 @@
-ck# 1. Check if Node.js and npm are installed
+# 1. Check if Node.js and npm are installed
 
 ```bash
 node -v
