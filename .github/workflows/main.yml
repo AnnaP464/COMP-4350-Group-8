@@ -18,8 +18,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        working-directory: front-end
 
       - name: Run Jest tests
         run: npm test -- --ci --runInBand
+        working-directory: front-end
         env:
           CI: true
