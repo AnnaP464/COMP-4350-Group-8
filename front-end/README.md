@@ -25,6 +25,7 @@ Go to /front-end and run:
 ```bash
 npm install
 ```
+
 # 4. Run the app
 ```bash
 npm run dev
