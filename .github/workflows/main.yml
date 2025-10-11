@@ -3,9 +3,27 @@ name: Run Jest Tests on Windows
 on: [push, pull_request]
 
 jobs:
-  front-end-tests:
+  linter:
     runs-on: windows-latest
 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install dependencies
+        run: npm run lint
+
+  front-end-tests:
+    runs-on: windows-latest
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
