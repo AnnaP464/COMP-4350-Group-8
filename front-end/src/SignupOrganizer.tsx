@@ -113,11 +113,11 @@ const SignupOrganizer: React.FC = () => {
           </label> */}
 
           <button className="option-btn" type="submit">
-            Sign Up
+            Sign-up
           </button>
 
           <a href="/" className="guest-btn" style={{ textAlign: "center" }}>
-            Back to Login
+            Back to Log-in
           </a>
         </form>
       </div>

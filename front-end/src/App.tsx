@@ -9,7 +9,6 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-
         <Route path="/Organizer-signup" element={<SignupOrganizer />} />
       </Routes>
     </BrowserRouter>
