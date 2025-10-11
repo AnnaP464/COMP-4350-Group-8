@@ -24,6 +24,7 @@ jobs:
         working-directory: front-end
         env:
           CI: true
+
   api-tests:
     runs-on: windows-latest
 
