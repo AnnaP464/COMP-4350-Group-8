@@ -3,7 +3,7 @@ name: Run Jest Tests on Windows
 on: [push, pull_request]
 
 jobs:
-  test:
+  front end tests:
     runs-on: windows-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
         working-directory: front-end
         env:
           CI: true
-  test:
+  api tests:
     runs-on: windows-latest
 
     steps:
