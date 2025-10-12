@@ -1,13 +1,13 @@
 import React from "react";
 import {render, screen} from "@testing-library/react"
 import userEvent from "@testing-library/user-event";
-import LoginForm from "../Login.tsx";
+import AuthChoice from "../AuthChoice.tsx";
 import { MemoryRouter } from "react-router-dom";
 
 test("chooses organizer sign up and completes it", async () => {
     render(
         <MemoryRouter>
-            <LoginForm />
+            <AuthChoice />
         </MemoryRouter>
     );
 
@@ -19,7 +19,7 @@ test("chooses organizer sign up and completes it", async () => {
     await userEvent.click(signUpButton);
     expect(screen.queryByText("Organizer Sign-up"));
 
-    const backButton = screen.getByRole("button", { name: "Back" });
+    const backButton = screen.getByRole("button", { name: "Back to Role Selection" });
     await userEvent.click(backButton);
     expect(screen.queryByText("Welcome to HiveHand"))
 });
@@ -28,7 +28,7 @@ test("chooses organizer sign up and completes it", async () => {
 test("chooses organizer log in and completes it", async () => {
     render(
         <MemoryRouter>
-            <LoginForm />
+            <AuthChoice />
         </MemoryRouter>
     );
 
@@ -40,7 +40,7 @@ test("chooses organizer log in and completes it", async () => {
     await userEvent.click(logInButton);
     expect(screen.queryByText("Organizer Log-in"));
 
-    const backButton = screen.getByRole("button", { name: "Back to Log-in" });
+    const backButton = screen.getByRole("button", { name: "Back to Role Selection" });
     await userEvent.click(backButton);
     expect(screen.queryByText("Welcome to HiveHand"))
 });
@@ -49,7 +49,7 @@ test("chooses organizer log in and completes it", async () => {
 test("chooses volunteer sign in and completes it", async () => {
     render(
         <MemoryRouter>
-            <LoginForm />
+            <AuthChoice />
         </MemoryRouter>
     );
 
@@ -61,7 +61,7 @@ test("chooses volunteer sign in and completes it", async () => {
     await userEvent.click(signUpButton);
     expect(screen.queryByText("Volunteer Sign-up"));
 
-    const backButton = screen.getByRole("button", { name: "Back" });
+    const backButton = screen.getByRole("button", { name: "Back to Role Selection" });
     await userEvent.click(backButton);
     expect(screen.queryByText("Welcome to HiveHand"))
 });
@@ -70,7 +70,7 @@ test("chooses volunteer sign in and completes it", async () => {
 test("chooses volunteer log in and completes it", async () => {
     render(
         <MemoryRouter>
-            <LoginForm />
+            <AuthChoice />
         </MemoryRouter>
     );
 
@@ -82,7 +82,7 @@ test("chooses volunteer log in and completes it", async () => {
     await userEvent.click(LogInButton);
     expect(screen.queryByText("Volunteer Log-in"));
 
-    const backButton = screen.getByRole("button", { name: "Back to Log-in" });
+    const backButton = screen.getByRole("button", { name: "Back to Role Selection" });
     await userEvent.click(backButton);
     expect(screen.queryByText("Welcome to HiveHand"))
 });

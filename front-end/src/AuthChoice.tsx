@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {Link} from "react-router-dom";
-import "./login.css";
+import "./AuthChoice.css";
 
 type UserRole = "Organizer" | "Volunteer" | "Guest" | "";
 
@@ -11,6 +11,15 @@ const Login: React.FC = () => {
     setRole(selectedRole);
     // alert(`You selected: ${selectedRole}`); // Replace this with navigation logic later
   };
+
+  let subtitle = "";
+  if(role === "Organizer"){
+    subtitle = "Manage your events and volunteers";
+  } else if(role === "Volunteer"){
+    subtitle = "Join and contribute to causes";
+  } else if(role === "Guest"){
+    subtitle = "Come check us out"
+  }
 
   return (
     <div className="login-container">
@@ -46,43 +55,41 @@ const Login: React.FC = () => {
             </>
         )}
 
-        { role === "Organizer"  &&(
+        { (role === "Volunteer" || role === "Organizer")  && (
             <>
-                <h2 className="title">Organizer portal</h2>
-                <p className="subtitle">Manage your events and volunteers</p>
+                <h2 className="title">{role} Portal</h2>
+                <p className="subtitle">{subtitle}</p>
                 <div className="options">
-                
-                <Link to="/Organizer-signup" className="option-btn">
-                 Sign-up
+
+                <Link to={`/User-signup?role=${encodeURIComponent(role)}`} className="option-btn">
+                    Sign-up
                 </Link>
 
-                <button
-                    className = "option-btn">Log-in
-                </button>
+                <Link to={`/User-login?role=${encodeURIComponent(role)}`} className="option-btn">
+                    Log-in
+                </Link>
                 <button
                     className = "guest-btn"
                     onClick={() => setRole("")}>
-                    Back
+                    Back to Role Selection
                 </button>
                 </div>
             </>
         )}
 
-        { role === "Volunteer"  &&(
+        { (role === "Guest")  && (
             <>
-                <h2 className="title">Volunteer portal</h2>
-                <p className="subtitle">Join and contribute to causes</p>
+                <h2 className="title">{role} Portal</h2>
+                <p className="subtitle">{subtitle}</p>
                 <div className="options">
-                <button
-                    className = "option-btn">Sign-up
-                </button>
-                <button
-                    className = "option-btn">Log-in
-                </button>
+
+                <Link to={""} className="option-btn">
+                    Proceed
+                </Link>
                 <button
                     className = "guest-btn"
                     onClick={() => setRole("")}>
-                    Back
+                    Back to Role Selection
                 </button>
                 </div>
             </>

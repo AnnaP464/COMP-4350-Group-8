@@ -1,39 +1,45 @@
 import React, { useState } from "react";
-import "./login.css";  // Reuse same styling
+import "./authChoice.css";  // Reuse same styling
+import { useLocation } from "react-router-dom";
 
-const SignupOrganizer: React.FC = () => {
-  const [OrganizerName, setOrganizerName] = useState("");
+const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   // const [phone, setPhone] = useState("");
   // const [city, setCity] = useState("");
   // const [skills, setSkills] = useState("");
   //const [agree, setAgree] = useState(false);
 
+  const { search } = useLocation();
+  const queryParams = new URLSearchParams(search);
+  const role = queryParams.get("role");
+
+  let subtitle = "";
+  if(role === "Organizer"){
+    subtitle = "Manage your events and volunteers";
+  } else if(role === "Volunteer"){
+    subtitle = "Join and contribute to causes";
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!OrganizerName.trim()) return alert("Name is required.");
     if (!email.trim()) return alert("Email is required.");
     if (!password.trim()) return alert("Password is required.");
-    if (password !== confirmPassword) return alert("Passwords do not match.");
     // if (!agree) return alert("Please agree to the terms.");
 
     alert(
-      `Organizer signup:\n` +
-        `Name: ${OrganizerName}\n` +
-        `Email: ${email}\n`
+        `Organizer signup:\n` +
+        //`Name: ${name}\n` +
+        `Email: ${email}\n` //+
         // `Phone: ${phone}\n` +
         // `City: ${city}\n` +
         // `Skills: ${skills}`
     );
 
     // Reset fields after submit
-    setOrganizerName("");
     setEmail("");
     setPassword("");
-    setConfirmPassword("");
     // setPhone("");
     // setCity("");
     // setSkills("");
@@ -43,18 +49,11 @@ const SignupOrganizer: React.FC = () => {
   return (
     <div className="login-container">
       <div className="login-box">
-        <h2 className="title">Organizer Sign-up</h2>
-        <p className="subtitle">Join and contribute to causes</p>
+        <h2 className="title">{role} Log-in</h2>
+        <p className="subtitle">{subtitle}</p>
 
         <form onSubmit={handleSubmit} className="options" style={{ gap: 10 }}>
-          <input
-            className="text-input"
-            type="text"
-            placeholder="Organization name *"
-            value={OrganizerName}
-            onChange={(e) => setOrganizerName(e.target.value)}
-            required
-          />
+
           <input
             className="text-input"
             type="email"
@@ -69,14 +68,6 @@ const SignupOrganizer: React.FC = () => {
             placeholder="Password *"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <input
-            className="text-input"
-            type="password"
-            placeholder="Confirm Password *"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
           {/* <input
@@ -117,7 +108,7 @@ const SignupOrganizer: React.FC = () => {
           </button>
 
           <a href="/" className="guest-btn" style={{ textAlign: "center" }}>
-            Back to Log-in
+            Back to Role Selection
           </a>
         </form>
       </div>
@@ -125,4 +116,4 @@ const SignupOrganizer: React.FC = () => {
   );
 };
 
-export default SignupOrganizer;
+export default LoginUser;
