@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import "./authChoice.css";  // Reuse same styling
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const SignupUser: React.FC = () => {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -15,6 +16,7 @@ const SignupUser: React.FC = () => {
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
   const role = queryParams.get("role");
+  const navigate = useNavigate();
 
   let textFieldDesc = "";
   let subtitle = "";
@@ -31,15 +33,16 @@ const SignupUser: React.FC = () => {
 
   
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) return alert("Name is required.");
+    if (!username.trim()) return alert("Name is required.");
     if (!email.trim()) return alert("Email is required.");
     if (!password.trim()) return alert("Password is required.");
     if (password !== confirmPassword) return alert("Passwords do not match.");
     // if (!agree) return alert("Please agree to the terms.");
-
+    
+    /*
     alert(
         `Organizer signup:\n` +
         `Name: ${name}\n` +
@@ -50,7 +53,7 @@ const SignupUser: React.FC = () => {
     );
 
     // Reset fields after submit
-    setName("");
+    setUsername("");
     setEmail("");
     setPassword("");
     setConfirmPassword("");
@@ -58,6 +61,39 @@ const SignupUser: React.FC = () => {
     // setCity("");
     // setSkills("");
     // setAgree(false);
+    */
+    try {
+      const response = await fetch("http://localhost:4000/v1/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          role, // send role too if your backend expects it
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        alert(`Sign-up failed: ${err}`);
+        return;
+      }
+
+      const data = await response.json();
+      alert(JSON.stringify(data));
+      //alert(`Sign-up successful! Token: ${data.token}`);
+
+      navigate("/User-login");
+
+      // optionally redirect:
+      // window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Sign-up error:", error);
+      alert("Network error — could not connect to server." + error);
+    }
   };
 
   return (
@@ -71,8 +107,8 @@ const SignupUser: React.FC = () => {
             className="text-input"
             type="text"
             placeholder= {textFieldDesc}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
           <input

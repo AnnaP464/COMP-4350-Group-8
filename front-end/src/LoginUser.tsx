@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./authChoice.css";  // Reuse same styling
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -13,6 +14,7 @@ const LoginUser: React.FC = () => {
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
   const role = queryParams.get("role");
+  const navigate = useNavigate();
 
   let subtitle = "";
   if(role === "Organizer"){
@@ -21,13 +23,14 @@ const LoginUser: React.FC = () => {
     subtitle = "Join and contribute to causes";
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email.trim()) return alert("Email is required.");
     if (!password.trim()) return alert("Password is required.");
     // if (!agree) return alert("Please agree to the terms.");
 
+    /*
     alert(
         `Organizer signup:\n` +
         //`Name: ${name}\n` +
@@ -44,6 +47,37 @@ const LoginUser: React.FC = () => {
     // setCity("");
     // setSkills("");
     // setAgree(false);
+    */
+
+    try {
+      const response = await fetch("http://localhost:4000/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          role, // send role too if your backend expects it
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        alert(`Login failed: ${err}`);
+        return;
+      }
+
+      const data = await response.json();
+      alert(`Login successful! Token: ${data.token}`);
+
+      navigate("/Dashboard");
+      // optionally redirect:
+      // window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Network error — could not connect to server.");
+    }
   };
 
   return (
@@ -104,7 +138,7 @@ const LoginUser: React.FC = () => {
           </label> */}
 
           <button className="option-btn" type="submit">
-            Sign-up
+            Log-in
           </button>
 
           <a href="/" className="guest-btn" style={{ textAlign: "center" }}>
