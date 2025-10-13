@@ -1,4 +1,5 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction} from "express";
+import * as authService from "../services/authService.ts";
 
 /**
  * NOTE: These are STUBS for demo/dev only.
@@ -23,9 +24,6 @@ const DUMMY_USER: PublicUser = {
   role: "VOLUNTEER",
 };
 
-// Fake token strings to look realistic
-const makeAccessToken = () => "stub_access_token.abc.def";
-const makeRefreshToken = () => "stub_refresh_token.ghi.jkl";
 
 // cookies options for refresh token
 const refreshCookieOptions = {
@@ -37,7 +35,15 @@ const refreshCookieOptions = {
 };
 
 /** POST /v1/auth/register */
-export async function registerUser(req: Request, res: Response) {
+export async function registerUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = await authService.register(req.body);
+    return res.status(201).json(user);
+  } catch (err) {
+    return next(err); // don’t format here
+  }
+}
+  /*
   const { username, email, password } = req.body ?? {};
 
   // Minimal input checks so Swagger “try it out” feels real
@@ -67,12 +73,13 @@ export async function registerUser(req: Request, res: Response) {
     user: {
     ...DUMMY_USER,
     },
-  });
-}
+  });*/
 
 /** POST /v1/auth/login */
-export async function loginUser(req: Request, res: Response) {
-  const { email, password } = req.body ?? {};
+export async function loginUser(req: Request, res: Response, next: NextFunction) {
+  try { res.json(await authService.login(req.body)); }
+  catch (err) { next(err);}
+  /* const { email, password } = req.body ?? {};
   if (!email || !password) {
     return res.status(400).json({ message: "email and password are required" });
   }
@@ -97,33 +104,41 @@ export async function loginUser(req: Request, res: Response) {
     user: {
       ...DUMMY_USER,
     },
-  });
+  }); */
 }
 
-/** POST /v1/auth/refresh */
-export async function refreshToken(req: Request, res: Response) {
-  // Accept either cookie or body for convenience during early dev
+export async function refreshToken(req: Request, res: Response, next: NextFunction) {
+  
+  // Accept either cookie or body
+  // NEED TO REMOVE BODY VERSION LATER FOR PRODUCTION
   const cookieToken = (req as any).cookies?.refresh_token;
-  const bodyToken = req.body?.refresh_token;
+  const bodyToken = (req.body as any)?.refresh_token;
+  const oldRefreshToken = cookieToken ?? bodyToken;
 
-  if (!cookieToken && !bodyToken) {
+  if (!oldRefreshToken) {
     return res.status(401).json({ message: "Missing refresh token" });
   }
 
-  // No real verification; just mint a new access + refresh to simulate rotation
-  const newAccess = makeAccessToken();
-  const newRefresh = makeRefreshToken();
-
   try {
-    res.cookie("refresh_token", newRefresh, refreshCookieOptions);
-  } catch {
-    // ignore if cookie middleware not present yet
-  }
 
-  return res.json({
-    access_token: newAccess,
-    refresh_token: newRefresh,
-  });
+    // Call service to verify, rotate, and issue new tokens
+    const { access_token, refresh_token, user } = await authService.refresh(oldRefreshToken);
+
+    // Try to set cookie (safe if cookie-parser not mounted yet)
+    try {
+      res.cookie("refresh_token", refresh_token, refreshCookieOptions);
+    } catch {
+      /* ignore if cookie middleware not present */
+    }
+
+    return res.status(200).json({
+      access_token,
+      refresh_token,
+      user, // { email, username, role }
+    });
+  } catch (err) {
+    return next(err); 
+  }
 }
 
 /** POST /v1/auth/logout */

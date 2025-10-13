@@ -23,6 +23,10 @@ app.use("/v1/auth", authRouter);
 
 // Swagger docs
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+//raw JSON spec
+app.get('/api.json', (_req, res) => res.json(swaggerSpec));
+
 // Start listening
 app.listen(4000, () => console.log(`Server running on http://localhost:${PORT}")`));
 console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);

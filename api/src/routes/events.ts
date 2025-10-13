@@ -15,6 +15,7 @@ import { listEvents } from "../controllers/eventsController";
  *   schemas:
  *     Event:
  *       type: object
+ *       required: [id, name, starts_at, ends_at, location, verifier]
  *       properties:
  *         id:
  *           type: string

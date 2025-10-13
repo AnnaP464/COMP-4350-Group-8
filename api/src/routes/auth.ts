@@ -1,6 +1,8 @@
 import { Router } from "express";
 const router = Router();
 import { registerUser, loginUser, refreshToken, logoutUser } from "../controllers/authController";
+import { schemas}  from "../spec/zod";
+import { validateRequest } from "../middleware/validateRequest";
 
 /**
  * @swagger
@@ -30,6 +32,7 @@ import { registerUser, loginUser, refreshToken, logoutUser } from "../controller
  *
  *     RegisterRequest:
  *       type: object
+ *       additionalProperties: false
  *       required: [username, email, password]
  *       properties:
  *         username:
@@ -49,6 +52,7 @@ import { registerUser, loginUser, refreshToken, logoutUser } from "../controller
  *
  *     LoginRequest:
  *       type: object
+ *       additionalProperties: false
  *       required: [email, password]
  *       properties:
  *         email:
@@ -58,6 +62,13 @@ import { registerUser, loginUser, refreshToken, logoutUser } from "../controller
  *         password:
  *           type: string
  *           example: "HiddenPassword123!"
+ * 
+ *     RefreshRequest:
+ *          type: object
+ *          required: [refresh_token]
+ *          properties:
+ *              refresh_token:
+ *                  type: string
  *
  *     AuthTokens:
  *       type: object
@@ -177,10 +188,7 @@ import { registerUser, loginUser, refreshToken, logoutUser } from "../controller
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [refresh_token]
- *             properties:
- *               refresh_token: { type: string }
+ *            $ref: "#/components/schemas/RefreshRequest"
  *     responses:
  *       200:
  *         description: New tokens issued (refresh should be rotated)
@@ -213,9 +221,9 @@ import { registerUser, loginUser, refreshToken, logoutUser } from "../controller
  *             schema: { $ref: "#/components/schemas/TokenErrorResponse" }
  */
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
-router.post("/refresh", refreshToken);
+router.post("/register", validateRequest( {body: schemas.RegisterRequest}), registerUser);
+router.post("/login", validateRequest({ body: schemas.LoginRequest}), loginUser);
+router.post("/refresh", validateRequest({body: schemas.RefreshRequest}), refreshToken);
 router.post("/logout", logoutUser);
 
 export default router;
