@@ -21,13 +21,13 @@ export async function register(input: { username: string; email: string; passwor
 
   // use bcrypt.hash to hash password 
   const password_hash = await hash(input.password, SALT_ROUNDS);
-  const hashed_user = await users.create({
+  const user = await users.create({
     email: input.email,
     username: input.username,
     password_hash,         
   });
 
-  const user = await users.create(hashed_user); 
+  //const user = await users.create(hashed_user); 
   const access_token = tokens.issueAccessToken(user);
   const { token: refresh_token, jti } = tokens.issueRefreshToken(user);
 
