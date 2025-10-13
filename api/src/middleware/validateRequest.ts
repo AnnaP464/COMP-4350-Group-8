@@ -13,21 +13,10 @@ export type RequestSchemas = {
   headers?: ZodTypeAny;
 };
 
+//toggles for validate options just in 
 export type ValidateOptions = {
-  /**
-   * If true, we return a 400 with validation details (default).
-   * If false, we call next(err) so your global error handler can format it.
-   */
   respondWithJsonError?: boolean;
-  /**
-   * If true, we attach the parsed objects back to req.* so downstream code
-   * sees coerced/trimmed/transformed values. Default: true.
-   */
   assignParsedData?: boolean;
-  /**
-   * If true, we include path-by-path error details; else a compact list.
-   * Default: true.
-   */
   detailedErrors?: boolean;
 };
 
@@ -54,12 +43,8 @@ function formatZodError(err: ZodError, detailed: boolean) {
 /**
  * Factory that returns an Express middleware which validates the request.
  *
- * Usage per route:
- *   router.post(
- *     "/users/:id",
- *     validateRequest({ body: createUserBody, params: userParams, query: userQuery }),
- *     controller.createUser,
- *   );
+ * You can provide any subset of schemas for body, query, params, headers.
+ * If a schema is not provided, that segment is not validated.
  */
 export function validateRequest(
   schemas: RequestSchemas,
