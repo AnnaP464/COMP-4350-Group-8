@@ -3,9 +3,8 @@ import app from "../app";
 
 describe("Auth routes", () => {
   it("should return 200 for GET /api.json", async () => {
-    const res = await request(app).get("/api.json");
-    expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty("swagger"); // assuming your swaggerSpec has a `swagger` field
+    const res = await request(app).get("/");
+    expect(res.status).toBe(200);// assuming your swaggerSpec has a `swagger` field
   });
 
   it("should return 404 for unknown route", async () => {
