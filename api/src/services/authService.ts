@@ -65,7 +65,7 @@ export async function refresh(oldRefreshToken: string) {
 
   const userId = decoded.sub;   // string
   const oldJti = decoded.jti;   // string
-  const exp    = decoded.exp;   // number | undefined
+  //const exp    = decoded.exp;   // number | undefined
 
 
   const row = await sessions.findByJti(oldJti);
