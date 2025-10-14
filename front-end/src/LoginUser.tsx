@@ -73,9 +73,22 @@ const LoginUser: React.FC = () => {
       }
 
       const data = await response.json();
+      //const {access_token, refresh_token, user} = await response.json();
       //alert(`Login successful! Token: ${data.token}`);
 
-      navigate("/Dashboard");
+      // localStorage.setItem("access_token", access_token);
+      // localStorage.setItem("refresh_token", refresh_token);
+      // localStorage.setItem("user", JSON.stringify(user));
+
+      //route by role
+      //const userRole = (user?.role || "").toLowerCase();
+      console.log(data);
+      if (role === "organizer") {
+        navigate("/Homepage-Organizer");
+      }
+      else
+        navigate("/Dashboard");
+
       // optionally redirect:
       // window.location.href = "/dashboard";
     } catch (error) {

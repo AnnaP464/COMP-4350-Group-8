@@ -8,8 +8,9 @@ if if it doesn't authomatically.
 Note the password you set when installing postgresql. Might need when entering psql shell
 
 # 2) Set up a stub db
-Password for hivedev: verysafe
 Open psql shell
+Password for hivedev: verysafe
+Password for postgres: the password you set while installation
 
 ```bash
 psql -h 127.0.0.1 -U postgres -d postgres
@@ -24,7 +25,7 @@ CREATE DATABASE hivehand OWNER hivedev;
 
 ## i) Run the DB migration
 ```bash
-psql -h 127.0.0.1 -U hivedev -d hivehand -f .\migration\001_init.sql
+psql -h 127.0.0.1 -U hivedev -d hivehand -f .\migrations\001_init.sql
 ```
 
 ## ii) Install API dependencies if needed
@@ -36,4 +37,5 @@ npm install
 ```bash
 npm run dev
 ```
+output: Server running on http://localhost:4000
 

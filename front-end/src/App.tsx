@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthChoice from './AuthChoice.tsx';
 import SignupUser from './SignupUser';
 import LoginUser from './LoginUser';
-import Dashboard from './Dashboard';
+import HomepageOrganizer from "./Homepage-Organizer.tsx";
+import Dashboard from "./Dashboard.tsx";
 
 function App() {
   
@@ -15,7 +16,8 @@ function App() {
         <Route path="/" element={<AuthChoice />} />
         <Route path="/User-signup" element={<SignupUser />} />
         <Route path="/User-login" element={<LoginUser />} />
-        <Route path="/Dashboard" element={<Dashboard />}/>
+        <Route path="/Homepage-Organizer" element={<HomepageOrganizer />}/>
+        <Route path="/Dashboard" element={<Dashboard/>}/>
       </Routes>
     </BrowserRouter>
   );
