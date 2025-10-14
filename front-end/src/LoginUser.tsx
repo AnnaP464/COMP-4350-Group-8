@@ -78,7 +78,7 @@ const LoginUser: React.FC = () => {
 
       // localStorage.setItem("access_token", access_token);
       // localStorage.setItem("refresh_token", refresh_token);
-      // localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       //route by role
       //const userRole = (user?.role || "").toLowerCase();

@@ -1,7 +1,12 @@
 import React, { useMemo, useState } from "react";
 import "./authChoice.css"; // re-use your existing styles
 
-type EventPost = {
+type PublicUser = { 
+  email: string; 
+  username: string; 
+};
+
+  type EventPost = {
   id: string;
   jobName: string;
   minCommitment: string;
@@ -10,22 +15,8 @@ type EventPost = {
   createdAt: string;
 };
 
-type UserInfo = {
-  email?: string;
-  username?: string;
-  role?: string;
-};
-
-const HomepageOrganizer: React.FC = () => {
-  // Try to read the user from localStorage if your login later stores it.
-  const user: UserInfo | null = useMemo(() => {
-    try {
-      const raw = localStorage.getItem("user");
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
-  }, []);
+const HomepageOrganizer: React.FC = () => 
+{
 
   const [events, setEvents] = useState<EventPost[]>([]);
   const [showProfile, setShowProfile] = useState(false);
@@ -37,8 +28,18 @@ const HomepageOrganizer: React.FC = () => {
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
 
-  const organizerName =
-    user?.username || user?.email?.split("@")[0] || "Organizer";
+  const [user, setUser] = React.useState<PublicUser | null>(null);
+
+  //get the user
+  React.useEffect(() => {
+    const raw = localStorage.getItem("user");
+    if (raw) 
+      setUser(JSON.parse(raw) as PublicUser);
+  }, []);
+
+  if (!user) 
+    return <div>Loading…</div>;
+    //user?.username || user?.email?.split("@")[0] || "Organizer";
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +91,7 @@ const HomepageOrganizer: React.FC = () => {
         >
           <div>
             <h2 className="title" style={{ margin: 0 }}>
-              HiveHand - {organizerName}
+              HiveHand - {user.username}
             </h2>
             <p className="subtitle" style={{ marginTop: 4 }}>
               Homepage
@@ -114,7 +115,7 @@ const HomepageOrganizer: React.FC = () => {
           </div>
         </header>
 
-        {/* Content area: Feed + optional Profile panel */}
+        {/* Content area: Feed +  Profile panel */}
         <div
           style={{
             display: "grid",
@@ -126,14 +127,14 @@ const HomepageOrganizer: React.FC = () => {
           {/* Feed */}
           <main
             style={{
-              background: "white",
+              background: "#3e2b2bff",
               borderRadius: 12,
               padding: 16,
               minHeight: 260,
               boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
             }}
           >
-            <h3 style={{ marginTop: 0 }}>Your job postings</h3>
+            <h3 style={{ marginTop: 0 }}>{user.username}'s job postings</h3>
 
             {events.length === 0 ? (
               <div
@@ -187,7 +188,7 @@ const HomepageOrganizer: React.FC = () => {
             )}
           </main>
 
-          {/* Profile side panel (toggles) */}
+          {/* Profile side panel */}
           {showProfile && (
             <aside
               style={{
@@ -199,14 +200,14 @@ const HomepageOrganizer: React.FC = () => {
               }}
             >
               <h3 style={{ marginTop: 0 }}>Profile</h3>
-              <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+              <div style={{ display: "grid", gap: 8, marginBottom: 12, color: "black"}}>
                 <div>
-                  <div style={{ fontSize: 12, color: "#666" }}>Name</div>
-                  <div>{organizerName}</div>
+                  <div style={{ fontSize: 12, color: "#666" }}>Organizer</div>
+                  <div>{user.username}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: 12, color: "#666" }}>Email</div>
-                  <div>{user?.email || "—"}</div>
+                  <div>{user.email}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: 12, color: "#666" }}>
@@ -214,10 +215,10 @@ const HomepageOrganizer: React.FC = () => {
                   </div>
                   <div>{events.length}</div>
                 </div>
-                <div>
+                {/* <div>
                   <div style={{ fontSize: 12, color: "#666" }}>Role</div>
                   <div>{user?.role || "Organizer"}</div>
-                </div>
+                </div> */}
               </div>
 
               <hr style={{ margin: "12px 0" }} />
@@ -275,7 +276,7 @@ const HomepageOrganizer: React.FC = () => {
             style={{
               width: "100%",
               maxWidth: 560,
-              background: "white",
+              background: "#819a91ff",
               borderRadius: 12,
               padding: 16,
               boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
@@ -290,9 +291,7 @@ const HomepageOrganizer: React.FC = () => {
               }}
             >
               <h3 style={{ margin: 0 }}>Create a job post</h3>
-              <button className="guest-btn" onClick={() => setShowCreate(false)}>
-                Close
-              </button>
+
             </div>
             <form
               onSubmit={handleCreate}
