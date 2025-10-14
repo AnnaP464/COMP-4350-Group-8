@@ -69,7 +69,7 @@ const LoginUser: React.FC = () => {
       }
 
       const data = await response.json();
-      alert(`Login successful! Token: ${data.token}`);
+      //alert(`Login successful! Token: ${data.token}`);
 
       navigate("/Dashboard");
       // optionally redirect:

@@ -83,7 +83,7 @@ const SignupUser: React.FC = () => {
       }
 
       const data = await response.json();
-      alert(JSON.stringify(data));
+      //alert(JSON.stringify(data)); //too much data
       //alert(`Sign-up successful! Token: ${data.token}`);
 
       navigate("/User-login");
