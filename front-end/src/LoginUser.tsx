@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   // const [phone, setPhone] = useState("");
   // const [city, setCity] = useState("");
   // const [skills, setSkills] = useState("");
@@ -25,7 +26,7 @@ const LoginUser: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setErrorMsg("");
     if (!email.trim()) return alert("Email is required.");
     if (!password.trim()) return alert("Password is required.");
     // if (!agree) return alert("Please agree to the terms.");
@@ -62,9 +63,12 @@ const LoginUser: React.FC = () => {
         }),
       });
 
+      //login failed
       if (!response.ok) {
         const err = await response.text();
+        let msg = "Invalid email or password"
         alert(`Login failed: ${err}`);
+        setErrorMsg(msg);
         return;
       }
 
@@ -85,6 +89,9 @@ const LoginUser: React.FC = () => {
       <div className="login-box">
         <h2 className="title">{role} Log-in</h2>
         <p className="subtitle">{subtitle}</p>
+
+        {/* only redner when there is log-in error */}
+        {errorMsg && <p className="errorMsg">{errorMsg}</p>}
 
         <form onSubmit={handleSubmit} className="options" style={{ gap: 10 }}>
 

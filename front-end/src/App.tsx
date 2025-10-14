@@ -8,6 +8,8 @@ import Dashboard from './Dashboard';
 function App() {
   
   return(
+
+    //when url matches the path, react router renders the element component
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<AuthChoice />} />
