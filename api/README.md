@@ -5,9 +5,10 @@ psql --version
 ```
 If you don't see the version, install it from https://www.postgresql.org/ and don't forget to add the /bin to path
 if if it doesn't authomatically.
+Note the password you set when installing postgresql. Might need when entering psql shell
 
 # 2) Set up a stub db
-
+Password for hivedev: verysafe
 Open psql shell
 
 ```bash
