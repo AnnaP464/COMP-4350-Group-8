@@ -1,0 +1,27 @@
+.dashboard-container {
+  padding: 2rem;
+}
+
+.section-title {
+  margin-top: 2rem;
+}
+
+.events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.event-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #414141;
+}
+
+/* Optional: add a hover effect to make it feel a bit interactive */
+.event-box:hover {
+  background-color: #242424;
+  transition: background-color 0.2s ease-in-out;
+}
