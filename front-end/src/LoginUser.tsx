@@ -83,7 +83,7 @@ const LoginUser: React.FC = () => {
       //route by role
       //const userRole = (user?.role || "").toLowerCase();
       console.log(data);
-      if (role === "organizer") {
+      if (role === "Organizer") {
         navigate("/Homepage-Organizer");
       }
       else
