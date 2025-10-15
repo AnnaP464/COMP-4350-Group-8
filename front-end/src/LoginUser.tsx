@@ -55,7 +55,7 @@ const LoginUser: React.FC = () => {
       console.log(data);
       if (role === "Organizer") {
         navigate("/Homepage-Organizer");
-      } else {
+      } else 
         navigate("/Dashboard");
 
       localStorage.setItem("access_token", data.access_token);
