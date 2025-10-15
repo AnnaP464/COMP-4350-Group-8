@@ -78,22 +78,8 @@ const Dashboard: React.FC = () => {
   };
 
   const handleSignUp = async (eventID: number) => {
-    try{
-      /* We need to implement in the backend first, the path doesnt exist
-      const response = await fetch("http://localhost:4000/v1/.........",{
-        method: "POST",
-        headers: {
-          "Content-type": "application/json"
-        },
-        body: JSON.stringify({
-          eventID
-        })
-      });
-      */
-    } catch (error) {
-      console.error("Event Sign-up Error:", error);
-      alert("Network error — could not connect to server.");
-    }
+    alert("Not quite finished yet, check back soon!");
+    return;
   };
 
   return (
@@ -119,7 +105,7 @@ const Dashboard: React.FC = () => {
               className="option-btn"
               type="button"
             >
-              Sign Up
+              Sign-up
             </button>
           </div>
         ))}

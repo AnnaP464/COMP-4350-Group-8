@@ -13,6 +13,7 @@ test("chooses organizer sign up and completes it", async () => {
             <LoginUserForm />
         </MemoryRouter>
     );
+
     const emailField = screen.getByPlaceholderText("Email *");
     await userEvent.type(emailField, email);
     expect(emailField).toHaveValue(email);
@@ -20,6 +21,10 @@ test("chooses organizer sign up and completes it", async () => {
     const passwordField = screen.getByPlaceholderText("Password *");
     await userEvent.type(passwordField, password);
     expect(passwordField).toHaveValue(password);
+
+    const button = screen.getByRole("button", { name: "Log-in" });
+    await userEvent.click(button);
+    expect(screen.queryByText("Organizer Sign-up"));
 });
 
 test("chooses volunteer sign up and completes it", async () => {
@@ -39,4 +44,8 @@ test("chooses volunteer sign up and completes it", async () => {
     const passwordField = screen.getByPlaceholderText("Password *");
     await userEvent.type(passwordField, password);
     expect(passwordField).toHaveValue(password);
+
+    const button = screen.getByRole("button", { name: "Log-in" });
+    await userEvent.click(button);
+    expect(screen.queryByText("Organizer Sign-up"));
 });

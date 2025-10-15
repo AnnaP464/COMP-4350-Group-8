@@ -8,10 +8,6 @@ const SignupUser: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  // const [phone, setPhone] = useState("");
-  // const [city, setCity] = useState("");
-  // const [skills, setSkills] = useState("");
-  //const [agree, setAgree] = useState(false);
 
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
@@ -31,8 +27,6 @@ const SignupUser: React.FC = () => {
     subtitle = "This text should not appear";
   }
 
-  
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -40,28 +34,6 @@ const SignupUser: React.FC = () => {
     if (!email.trim()) return alert("Email is required.");
     if (!password.trim()) return alert("Password is required.");
     if (password !== confirmPassword) return alert("Passwords do not match.");
-    // if (!agree) return alert("Please agree to the terms.");
-    
-    /*
-    alert(
-        `Organizer signup:\n` +
-        `Name: ${name}\n` +
-        `Email: ${email}\n`
-        // `Phone: ${phone}\n` +
-        // `City: ${city}\n` +
-        // `Skills: ${skills}`
-    );
-
-    // Reset fields after submit
-    setUsername("");
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-    // setPhone("");
-    // setCity("");
-    // setSkills("");
-    // setAgree(false);
-    */
     try {
       const response = await fetch("http://localhost:4000/v1/auth/register", {
         method: "POST",
@@ -83,13 +55,8 @@ const SignupUser: React.FC = () => {
       }
 
       const data = await response.json();
-      //alert(JSON.stringify(data)); //too much data
-      //alert(`Sign-up successful! Token: ${data.token}`);
-
       navigate("/User-login");
 
-      // optionally redirect:
-      // window.location.href = "/dashboard";
     } catch (error) {
       console.error("Sign-up error:", error);
       alert("Network error — could not connect to server." + error);
@@ -135,38 +102,6 @@ const SignupUser: React.FC = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
-          {/* <input
-            className="text-input"
-            type="tel"
-            placeholder="Phone (optional)"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-          <input
-            className="text-input"
-            type="text"
-            placeholder="City / Location"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-          />
-          <textarea
-            className="text-input"
-            placeholder="Skills or Interests (optional)"
-            value={skills}
-            onChange={(e) => setSkills(e.target.value)}
-            rows={3}
-          /> */}
-
-          {/* <label className="checkbox-row">
-            <input
-              type="checkbox"
-              checked={agree}
-              onChange={(e) => setAgree(e.target.checked)}
-            />
-            <span style={{ marginLeft: 8 }}>
-              I agree to the Terms & Privacy Policy *
-            </span>
-          </label> */}
 
           <button className="option-btn" type="submit">
             Sign-up

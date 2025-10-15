@@ -30,6 +30,10 @@ test("chooses organizer sign up and completes it", async () => {
     const confirmPasswordField = screen.getByPlaceholderText("Confirm Password *");
     await userEvent.type(confirmPasswordField, password);
     expect(confirmPasswordField).toHaveValue(password);
+
+    const button = screen.getByRole("button", { name: "Sign-up" });
+    await userEvent.click(button);
+    expect(screen.queryByText("Organizer Sign-up"));
 });
 
 test("chooses volunteer sign up and completes it", async () => {
@@ -58,4 +62,8 @@ test("chooses volunteer sign up and completes it", async () => {
     const confirmPasswordField = screen.getByPlaceholderText("Confirm Password *");
     await userEvent.type(confirmPasswordField, password);
     expect(confirmPasswordField).toHaveValue(password);
+
+    const button = screen.getByRole("button", { name: "Sign-up" });
+    await userEvent.click(button);
+    expect(screen.queryByText("Volunteer Sign-up"));
 });

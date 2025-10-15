@@ -7,10 +7,6 @@ const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  // const [phone, setPhone] = useState("");
-  // const [city, setCity] = useState("");
-  // const [skills, setSkills] = useState("");
-  //const [agree, setAgree] = useState(false);
 
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
@@ -29,26 +25,6 @@ const LoginUser: React.FC = () => {
     setErrorMsg("");
     if (!email.trim()) return alert("Email is required.");
     if (!password.trim()) return alert("Password is required.");
-    // if (!agree) return alert("Please agree to the terms.");
-
-    /*
-    alert(
-        `Organizer signup:\n` +
-        //`Name: ${name}\n` +
-        `Email: ${email}\n` //+
-        // `Phone: ${phone}\n` +
-        // `City: ${city}\n` +
-        // `Skills: ${skills}`
-    );
-
-    // Reset fields after submit
-    setEmail("");
-    setPassword("");
-    // setPhone("");
-    // setCity("");
-    // setSkills("");
-    // setAgree(false);
-    */
 
     try {
       const response = await fetch("http://localhost:4000/v1/auth/login", {
@@ -67,30 +43,22 @@ const LoginUser: React.FC = () => {
       if (!response.ok) {
         const err = await response.text();
         let msg = "Invalid email or password"
-        alert(`Login failed: ${err}`);
+        //alert(`Login failed: ${err}`);
         setErrorMsg(msg);
         return;
       }
 
       const data = await response.json();
-      //const {access_token, refresh_token, user} = await response.json();
-      //alert(`Login successful! Token: ${data.token}`);
-
-      // localStorage.setItem("access_token", access_token);
-      // localStorage.setItem("refresh_token", refresh_token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       //route by role
-      //const userRole = (user?.role || "").toLowerCase();
       console.log(data);
       if (role === "Organizer") {
         navigate("/Homepage-Organizer");
-      }
-      else
+      } else {
         navigate("/Dashboard");
+      }
 
-      // optionally redirect:
-      // window.location.href = "/dashboard";
     } catch (error) {
       console.error("Login error:", error);
       alert("Network error — could not connect to server.");
@@ -124,38 +92,6 @@ const LoginUser: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {/* <input
-            className="text-input"
-            type="tel"
-            placeholder="Phone (optional)"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-          <input
-            className="text-input"
-            type="text"
-            placeholder="City / Location"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-          />
-          <textarea
-            className="text-input"
-            placeholder="Skills or Interests (optional)"
-            value={skills}
-            onChange={(e) => setSkills(e.target.value)}
-            rows={3}
-          /> */}
-
-          {/* <label className="checkbox-row">
-            <input
-              type="checkbox"
-              checked={agree}
-              onChange={(e) => setAgree(e.target.checked)}
-            />
-            <span style={{ marginLeft: 8 }}>
-              I agree to the Terms & Privacy Policy *
-            </span>
-          </label> */}
 
           <button className="option-btn" type="submit">
             Log-in
