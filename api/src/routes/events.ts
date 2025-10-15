@@ -1,6 +1,9 @@
 import { Router } from "express";
-const router = Router();
-import { listEvents } from "../controllers/eventsController";
+import { createEvent, listMyEvents } from "../controllers/eventsController";
+import { requireAuth } from "../middleware/requireAuth"; // your JWT middleware
+import { validateRequest } from "../middleware/validateRequest";
+import { z } from "zod";
+import { EventCreateBody } from "../spec/zod";
 
 /**
  * @swagger
@@ -73,6 +76,13 @@ import { listEvents } from "../controllers/eventsController";
  *       500:
  *         description: Internal server error.
  */
-router.get("/", listEvents);
-
-export default router;
+const r = Router();
+r.use(requireAuth());               // ensure req.user is set
+r.get("/", listMyEvents);         // GET /v1/events       -> list mine
+        
+r.post(                           // POST /v1/events      -> create
+  "/",
+  validateRequest({ body: EventCreateBody }),
+  createEvent
+);
+export default r;

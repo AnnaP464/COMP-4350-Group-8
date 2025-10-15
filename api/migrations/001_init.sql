@@ -21,5 +21,17 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+
+-- events table
+CREATE TABLE events (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- or uuid_generate_v4()
+  organizer_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  job_name       TEXT NOT NULL,
+  description    TEXT NOT NULL,
+  min_commitment TEXT NOT NULL,
+  location       TEXT NOT NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS ix_refresh_user ON refresh_tokens(user_id);
 CREATE INDEX IF NOT EXISTS ix_refresh_expires ON refresh_tokens(expires_at);

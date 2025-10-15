@@ -1,12 +1,13 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import "./authChoice.css"; // re-use your existing styles
+import { useNavigate } from "react-router-dom";
 
 type PublicUser = { 
   email: string; 
   username: string; 
 };
 
-  type EventPost = {
+type EventPost = {
   id: string;
   jobName: string;
   minCommitment: string;
@@ -27,43 +28,215 @@ const HomepageOrganizer: React.FC = () =>
   const [minCommitment, setMinCommitment] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
-
   const [user, setUser] = React.useState<PublicUser | null>(null);
 
-  //get the user
-  React.useEffect(() => {
+  const [posts, setPosts] = useState<EventPost[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  // //get the user and the list of events it has
+  // React.useEffect(() => 
+  // {
+  //   const raw = localStorage.getItem("user");
+  //   if (raw) 
+  //     setUser(JSON.parse(raw) as PublicUser);
+
+  //   (async () => {
+  //   const res = await fetch("http://localhost:4000/v1/org_events", {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
+  //     },
+  //   });
+  //   if (res.ok) setEvents(await res.json());
+  // })();
+  // }, []);
+
+
+  useEffect(() => 
+  {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
     const raw = localStorage.getItem("user");
     if (raw) 
       setUser(JSON.parse(raw) as PublicUser);
-  }, []);
+
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("http://localhost:4000/v1/org_events", {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+           return;
+        }
+
+        // server may return snake_case; map to your EventPost type
+        const rows = await res.json();
+        const normalized: EventPost[] = (Array.isArray(rows) ? rows : []).map((r: any) => ({
+          id: r.id,
+          jobName: r.jobName ?? r.job_name,
+          minCommitment: r.minCommitment ?? r.min_commitment,
+          location: r.location,
+          description: r.description,
+          createdAt: r.createdAt ?? r.created_at,
+        }));
+        setEvents(normalized);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  },[] );
+
+
+
+
+
 
   if (!user) 
     return <div>Loading…</div>;
     //user?.username || user?.email?.split("@")[0] || "Organizer";
 
-  const handleCreate = (e: React.FormEvent) => {
+  //handles creation of events
+  const handleCreate = async (e: React.FormEvent) => 
+  {
     e.preventDefault();
+
+    // basic client-side validation
     if (!jobName.trim()) return alert("Job name is required");
     if (!minCommitment.trim()) return alert("Minimum time commitment is required");
     if (!location.trim()) return alert("Location is required");
     if (!description.trim()) return alert("Description is required");
 
-    const newPost: EventPost = {
-      id: crypto.randomUUID(),
+    // prepare payload in the shape your API expects
+    const payload = {
       jobName: jobName.trim(),
       minCommitment: minCommitment.trim(),
       location: location.trim(),
       description: description.trim(),
-      createdAt: new Date().toISOString(),
     };
-    setEvents((prev) => [newPost, ...prev]);
-    setShowCreate(false);
-    // reset form
-    setJobName("");
-    setMinCommitment("");
-    setLocation("");
-    setDescription("");
-  };
+
+    try {
+      const res = await fetch("http://localhost:4000/v1/org_events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 401) { //auto-redirect if timed-out
+        alert("Your session has expired. Please log in again.");
+        navigate("/User-login"); 
+        return;
+      }
+
+      if (!res.ok) {
+        const errText = await res.text();
+        alert(`Failed to create job: ${errText}`);
+        return;
+      }
+
+      // Your API might return 201 + JSON of created event, or 204 with no body.
+      let created: any = null;
+      try {
+        created = await res.json();
+      } catch {
+        // no JSON body (e.g., 204) — fallback to local echo so UI still updates
+        created = { ...payload, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+      }
+
+      const toEventPost = (row: any): EventPost => ({
+        id: row.id,
+        jobName: row.jobName ?? row.job_name,
+        minCommitment: row.minCommitment ?? row.min_commitment,
+        location: row.location,
+        description: row.description,
+        createdAt: row.createdAt ?? row.created_at ?? new Date().toISOString(),
+      });
+
+      const newPost: EventPost = toEventPost(created);
+
+      //update UI
+      setEvents(prev => [newPost, ...prev]);
+      setShowCreate(false);
+
+      // reset form
+      setJobName("");
+      setMinCommitment("");
+      setLocation("");
+      setDescription("");
+    } catch (err) {
+      console.error("Create job error:", err);
+      alert("Network error — could not reach the server.");
+    }
+  }; //end of event creation handler
+
+
+  //handles logging out
+  const handleLogout = async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      //clear local state
+      localStorage.removeItem("user");
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+
+      try {
+        const response = await fetch("http://localhost:4000/v1/auth/logout", {
+          method: "POST",
+          headers: {"Content-Type": "application/json",}
+        });
+  
+        if (!response.ok) {
+          const err = await response.text();
+          alert(`Log-out failed: ${err}`);
+          return;
+        }
+  
+        if(response.status !== 204){
+          try{
+            const data = await response.json();
+          } catch (error){
+            console.error("Unexpected JSON package", error);
+          }
+        }
+  
+      navigate("/", { replace: true });
+
+        
+      } catch (error) {
+        console.error("Log-out Error:", error);
+        alert("Network error — could not connect to server.");
+      }
+    }; //log out function ends
+
+
+//     // create handler
+// const handleCreate = async (form: { jobName: string; description: string; minCommitment: string; location: string; }) => 
+//   {
+//     const res = await fetch("http://localhost:4000/v1/events", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
+//       },
+//       body: JSON.stringify(form),
+//     });
+//     if (!res.ok)/* show error */ 
+//       return; }
+//     const created = await res.json();
+//     setEvents(prev => [created, ...prev]); // optimistic update
+//   };
 
   return (
     <div className="login-container" style={{ alignItems: "stretch" }}>
@@ -149,11 +322,12 @@ const HomepageOrganizer: React.FC = () =>
                 No job postings posted yet.
               </div>
             ) : (
-              <div style={{ display: "grid", gap: 12 }}>
+              <div style={{ display: "grid", gap: 12, textAlign:"left"}}>
                 {events.map((ev) => (
                   <article
                     key={ev.id}
                     style={{
+                      color: "#111",
                       border: "1px solid #eee",
                       borderRadius: 12,
                       padding: 14,
@@ -173,15 +347,18 @@ const HomepageOrganizer: React.FC = () =>
                         {new Date(ev.createdAt).toLocaleString()}
                       </small>
                     </div>
-                    <p style={{ margin: "6px 0 0 0" }}>
+                    <p style={{ margin: "6px 0 0 0", whiteSpace: "pre-wrap", wordBreak: "break-word",}}>
+                      {ev.description}
+                      <br></br>
+                    {/* </p>
+                    <p style={{ margin: "6px 0 0 0" }}> */}
                       <strong>Minimum commitment:</strong> {ev.minCommitment}
-                    </p>
-                    <p style={{ margin: "6px 0" }}>
+                    {/* </p>
+                    <p style={{ margin: "6px 0" }}> */}
+                      <br></br>
                       <strong>Location:</strong> {ev.location}
                     </p>
-                    <p style={{ margin: "6px 0 0 0", whiteSpace: "pre-wrap" }}>
-                      {ev.description}
-                    </p>
+                    
                   </article>
                 ))}
               </div>
@@ -250,6 +427,10 @@ const HomepageOrganizer: React.FC = () =>
                   Update Password
                 </button>
               </form>
+              <br></br>
+              <button className="option-btn" type="button" onClick={handleLogout}>
+                Log-out
+              </button>
             </aside>
           )}
         </div>

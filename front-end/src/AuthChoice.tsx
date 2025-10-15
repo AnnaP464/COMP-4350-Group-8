@@ -28,7 +28,7 @@ const Login: React.FC = () => {
         {role === "" && (
             <>
                 <h2 className="title">Welcome to HiveHand</h2>
-                <p className="subtitle">Log in or continue as a guest</p>
+                <p className="subtitle">Log in</p>
 
                 <div className="options">
                     <button
@@ -45,12 +45,6 @@ const Login: React.FC = () => {
                         Volunteer
                     </button>
 
-                    <button
-                        className="guest-btn"
-                        onClick={() => handleSelect("Guest")}
-                    >
-                        Continue as Guest
-                    </button>
                 </div>
             </>
         )}

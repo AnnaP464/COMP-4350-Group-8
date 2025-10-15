@@ -5,6 +5,7 @@ const RegisterRequest = z.object({
   username: z.string().min(3).max(32),
   email: z.string().email(),
   password: z.string().min(8),
+  role: z.enum(["Organizer", "Volunteer"]),
 });
 const UserPublic = z
   .object({ id: z.string(), username: z.string(), role: z.string() })
