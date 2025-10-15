@@ -37,3 +37,9 @@ Open the link you get from the output in a browser to view the app
 # 5) To run the full program, run the backend.
 
 The instructions for running backend is in /api/README.md
+
+# Tests
+To run front-end tests navigate to /front-end
+```bash
+npx jest --coverage
+```
