@@ -1,55 +1,162 @@
 import React from "react";
-import {render, screen} from "@testing-library/react"
-import userEvent from "@testing-library/user-event";
-import LoginUserForm from "../LoginUser.tsx";
-import { MemoryRouter } from "react-router-dom";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
+import LoginUser from "../LoginUser";
+import "@testing-library/jest-dom";
 
-test("chooses organizer log-in and completes it", async () => {
-    const email = "placeholder@gmail.com";
-    const password = "placeholder123";
-
-    render(
-        <MemoryRouter initialEntries={["/signup?role=Organizer"]}>
-            <LoginUserForm />
-        </MemoryRouter>
-    );
-
-    //fills in the login info
-    const emailField = screen.getByPlaceholderText("Email *");
-    await userEvent.type(emailField, email);
-    expect(emailField).toHaveValue(email);
-
-    const passwordField = screen.getByPlaceholderText("Password *");
-    await userEvent.type(passwordField, password);
-    expect(passwordField).toHaveValue(password);
-
-    //should take it to the Homepage for Organizers
-    const button = screen.getByRole("button", { name: "Log-in" });
-    await userEvent.click(button);
-    expect(screen.queryByText("Homepage"));
+const mockNavigate = jest.fn();
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
 });
 
-test("chooses volunteer log-in and completes it", async () => {
-    const email = "placeholder@gmail.com";
-    const password = "placeholder123";
+const setupLocalStorageMock = () => {
+  const store = {};
+  const ls = {
+    getItem: jest.fn((k) => (k in store ? store[k] : null)),
+    setItem: jest.fn((k, v) => { store[k] = v; }),
+    removeItem: jest.fn((k) => { delete store[k]; }),
+    clear: jest.fn(() => { Object.keys(store).forEach(k => delete store[k]); }),
+  };
+  Object.defineProperty(window, "localStorage", { value: ls, writable: true });
+  return ls;
+};
 
-    render(
-        <MemoryRouter initialEntries={["/signup?role=Volunteer"]}>
-            <LoginUserForm />
-        </MemoryRouter>
+const renderWithRole = (role = "Organizer") =>
+  render(
+    <MemoryRouter initialEntries={[`/User-login?role=${encodeURIComponent(role)}`]}>
+      <Routes>
+        <Route path="/User-login" element={<LoginUser />} />
+        {/* explicit targets so navigation calls are meaningful */}
+        <Route path="/Homepage-Organizer" element={<div>ORG HOME</div>} />
+        <Route path="/Dashboard" element={<div>VOL DASH</div>} />
+      </Routes>
+    </MemoryRouter>
+  );
+
+const fillAndSubmit = async ({ email = "", password = "" } = {}) => {
+  if (email) {
+    fireEvent.change(screen.getByPlaceholderText(/Email \*/i), { target: { value: email } });
+  }
+  if (password) {
+    fireEvent.change(screen.getByPlaceholderText(/Password \*/i), { target: { value: password } });
+  }
+  fireEvent.click(screen.getByRole("button", { name: /log-in/i }));
+};
+
+describe("LoginUser handleSubmit coverage", () => {
+  let alertSpy;
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    setupLocalStorageMock();
+    alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
+    mockNavigate.mockReset();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("early return: alerts when email is missing", async () => {
+    renderWithRole("Organizer");
+    await fillAndSubmit({ password: "secret" });
+    expect(alertSpy).toHaveBeenCalledWith("Email is required.");
+    expect(global.fetch).toBeUndefined(); // no network call
+  });
+
+  test("early return: alerts when password is missing", async () => {
+    renderWithRole("Organizer");
+    await fillAndSubmit({ email: "a@b.com" });
+    expect(alertSpy).toHaveBeenCalledWith("Password is required.");
+  });
+
+  test("non-OK response shows errorMsg 'Invalid email or password'", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      text: async () => "Unauthorized",
+    });
+
+    renderWithRole("Volunteer");
+    await fillAndSubmit({ email: "v@x.com", password: "pw" });
+
+    await waitFor(() =>
+      expect(screen.getByText(/Invalid email or password/i)).toBeInTheDocument()
     );
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 
-    //fills in the login info
-    const emailField = screen.getByPlaceholderText("Email *");
-    await userEvent.type(emailField, email);
-    expect(emailField).toHaveValue(email);
+  test("role mismatch: cleans tokens, shows message, no navigate", async () => {
+    // User picked Organizer screen but backend says volunteer
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        access_token: "A",
+        refresh_token: "R",
+        user: { role: "volunteer" },
+      }),
+    });
 
-    const passwordField = screen.getByPlaceholderText("Password *");
-    await userEvent.type(passwordField, password);
-    expect(passwordField).toHaveValue(password);
+    const ls = setupLocalStorageMock();
+    renderWithRole("Organizer");
+    await fillAndSubmit({ email: "o@x.com", password: "pw" });
 
-    //should take it to the dashboard
-    const button = screen.getByRole("button", { name: "Log-in" });
-    await userEvent.click(button);
-    expect(screen.queryByText("Welcome to the Dashboard"));
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Invalid email or password role:organizer/i)
+      ).toBeInTheDocument()
+    );
+    expect(ls.removeItem).toHaveBeenCalledWith("access_token");
+    expect(ls.removeItem).toHaveBeenCalledWith("refresh_token");
+    expect(ls.removeItem).toHaveBeenCalledWith("user");
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  test("success: backend organizer → navigates /Homepage-Organizer", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        access_token: "A",
+        refresh_token: "R",
+        user: { role: "organizer" },
+      }),
+    });
+
+    renderWithRole("Organizer");
+    await fillAndSubmit({ email: "o@x.com", password: "pw" });
+
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith("/Homepage-Organizer")
+    );
+  });
+
+  test("success: backend volunteer → navigates /Dashboard", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        access_token: "A",
+        refresh_token: "R",
+        user: { role: "volunteer" },
+      }),
+    });
+
+    renderWithRole("Volunteer");
+    await fillAndSubmit({ email: "v@x.com", password: "pw" });
+
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith("/Dashboard")
+    );
+  });
+
+  test("network error triggers alert", async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error("boom"));
+    renderWithRole("Organizer");
+    await fillAndSubmit({ email: "a@b.com", password: "pw" });
+    await waitFor(() =>
+      expect(alertSpy).toHaveBeenCalledWith("Network error — could not connect to server.")
+    );
+  });
 });
