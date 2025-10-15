@@ -11,6 +11,7 @@ test("chooses organizer sign up and completes it", async () => {
         </MemoryRouter>
     );
 
+    //does a quick mock sign-up and navigates back to role selection
     const organizerButton = screen.getByRole("button", { name: "Organizer" });
     await userEvent.click(organizerButton);
     expect(screen.queryByText("Organizer portal"));
@@ -24,7 +25,6 @@ test("chooses organizer sign up and completes it", async () => {
     expect(screen.queryByText("Welcome to HiveHand"))
 });
 
-//THIS TEST DOESNT WORK BECAUSE THE FRONT END ISNT DONE
 test("chooses organizer log in and completes it", async () => {
     render(
         <MemoryRouter>
@@ -32,6 +32,7 @@ test("chooses organizer log in and completes it", async () => {
         </MemoryRouter>
     );
 
+    //does a quick mock log-in and navigates back to role selection
     const organizerButton = screen.getByRole("button", { name: "Organizer" });
     await userEvent.click(organizerButton);
     expect(screen.queryByText("Organizer portal"));
@@ -45,7 +46,6 @@ test("chooses organizer log in and completes it", async () => {
     expect(screen.queryByText("Welcome to HiveHand"))
 });
 
-//THIS TEST DOESNT WORK BECAUSE THE FRONT END ISNT DONE
 test("chooses volunteer sign in and completes it", async () => {
     render(
         <MemoryRouter>
@@ -53,6 +53,7 @@ test("chooses volunteer sign in and completes it", async () => {
         </MemoryRouter>
     );
 
+    //does a quick mock sign-up and navigates back to role selection
     const volunteerButton = screen.getByRole("button", { name: "Volunteer" });
     await userEvent.click(volunteerButton);
     expect(screen.queryByText("Volunteer portal"));
@@ -66,7 +67,6 @@ test("chooses volunteer sign in and completes it", async () => {
     expect(screen.queryByText("Welcome to HiveHand"))
 });
 
-//THIS TEST DOESNT WORK BECAUSE THE FRONT END ISNT DONE
 test("chooses volunteer log in and completes it", async () => {
     render(
         <MemoryRouter>
@@ -74,6 +74,7 @@ test("chooses volunteer log in and completes it", async () => {
         </MemoryRouter>
     );
 
+    //does a quick mock log-in and navigates back to role selection
     const volunteerButton = screen.getByRole("button", { name: "Volunteer" });
     await userEvent.click(volunteerButton);
     expect(screen.queryByText("Volunteer portal"));

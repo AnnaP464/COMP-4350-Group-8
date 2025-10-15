@@ -55,7 +55,7 @@ const SignupUser: React.FC = () => {
       }
 
       const data = await response.json();
-      navigate("/User-login");
+      navigate(`/User-login?role=${role}`);
 
     } catch (error) {
       console.error("Sign-up error:", error);

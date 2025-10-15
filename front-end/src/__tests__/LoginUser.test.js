@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import LoginUserForm from "../LoginUser.tsx";
 import { MemoryRouter } from "react-router-dom";
 
-test("chooses organizer sign up and completes it", async () => {
+test("chooses organizer log-in and completes it", async () => {
     const email = "placeholder@gmail.com";
     const password = "placeholder123";
 
@@ -14,6 +14,7 @@ test("chooses organizer sign up and completes it", async () => {
         </MemoryRouter>
     );
 
+    //fills in the login info
     const emailField = screen.getByPlaceholderText("Email *");
     await userEvent.type(emailField, email);
     expect(emailField).toHaveValue(email);
@@ -22,12 +23,13 @@ test("chooses organizer sign up and completes it", async () => {
     await userEvent.type(passwordField, password);
     expect(passwordField).toHaveValue(password);
 
+    //should take it to the Homepage for Organizers
     const button = screen.getByRole("button", { name: "Log-in" });
     await userEvent.click(button);
-    expect(screen.queryByText("Organizer Sign-up"));
+    expect(screen.queryByText("Homepage"));
 });
 
-test("chooses volunteer sign up and completes it", async () => {
+test("chooses volunteer log-in and completes it", async () => {
     const email = "placeholder@gmail.com";
     const password = "placeholder123";
 
@@ -37,6 +39,7 @@ test("chooses volunteer sign up and completes it", async () => {
         </MemoryRouter>
     );
 
+    //fills in the login info
     const emailField = screen.getByPlaceholderText("Email *");
     await userEvent.type(emailField, email);
     expect(emailField).toHaveValue(email);
@@ -45,7 +48,8 @@ test("chooses volunteer sign up and completes it", async () => {
     await userEvent.type(passwordField, password);
     expect(passwordField).toHaveValue(password);
 
+    //should take it to the dashboard
     const button = screen.getByRole("button", { name: "Log-in" });
     await userEvent.click(button);
-    expect(screen.queryByText("Organizer Sign-up"));
+    expect(screen.queryByText("Welcome to the Dashboard"));
 });

@@ -17,6 +17,10 @@ app.use(cookieParser());
 app.use("/v1/events", eventsRouter);
 app.use("/v1/auth", authRouter);
 
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 // Swagger docs
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

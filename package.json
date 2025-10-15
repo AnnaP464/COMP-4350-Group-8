@@ -1,14 +1,27 @@
 {
+  "private": true,
+  "workspaces": [
+    "api",
+    "front-end"
+  ],
   "name": "hivehand",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "lint": "eslint . --ext .js,.ts,.tsx"
+    "lint": "eslint . --ext .js,.ts,.tsx",
+    "dev:api": "npm --workspace api run dev",
+    "dev:web": "npm --workspace front-end run dev",
+    "build": "npm -w api run build && npm -w front-end run build",
+    "test:e2e": "playwright test --reporter=list",
+    "test:e2e:ui": "playwright test --ui",
+    "test:show-trace": "playwright show-trace test-results/**/trace.zip"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.0",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",
     "eslint": "^9.37.0",
-    "eslint-plugin-react": "^7.37.5"
+    "eslint-plugin-react": "^7.37.5",
+    "tsx": "^4.0.0"
   }
 }

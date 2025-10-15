@@ -3,11 +3,13 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../App";
 
+//test the routes the app can redirect to from the role selection screen
 test("renders login page by default", () => {
   render(<App />);
   expect(screen.getByText("Welcome to HiveHand")).toBeInTheDocument();
 });
 
+//test the organizer screen
 test("navigates to organizer auth selection page", async () => {
   render(<App />);
 
@@ -20,6 +22,7 @@ test("navigates to organizer auth selection page", async () => {
   expect(screen.getByText("Welcome to HiveHand")).toBeInTheDocument();
 });
 
+//test the volunteer screen
 test("navigates to volunteer auth selection page", async () => {
   render(<App />);
 
@@ -32,6 +35,7 @@ test("navigates to volunteer auth selection page", async () => {
   expect(screen.getByText("Welcome to HiveHand")).toBeInTheDocument();
 });
 
+//test the guest screen
 test("navigates to guest buffer page", async () => {
   render(<App />);
 
