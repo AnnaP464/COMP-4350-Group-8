@@ -11,6 +11,7 @@ import type { DbUser } from "../contracts/db.contracts";
   return rows[0] ?? null;
 }
 
+//keeping this in case we need to look up by username later
  async function findByUsername(username: string): Promise<DbUser | null> {
   const { rows } = await query<DbUser>(
     `SELECT * FROM users WHERE username = $1`,
@@ -31,7 +32,7 @@ import type { DbUser } from "../contracts/db.contracts";
   email: string;
   username: string;
   password_hash: string;
-  role?: string;
+  role?: Role;
 }): Promise<DbUser> {
   const role = opts.role ?? "user";
   const { rows } = await query<DbUser>(
@@ -44,6 +45,7 @@ import type { DbUser } from "../contracts/db.contracts";
   );
   return rows[0];
 }
+
 export const users = {
   findByEmail,
   findByUsername,

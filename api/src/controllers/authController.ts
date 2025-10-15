@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 import type { Request, Response, NextFunction} from "express";
 import type { AuthService, RegisterInput, LoginInput} from "../contracts/auth.contracts";
 import type { AuthController } from "../contracts/authController.contracts";
+
 /**
  * NOTE: These are STUBS for demo/dev only.
  * - No DB calls
@@ -17,6 +18,9 @@ type PublicUser = {
   role: "VOLUNTEER" | "ORG_ADMIN" | "ADMIN";
 };
 
+//END OF STUBS
+
+
 // cookies options for refresh token
 const refreshCookieOptions = {
   httpOnly: true,
@@ -27,15 +31,19 @@ const refreshCookieOptions = {
 };
 
 
+// GET /v1/auth/me 
 const me: RequestHandler = (_req, res) => {
   // TODO: if you have auth middleware attaching req.user, return it here
   return res.status(501).json({ message: "Not implemented" });
 };
 
 
-/** POST /v1/auth/register */
+
 // Factory: take an AuthService, return Express handler.
 export function makeAuthController(auth: AuthService) : AuthController {
+
+
+    /** POST /v1/auth/register */
     async function registerUser(req: Request, res: Response, next: NextFunction) {
       try {
 
@@ -58,7 +66,8 @@ export function makeAuthController(auth: AuthService) : AuthController {
     /** POST /v1/auth/login */
     async function loginUser(req: Request, res: Response, next: NextFunction) {
       try {
-        // validated by middleware → safe to cast
+
+        // req.body already validated by middleware → safe to cast
         const { accessToken, refreshToken, user } = await auth.login(req.body as LoginInput);
 
         // Set refresh token as HTTP-only cookie

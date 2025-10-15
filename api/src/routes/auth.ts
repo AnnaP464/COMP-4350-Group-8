@@ -32,7 +32,7 @@ import { validateRequest } from "../middleware/validateRequest";
  *     RegisterRequest:
  *       type: object
  *       additionalProperties: false
- *       required: [username, email, password]
+ *       required: [username, email, password, role]
  *       properties:
  *         username:
  *           type: string
@@ -48,6 +48,11 @@ import { validateRequest } from "../middleware/validateRequest";
  *           minLength: 8
  *           description: "Min 8 chars. Recommend letters, numbers, symbols."
  *           example: "StrongPassword123!"
+ *         role:
+ *           type: string
+ *           enum: [Volunteer, Organization]
+ *           example: "Volunteer"
+ *  
  *
  *     LoginRequest:
  *       type: object
@@ -259,7 +264,7 @@ export function makeAuthRouter(ctrl: AuthController) {
     /* “me” endpoint
     r.get(
         "/v1/auth/me",
-        authenticate, // ✅ middleware here
+        authenticate, // authenticate format of request
         ctrl.me,
     );
     */

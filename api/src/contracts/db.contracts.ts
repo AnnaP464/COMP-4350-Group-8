@@ -1,7 +1,7 @@
 import { Role } from "./domain.types";
 
 
-// DB-facing entity shapes (not exposed to controllers)
+// DB-facing entity shapes
 export type DbUser = {
   id: string;
   email: string;
@@ -12,6 +12,7 @@ export type DbUser = {
   updated_at?: Date;
 };
 
+// A row in sessions table  
 export type SessionRow = {
   jti: string;
   user_id: string;
@@ -21,7 +22,7 @@ export type SessionRow = {
   created_at?: Date;
 };
 
-// Users repository (AuthService depends on this)
+// Users persistence contract (AuthService depends on this)
 export interface UserModel {
   findByEmail(email: string): Promise<DbUser | null>;
   findById(id: string): Promise<DbUser| null>;
@@ -33,7 +34,7 @@ export interface UserModel {
   }): Promise<DbUser>;
 }
 
-// Sessions repository for refresh rotation/revocation
+// Sessions persistence contract for refresh rotation/revocation
 export interface SessionsModel {
   create(session: { jti: string; userId: string; expiresAt: Date }): Promise<void>;
   findByJti(jti: string): Promise<SessionRow | null>;

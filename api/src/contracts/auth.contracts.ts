@@ -1,7 +1,7 @@
-import { UserPublic } from "./domain.types";
+import { UserPublic, Role } from "./domain.types";
 
 // Inputs to auth service
-export type RegisterInput = { username: string; email: string; password: string };
+export type RegisterInput = { username: string; email: string; password: string ; role: Role };
 export type LoginInput    = { email: string; password: string };
 export type RefreshInput  = { refreshToken: string };
 
