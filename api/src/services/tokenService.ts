@@ -4,8 +4,8 @@ import { randomUUID } from "crypto";
 
 const ACCESS_TTL = "15m";
 const REFRESH_TTL = "30d";
-const ISSUER = "your-app";
-const AUD    = "your-app-web";
+const ISSUER = "hivehand";
+const AUD    = "hivehandReactApp";
 
 type AccessClaims  = { sub: string; role: string };
 type RefreshClaims = { sub: string; role: string; jti: string };

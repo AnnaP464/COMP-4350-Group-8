@@ -7,27 +7,21 @@ const RegisterRequest = z.object({
   password: z.string().min(8),
 });
 const UserPublic = z
-  .object({
-    id: z.string(),
-    username: z.string(),
-    email: z.string().email(),
-    role: z.string(),
-  })
+  .object({ id: z.string(), username: z.string(), role: z.string() })
   .passthrough();
-const AuthTokens = z
-  .object({
-    access_token: z.string(),
-    refresh_token: z.string(),
-    user: UserPublic,
-  })
+const LoginResponse = z
+  .object({ access_token: z.string(), user: UserPublic })
   .passthrough();
 const ErrorResponse = z.object({ message: z.string() }).partial().passthrough();
 const LoginRequest = z.object({
   email: z.string().email(),
   password: z.string(),
 });
-const RefreshRequest = z.object({ refresh_token: z.string() }).passthrough();
-const TokenErrorResponse = z.object({}).partial().passthrough();
+const RefreshResponse = z.object({ access_token: z.string() }).passthrough();
+const TokenErrorResponse = z
+  .object({ message: z.string() })
+  .partial()
+  .passthrough();
 const Event = z
   .object({
     id: z.string(),
@@ -48,10 +42,10 @@ const Event = z
 export const schemas = {
   RegisterRequest,
   UserPublic,
-  AuthTokens,
+  LoginResponse,
   ErrorResponse,
   LoginRequest,
-  RefreshRequest,
+  RefreshResponse,
   TokenErrorResponse,
   Event,
 };
@@ -97,7 +91,7 @@ const endpoints = makeApi([
       {
         status: 401,
         description: `Missing or invalid access token`,
-        schema: z.object({}).partial().passthrough(),
+        schema: z.object({ message: z.string() }).partial().passthrough(),
       },
     ],
   },
@@ -106,19 +100,12 @@ const endpoints = makeApi([
     path: "/v1/auth/refresh",
     alias: "postV1authrefresh",
     requestFormat: "json",
-    parameters: [
-      {
-        name: "body",
-        type: "Body",
-        schema: z.object({ refresh_token: z.string() }).passthrough(),
-      },
-    ],
-    response: AuthTokens,
+    response: z.object({ access_token: z.string() }).passthrough(),
     errors: [
       {
         status: 401,
         description: `Invalid/expired refresh token or reuse detected`,
-        schema: z.object({}).partial().passthrough(),
+        schema: z.object({ message: z.string() }).partial().passthrough(),
       },
     ],
   },
@@ -137,7 +124,7 @@ Optionally send a verification email before enabling sensitive actions.
         schema: RegisterRequest,
       },
     ],
-    response: AuthTokens,
+    response: LoginResponse,
     errors: [
       {
         status: 400,

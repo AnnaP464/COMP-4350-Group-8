@@ -1,6 +1,6 @@
 import { Router } from "express";
 const router = Router();
-import { registerUser, loginUser, refreshToken, logoutUser } from "../controllers/authController";
+import { AuthController } from "../contracts/authController.contracts";
 import { schemas}  from "../spec/zod";
 import { validateRequest } from "../middleware/validateRequest";
 
@@ -23,11 +23,10 @@ import { validateRequest } from "../middleware/validateRequest";
  *   schemas:
  *     UserPublic:
  *       type: object
- *       required: [id, username, email, role]
+ *       required: [id, username, role]
  *       properties:
  *         id: { type: string, example: "vol_123" }
  *         username: { type: string, example: "alex" }
- *         email: { type: string, format: email, example: "alex@example.com" }
  *         role: { type: string, example: "VOLUNTEER" }
  *
  *     RegisterRequest:
@@ -63,35 +62,34 @@ import { validateRequest } from "../middleware/validateRequest";
  *           type: string
  *           example: "HiddenPassword123!"
  * 
- *     RefreshRequest:
- *          type: object
- *          required: [refresh_token]
- *          properties:
- *              refresh_token:
- *                  type: string
- *
- *     AuthTokens:
+ *     RefreshResponse:
  *       type: object
- *       required: [access_token, refresh_token, user]
+ *       required: [access_token]
+ *       properties:
+ *          access_token: 
+ *            type: string
+ *            description: "New JWT, ~15 minutes"
+ * 
+ *
+ *     LoginResponse:
+ *       type: object
+ *       required: [access_token, user]
  *       properties:
  *         access_token:
  *           type: string
  *           description: "JWT, ~15 minutes"
- *         refresh_token:
- *           type: string
- *           description: "JWT , ~30 days, stored in HttpOnly cookie"
  *         user:
  *           $ref: "#/components/schemas/UserPublic"
  * 
  *     TokenErrorResponse:
- *      type: object
- *      properties:
- *      message: { type: string, example: "Invalid or expired token" }
+ *       type: object
+ *       properties:
+ *          message: { type: string, example: "Invalid or expired token" }
  *
  *     ErrorResponse:
  *       type: object
  *       properties:
- *         message: { type: string, example: "Invalid credentials" }
+ *          message: { type: string, example: "Invalid credentials" }
  */
 
 
@@ -113,19 +111,23 @@ import { validateRequest } from "../middleware/validateRequest";
  *     responses:
  *       201:
  *         description: Registered successfully
+ *         headers:
+ *           Set-Cookie:
+ *            description: HttpOnly refresh token cookie
+ *           schema:
+ *             type: string
+ *             example: refresh_token=eyJhbGciOi...; HttpOnly; Secure; SameSite=Strict; Path=/v1/auth/refresh
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/AuthTokens"
+ *               $ref: "#/components/schemas/LoginResponse"
  *             examples:
  *               success:
  *                 value:
  *                   access_token: "eyJhbGciOi..."
- *                   refresh_token: "eyJhbGciOi..."
  *                   user:
  *                     id: "vol_123"
  *                     username: "alex"
- *                     email: "alex@example.com"
  *                     role: "VOLUNTEER"
  *       400:
  *         description: Invalid input (e.g., weak password, bad email)
@@ -163,7 +165,7 @@ import { validateRequest } from "../middleware/validateRequest";
  *          content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/AuthTokens"
+ *               $ref: "#/components/schemas/LoginResponse"
  *       400:
  *         description: Invalid input
  *         content:
@@ -183,19 +185,27 @@ import { validateRequest } from "../middleware/validateRequest";
  *   post:
  *     tags: [Auth]
  *     summary: Refresh access token using a refresh token
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *            $ref: "#/components/schemas/RefreshRequest"
+ *     parameters:
+ *        - in: cookie
+ *          name: refresh_token
+ *          required: true
+ *          schema:
+ *              type: string
+ *              description: "HttpOnly cookie containing the refresh token"
+ *
  *     responses:
  *       200:
- *         description: New tokens issued (refresh should be rotated)
+ *         description: New access token (and new refresh cookie)
+ *         headers:
+ *           Set-Cookie:
+ *             description: New HttpOnly refresh token cookie
+ *             schema:
+ *               type: string
+ *               example: refresh_token=...; HttpOnly; Secure; SameSite=Strict; Path=/v1/auth/refresh
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/AuthTokens"
+ *               $ref: "#/components/schemas/RefreshResponse"
  *       401:
  *         description: Invalid/expired refresh token or reuse detected
  *         content:
@@ -221,9 +231,42 @@ import { validateRequest } from "../middleware/validateRequest";
  *             schema: { $ref: "#/components/schemas/TokenErrorResponse" }
  */
 
-router.post("/register", validateRequest( {body: schemas.RegisterRequest}), registerUser);
-router.post("/login", validateRequest({ body: schemas.LoginRequest}), loginUser);
-router.post("/refresh", validateRequest({body: schemas.RefreshRequest}), refreshToken);
-router.post("/logout", logoutUser);
 
-export default router;
+export function makeAuthRouter(ctrl: AuthController) {
+  const r = Router();
+
+    // Registration 
+    r.post(
+        "/v1/auth/register",
+        validateRequest({ body: schemas.RegisterRequest }),
+        ctrl.register,
+    );
+
+    // Login 
+    r.post(
+        "/v1/auth/login",
+        validateRequest({ body: schemas.LoginRequest }),
+        ctrl.login,
+    );
+
+    // Refresh (cookie middleware automatically parses cookies)
+    r.post(
+        "/v1/auth/refresh",
+       // validateRequest({ body: schemas.RefreshRequest}), // body optional for now
+        ctrl.refresh,
+    );
+
+    /* “me” endpoint
+    r.get(
+        "/v1/auth/me",
+        authenticate, // ✅ middleware here
+        ctrl.me,
+    );
+    */
+    // Logout (authenticate to identify user)
+    r.post(
+        "/v1/auth/logout",
+        ctrl.logout,
+    );
+  return r;
+}
