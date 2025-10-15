@@ -49,7 +49,6 @@ const LoginUser: React.FC = () => {
       }
 
       const data = await response.json();
-<<<<<<< HEAD
       localStorage.setItem("user", JSON.stringify(data.user));
 
       //route by role
@@ -58,7 +57,6 @@ const LoginUser: React.FC = () => {
         navigate("/Homepage-Organizer");
       } else {
         navigate("/Dashboard");
-=======
 
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
@@ -94,8 +92,7 @@ const LoginUser: React.FC = () => {
         navigate("/Dashboard");
       } else {
         // Unknown role: send them back or show a safe default
-        setErrorMsg("Your account role is not recognized.");
->>>>>>> 2306434 (Added events endpointsand table)
+        setErrorMsg("Invalid email or password.");
       }
 
     } catch (error) {
