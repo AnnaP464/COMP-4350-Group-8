@@ -46,6 +46,9 @@ const Dashboard: React.FC = () => {
   const handleLogout = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    //clear local state
+    localStorage.removeItem("user");
+
     try {
       const response = await fetch("http://localhost:4000/v1/auth/logout", {
         method: "POST",
@@ -68,7 +71,7 @@ const Dashboard: React.FC = () => {
         }
       }//alert(`Log-out successful! Token: ${data.token}`);
 
-      navigate("/");
+      navigate("/", { replace: true });
       // optionally redirect:
       // window.location.href = "/dashboard";
     } catch (error) {

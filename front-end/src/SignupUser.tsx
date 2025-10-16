@@ -44,7 +44,10 @@ const SignupUser: React.FC = () => {
           username,
           email,
           password,
-          role, // send role too if your backend expects it
+          role,
+          // role,: (role ?? "").toLowerCase() === "organizer" ? "organizer"
+          //     : (role ?? "").toLowerCase() === "volunteer" ? "volunteer"
+          //     : "", // or omit role to trigger backend validation error
         }),
       });
 
