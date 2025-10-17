@@ -5,14 +5,17 @@ For the front-end we are testing the navigation logic as well as the state of th
 
 #### API 
 The api serves as the backbone of our entire project, if we do not have known and consistent behaviour within every function it can lead to issues within all other pieces of the project. The api is tested both with unit tests and with integration tests to make sure it behaves in the ways we expect it to. The api testing is structured to be quite bite sized as the functionality of the api is split up into atomic units which can be individually tested, leading to great consistencyas development continues.
+
 ---
 
-## Testing Frameworks and Tools  
+## Testing Frameworks and Tools
 We use mainly Jest for front-end and api testing and Playwright for acceptance/end to end testing. Jest integrates very well with our React environment as is very well suited to front end testing due to how easy it is to set up and tear down tests and add in new tests, Jest also makes it incredibly easy to run tests with coverage to let us know where to focus our efforts. Playwright is great for whole-system tests as it actually simulates the entire project in a chromium environment and allows for things like alerts to be simulated and actually shown/clicked. Playwright made for a very simple and fast test of the registration and login features due to how 1 to 1 the test is with the real use of the website.
+
 ---
 
 ## Test Organization and Structure  
-Our test suite is a touch scattered accross the api, front-end and the acceptance tests. In all cases our tests are in a __tests__ folder, one in root, /front-end/src/__tests__, /api/src/__tests__/UnitTests and /api/src/__tests__/Integration Tests.
+Our test suite is a touch scattered accross the api, front-end and the acceptance tests. In all cases our tests are in a \_\_tests__ folder, one in root, /front-end/src/\_\_tests__, /api/src/\_\_tests__/UnitTests and /api/src/\_\_tests__/Integration Tests.
+
 ---
 
 ## Coverage Targets  
@@ -39,10 +42,12 @@ npm run test
 
 ## Reporting and Results  
 For api and front-end tests the coverage reports are all printed into the console, but can also be found in /api/coverage, similarly for front-end /front-end/coverage and for acceptance tests in the root there is the /test-results folder
+
 ---
 
 ## Test Data and Environment Setup  
 The testing setup is outlined in the README.md under "Setting up the Project", after running the setup script the suite is ready to be run.
+
 ---
 
 ## Quality Assurance and Exceptions  
@@ -50,6 +55,6 @@ Currently a chunk of our front-end cookie and authentication token behaviour is 
 
 ---
 
-## Continuous Integration [Once set up]
+## Continuous Integration
 We do use github actions and that is our only Continuous Integration step, we run the front end, api, acceptance and linting steps and recieve a report emailed to us to let us know what is running well or not.
 
