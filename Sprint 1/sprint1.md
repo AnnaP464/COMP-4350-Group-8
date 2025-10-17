@@ -10,7 +10,7 @@
 the tests are mainly to test behaviour of the api, aswell as how the api interacts with the database.
 
 ### Frontend
-![alt text](ourFrontendReport.png)
+![alt text](image.png)
 The above image shows the test coverage for out front end which is mainly covering logic which navigates between pages
 
 ---
@@ -18,10 +18,10 @@ The above image shows the test coverage for out front end which is mainly coveri
 ## Testing Importance
 list 3 tests for each category and why they stand out
 ### Unit 
-
+For the unit tests these 3 tests ![alt text](image-2.png) they stand out in that they use mocks, as well as clearly diffirent possible outcomes that may be presented.
 
 ### Integration 
-
+For the integration tests these three from user.IntegrationTest.ts ![alt text](image-1.png) these 3 tests deal with the database and make sure that the api communicates exactly how we expect it to with the database.
 
 ### Acceptance Testing
 For acceptance testing the tests of note are in the /\_\_tests__/EndtoEnd.test.ts file the tests navigate throughout the entire project and display how the Organizer and Volunteer logins lead to diffirent pages with diffirent functionality, yet to be implemented. Also for the 3rd test the registartion test in Registration & Login.test.ts stands out as a test that shows a good use of database management & cleaning.
