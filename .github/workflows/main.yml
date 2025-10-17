@@ -64,3 +64,121 @@ jobs:
         working-directory: api
         env:
           CI: true
+
+  e2e:
+    runs-on: windows-latest
+
+    # PostgreSQL service for the API
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: hivehand
+        ports:
+          - 5432:5432
+        # Make sure Postgres is ready before migrations
+        options: >-
+          --health-cmd="pg_isready -U postgres -d hivehand"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      # Common env for both servers & tests
+      NODE_ENV: test
+      # DB seen by the API
+      DATABASE_HOST: localhost
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: hivehand
+      DATABASE_USER: hivedev
+      DATABASE_PASSWORD: verysafe
+      # API + FE URLs
+      API_PORT: "4000"
+      VITE_API_URL: http://localhost:4000
+      # (Optional) health URL your Playwright webServer uses
+      API_HEALTH_URL: http://localhost:4000/health
+      # Base URL for Playwright tests (front-end)
+      PLAYWRIGHT_BASE_URL: http://localhost:5173
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # Install deps (root, api, front-end)
+      - name: Install root deps
+        run: npm ci
+
+      - name: Install API deps
+        run: npm ci
+        working-directory: api
+
+      - name: Install front-end deps
+        run: npm ci
+        working-directory: front-end
+
+      # Install Playwright browsers & Linux deps
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+
+      # Prepare DB schema (create app user and run migrations)
+      - name: Prepare database
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d hivehand -c "DO $$ BEGIN CREATE ROLE hivedev LOGIN PASSWORD 'verysafe'; EXCEPTION WHEN duplicate_object THEN NULL; END $$;"
+          # Optional: grant if your API connects as hivedev
+          psql -h localhost -U postgres -d hivehand -c "GRANT ALL PRIVILEGES ON DATABASE hivehand TO hivedev;"
+          # If your migrations create tables in public schema, ensure privileges
+          psql -h localhost -U postgres -d hivehand -c "ALTER SCHEMA public OWNER TO hivedev;"
+          # Run your project migration file
+          psql -h localhost -U postgres -d hivehand -f ./api/migrations/001_init.sql
+
+      # Start API & FE; let Playwright's webServer (or wait-on) handle readiness
+      - name: Start API
+        run: nohup npm run dev:api > /tmp/api.log 2>&1 &
+      
+      - name: Start Front-end
+        run: nohup npm run dev --prefix front-end > /tmp/front.log 2>&1 &
+
+      # Optional: sanity wait if your webServer doesn't wait itself
+      - name: Wait for servers
+        run: npx wait-on -t 120000 "${API_HEALTH_URL}" http://localhost:5173
+
+      - name: Run Playwright tests
+        env:
+          # Many projects pick up baseURL from env
+          BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}
+        run: npx playwright test --reporter=list,html
+
+      # Always upload HTML report, traces, screenshots on failure
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
+
+      - name: Upload Playwright traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/**/*
+          retention-days: 7
+
+      - name: Print server logs (on failure)
+        if: failure()
+        run: |
+          echo "===== API LOG ====="
+          tail -n 500 /tmp/api.log || true
+          echo "===== FRONT LOG ====="
+          tail -n 500 /tmp/front.log || true

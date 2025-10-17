@@ -9,6 +9,16 @@ HiveHand is a platform for hosting and finding volunteering oppertunities. Volun
  - Noah McInnes
  - Sudipta Sarker
 
+## Setting up the Project
+Our project is built to run on Windows and Apple OS. 
+To run our project you will need a few downloads
+1) Node.js + npm which powers our React typescript environment [download here](https://nodejs.org)
+2) PostgreSQL for the database, when setting up the database be sure to set a password you can easily recall[download here](https://www.postgresql.org/download/windows/)
+3) Git to run the setup script, optional if you are ok with manually running the setup commands [download here](https://git-scm.com/downloads/win)
+
+Upon cloning the repo you just need to go into the root and run the ./setup.sh script in bash, alternatively run each command in the order it is shown to set up the api, front-end and the postgreSQL database.
+
+To run the project you need to run the npm run dev command in the api and the front-end folders resepctively and then go to [http://localhost:5173/](http://localhost:5173/)
 
 ---
 ## [Sprint 0](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%200/sprint0.md)

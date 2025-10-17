@@ -302,7 +302,8 @@
         "required": [
           "username",
           "email",
-          "password"
+          "password",
+          "role"
         ],
         "properties": {
           "username": {
@@ -321,6 +322,14 @@
             "minLength": 8,
             "description": "Min 8 chars. Recommend letters, numbers, symbols.",
             "example": "StrongPassword123!"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "Volunteer",
+              "Organization"
+            ],
+            "example": "Volunteer"
           }
         }
       },
