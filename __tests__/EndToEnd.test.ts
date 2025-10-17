@@ -1,6 +1,25 @@
 import { test, expect } from "@playwright/test";
 import { execSync } from 'child_process';
 
+//tests use diffirent useremails to prevent erasing eachother's data mid test
+const email1 = "test0@test.com"
+const email2 = "test1@test.com"
+const password = "testtest"
+const orgName = "testInc"
+const userName = "testGuy"
+
+test.beforeAll(async () => {
+    //deletes user to make sure test will go well
+    deleteUserData(email1);
+    deleteUserData(email2);
+});
+
+test.afterAll(async () => {
+    //deletes user to make sure database is unaffected will go well
+    deleteUserData(email1);
+    deleteUserData(email2);
+});
+
 test("New organizer registration, login make an event and check profile", async ({ page }) => {
     //goes to the default role selection page
     await page.goto("/"); 
@@ -17,8 +36,8 @@ test("New organizer registration, login make an event and check profile", async 
     await page.getByRole("link", {name: "Log-in"}).click();
 
     await expect(page.getByRole("button", { name: "Log-in" })).toBeVisible();
-    await page.getByPlaceholder("Email *").fill("test0@test.com");
-    await page.getByPlaceholder("Password *").fill("testtest");
+    await page.getByPlaceholder("Email *").fill(email1);
+    await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
     await expect(page.getByText("Invalid email or password")).toBeVisible();
 
@@ -33,17 +52,17 @@ test("New organizer registration, login make an event and check profile", async 
     await page.getByRole("link", {name: "Sign-up"}).click();
     await expect(page.getByText("Organizer Sign-up")).toBeVisible();
 
-    await page.getByPlaceholder("Organization name *").fill("testInc");
-    await page.getByPlaceholder("Email *").fill("test0@test.com");
-    await page.getByPlaceholder("Password *", {exact : true}).fill("testtest");
-    await page.getByPlaceholder("Confirm Password *").fill("testtest");
+    await page.getByPlaceholder("Organization name *").fill(orgName);
+    await page.getByPlaceholder("Email *").fill(email1);
+    await page.getByPlaceholder("Password *", {exact : true}).fill(password);
+    await page.getByPlaceholder("Confirm Password *").fill(password);
 
     await expect(page.getByRole("button", { name: "Sign-up" })).toBeVisible();
     await page.getByRole("button", {name: "Sign-up"}).click();
 
     await expect(page.getByRole("button", { name: "Log-in" })).toBeVisible();
-    await page.getByPlaceholder("Email *").fill("test0@test.com");
-    await page.getByPlaceholder("Password *").fill("testtest");
+    await page.getByPlaceholder("Email *").fill(email1);
+    await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
 
     await expect(page.getByText("HiveHand - testInc")).toBeVisible();
@@ -63,24 +82,10 @@ test("New organizer registration, login make an event and check profile", async 
     await expect(page.getByRole("button", { name: "Profile" })).toBeVisible();
     await page.getByRole("button", {name: "Profile"}).click();
 
-    try {
-        execSync(
-        'psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = \'test0@test.com\';"',
-        {
-            stdio: 'inherit',
-            env: {
-            ...process.env,
-            PGPASSWORD: 'verysafe',
-            },
-        }
-        );
-    } catch (err) {
-        console.error('Cleanup failed:', err);
-    }
-
+    deleteUserData(email1);
 });
 
-test("New volunteer registration, login, try to sign up for an even and log out", async ({ page }) => {
+test("New volunteer registration, login, try to sign up for an event and log out", async ({ page }) => {
     //goes to the default role selection page
     await page.goto("/"); 
 
@@ -96,8 +101,8 @@ test("New volunteer registration, login, try to sign up for an even and log out"
     await page.getByRole("link", {name: "Log-in"}).click();
 
     await expect(page.getByRole("button", { name: "Log-in" })).toBeVisible();
-    await page.getByPlaceholder("Email *").fill("test0@test.com");
-    await page.getByPlaceholder("Password *").fill("testtest");
+    await page.getByPlaceholder("Email *").fill(email2);
+    await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
     await expect(page.getByText("Invalid email or password")).toBeVisible();
 
@@ -112,17 +117,17 @@ test("New volunteer registration, login, try to sign up for an even and log out"
     await page.getByRole("link", {name: "Sign-up"}).click();
     await expect(page.getByText("Volunteer Sign-up")).toBeVisible();
 
-    await page.getByPlaceholder("Your username *").fill("testGuy");
-    await page.getByPlaceholder("Email *").fill("test1@test.com");
-    await page.getByPlaceholder("Password *", {exact : true}).fill("testtest");
-    await page.getByPlaceholder("Confirm Password *").fill("testtest");
+    await page.getByPlaceholder("Your username *").fill(userName);
+    await page.getByPlaceholder("Email *").fill(email2);
+    await page.getByPlaceholder("Password *", {exact : true}).fill(password);
+    await page.getByPlaceholder("Confirm Password *").fill(password);
 
     await expect(page.getByRole("button", { name: "Sign-up" })).toBeVisible();
     await page.getByRole("button", {name: "Sign-up"}).click();
 
     await expect(page.getByRole("button", { name: "Log-in" })).toBeVisible();
-    await page.getByPlaceholder("Email *").fill("test1@test.com");
-    await page.getByPlaceholder("Password *").fill("testtest");
+    await page.getByPlaceholder("Email *").fill(email2);
+    await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
 
     await expect(page.getByText("Welcome to your Dashboard 🎉")).toBeVisible();
@@ -143,10 +148,13 @@ test("New volunteer registration, login, try to sign up for an even and log out"
     await expect(
         page.getByRole("heading", { level: 2, name: /welcome to hivehand/i })
     ).toBeVisible();
+});
 
+//deletes the user with the email address from the database
+function deleteUserData(email: String){
     try {
         execSync(
-        'psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = \'test1@test.com\';"',
+        `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = ${email}/";`,
         {
             stdio: 'inherit',
             env: {
@@ -158,4 +166,4 @@ test("New volunteer registration, login, try to sign up for an even and log out"
     } catch (err) {
         console.error('Cleanup failed:', err);
     }
-});
+}

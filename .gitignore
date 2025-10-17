@@ -12,3 +12,6 @@ build/
 # Environment
 .env
 .env.*
+
+# Playwright tests
+test-results/
