@@ -8,12 +8,10 @@ The api serves as the backbone of our entire project, if we do not have known an
 ---
 
 ## Testing Frameworks and Tools  
-List the frameworks (e.g., Jest, Pytest, Cypress) and tools used for running tests, measuring coverage, or mocking data, and explain *why they were chosen*.
 We use mainly Jest for front-end and api testing and Playwright for acceptance/end to end testing. Jest integrates very well with our React environment as is very well suited to front end testing due to how easy it is to set up and tear down tests and add in new tests, Jest also makes it incredibly easy to run tests with coverage to let us know where to focus our efforts. Playwright is great for whole-system tests as it actually simulates the entire project in a chromium environment and allows for things like alerts to be simulated and actually shown/clicked. Playwright made for a very simple and fast test of the registration and login features due to how 1 to 1 the test is with the real use of the website.
 ---
 
 ## Test Organization and Structure  
-Describe how your tests are arranged in folders or files (e.g., `tests/unit`, `tests/integration`), and how naming conventions help identify test purpose.
 Our test suite is a touch scattered accross the api, front-end and the acceptance tests. In all cases our tests are in a __tests__ folder, one in root, /front-end/src/__tests__, /api/src/__tests__/UnitTests and /api/src/__tests__/Integration Tests.
 ---
 

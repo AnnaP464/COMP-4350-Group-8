@@ -1,16 +1,15 @@
 # Sprint 1 Worksheet
 
-## [Testing Plan] ()
-Our testing environment is largely centered around jest and playwright. Jest used primarily to test front-end logic and interactions between pages, and playwright for end to end tests that are done in a simulated chromium browser. The backend was also primed for testing and written with dependancy injection in mind to make it as simple as possible down the line. We have also implemented linting to make sure consistent code formatting accross the repo. All front-end, api and linting is run automatically on any push to the repo thanks to github actions.
+## [Testing Plan](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%201/Testing%20Plan.md)
 
 ## Coverage Report
-Test coverage of the code
 ### Backend
-
+![alt text](apiCoverageReport.png)
+the tests are mainly to test behaviour of the api, aswell as how the api interacts with the database.
 
 ### Frontend
 ![alt text](image.png)
-The above image shows the test coverage for out front end which is mainly covering logic which navigates between pages, the test percentage is quite a bit lower than the tests themselves cover due to the html being imbedded in the .tsx files which lowers the coverage significantly.
+The above image shows the test coverage for out front end which is mainly covering logic which navigates between pages
 
 ## Testing Importance
 list 3 tests for each category and why they stand out
@@ -21,9 +20,27 @@ list 3 tests for each category and why they stand out
 
 
 ### Acceptance Testing
-
+For acceptance testing the tests of note are in the /__tests__/EndtoEnd.test.ts file the tests navigate throughout the entire project and display how the Organizer and Volunteer logins lead to diffirent pages with diffirent functionality, yet to be implemented. Also for the 3rd test the registartion test in Registration & Login.test.ts stands out as a test that shows a good use of database management & cleaning.
 
 
 ## Reproducible Environments
 
-We need to choose another team to test their environment
+We chose to test Group 6's Budgetwise.
+Installation went great, easy to use pnpm, got the environment files set up as directed after grabbing a supabase account. after running tests in mono repo mode i got this log
+![alt text](image-2.png) 
+It is very important to note that the 500 error seems to be because the backend was not properly set up by me but i am unsureof what can be done to fix this. as i could not find a suitable fix in time, i believe in part due to my inexperience with supabase.
+
+When run in the front-end 
+![alt text](image-3.png)
+
+When run in the api 
+![alt text](image-4.png)
+
+For these tests i was unable to get them to run in the directories of api, front-end, in the packages/domain or packages/usecases, am unsure if this is due to the test itself failing due to poor backend install or if the test itself failed to run.
+![alt text](image-5.png)
+ 
+```
+pnpm test --filter @budget/domain -- --coverage
+
+pnpm test --filter @budget/usecases -- --coverage
+```
