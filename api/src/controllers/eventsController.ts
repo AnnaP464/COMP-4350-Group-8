@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as svc from "../services/eventsServices";
 
-<<<<<<< HEAD
 export async function createEvent(req: Request, res: Response, next: NextFunction) {
   try {
     const organizerId = req.user.id; // set by your auth middleware from access token
@@ -17,7 +16,6 @@ export async function listMyEvents(req: Request, res: Response, next: NextFuncti
     res.json(rows);
   } catch (err) { next(err); }
 }
-=======
 // GET /v1/events
 // For now, return stub data matching the Event schema in routes/events.ts
 export async function listEvents(req: Request, res: Response) {
@@ -31,4 +29,3 @@ export async function listEvents(req: Request, res: Response) {
       verifier: { id: "org_12", name: "City Cleanups" } 
     }]);
 }
->>>>>>> 692b2b2 (Added Unit and Integration Tests)
