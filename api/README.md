@@ -8,9 +8,9 @@ if if it doesn't authomatically.
 Note the password you set when installing postgresql. Might need when entering psql shell
 
 # 2) Set up a stub db
-Open psql shell 
-Password for hivedev: verysafe
-Password for postgres: the password you set while installation
+Open psql shell  
+Password for hivedev: verysafe  
+Password for postgres: the password you set while installation  
 
 ```bash
 psql -h 127.0.0.1 -U postgres -d postgres
