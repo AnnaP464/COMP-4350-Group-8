@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { createEvent, listMyEvents } from "../controllers/eventsController";
+import { createEvent, listEvents } from "../controllers/eventsController";
 import { requireAuth } from "../middleware/requireAuth"; // your JWT middleware
 import { validateRequest } from "../middleware/validateRequest";
-import { z } from "zod";
-import { EventCreateBody } from "../spec/zod";
+//import { z } from "zod";
+import { schemas} from "../spec/zod";
 
 /**
  * @swagger
@@ -44,7 +44,28 @@ import { EventCreateBody } from "../spec/zod";
  *           properties:
  *             id: { type: string, example: "org_12" }
  *             name: { type: string, example: "Vancouver Cleanups" }
+ * 
+ *     CreateEventSchema:
+ *       type: object
+ *       additionalProperties: false
+ *       required: [jobName, description, location, startTime, endTime]
+ *       properties:
+ *         jobName:     { type: string, minLength: 1, example: "Park Cleanup" }
+ *         description: { type: string, minLength: 1, example: "Bring gloves" }
+ *         location:    { type: string, minLength: 1, example: "Central Park" }
+ *         startTime:   { type: string, format: date-time, example: "2025-10-20T14:00:00Z" }
+ *         endTime:     { type: string, format: date-time, example: "2025-10-20T16:00:00Z" }
+ *     
+ *     ListEventsQuery:
+ *       type: object
+ *       additionalProperties: false
+ *       properties:
+ *         from: { type: string, format: date-time }
+ *         to:   { type: string, format: date-time }
+ *         mine: { type: string, enum: ["0","1"] }
  */
+
+
 
 /**
  * @swagger
@@ -62,6 +83,10 @@ import { EventCreateBody } from "../spec/zod";
  *         name: to
  *         schema: { type: string, format: date-time }
  *         description: Only include events starting before this date.
+ *       - in: query
+ *         name: mine
+ *         schema: { type: string, enum: ["0","1"] }
+ *         description: If "1", only include events created by the authenticated
  *     responses:
  *       200:
  *         description: A list of events.
@@ -75,14 +100,60 @@ import { EventCreateBody } from "../spec/zod";
  *         description: Invalid query parameters.
  *       500:
  *         description: Internal server error.
+ *   post:
+ *     tags: [Events]
+ *     summary: Create event
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateEventSchema'
+ *     responses:
+ *       201:
+ *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  */
 const r = Router();
-r.use(requireAuth());               // ensure req.user is set
-r.get("/", listMyEvents);         // GET /v1/events       -> list mine
-        
-r.post(                           // POST /v1/events      -> create
+
+// Public: list all events (optionally filter to "mine" via ?mine=1)
+//r.get("/", listEvents);    
+// validate query first, then only auth if ?mine=1
+r.get(
   "/",
-  validateRequest({ body: EventCreateBody }),
+  //validateRequest({ query: schemas.ListEventsQuery }),
+  (req, res, next) => {
+    const wantsMine = String(req.query.mine || "").toLowerCase() === "1";
+    if (!wantsMine) 
+      return next();
+    // run the real auth middleware when mine=1
+    return requireAuth()(req, res, next);
+  },
+  listEvents
+);
+//Auth-only : create event 
+// r.post("/", requireAuth, (req, res, next) => {
+//   console.log("Route reached");
+//   next();
+// },validateRequest({ body: schemas.CreateEventSchema }), createEvent);   
+r.post(
+  "/",
+  requireAuth(),
+  (req, _res, next) => { console.log("[router] after requireAuth"); next(); },
+  validateRequest({ body: schemas.CreateEventSchema }),
+  (req, _res, next) => { console.log("[router] after validateRequest"); next(); },
   createEvent
 );
+
+//r.post("/",createEvent);                           // POST /v1/events      -> create
+
 export default r;

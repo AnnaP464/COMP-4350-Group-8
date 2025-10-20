@@ -49,43 +49,35 @@ const LoginUser: React.FC = () => {
       }
 
       const data = await response.json();
-      localStorage.setItem("user", JSON.stringify(data.user));
 
-      //route by role
-      console.log(data);
-      if (role === "Organizer") {
-        navigate("/Homepage-Organizer");
-      } else 
-        navigate("/Dashboard");
-
+      //save user to local storage
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Enforce role: compare backend user.role vs the requested screen
-      const desiredRole = (role ?? "").toLowerCase(); 
+      //check if role of user while login matches with the backend role
+      //prevents users to login from volunteer screen with organizer credentials
+      //and vice versa
+      const desiredRole = (role ?? "").toLowerCase();
       const backendRole = (data?.user?.role ?? "").toLowerCase();
-
-      if (desiredRole && backendRole && desiredRole !== backendRole) 
-      {
-        // roles don't match → block, clean up, and show message
+      if(desiredRole && backendRole && desiredRole !== backendRole){
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         localStorage.removeItem("user");
-        setErrorMsg(`Invalid email or password role:${desiredRole}.`);
+        setErrorMsg("Invalid email or password.");
         return;
       }
 
-      // //route by role
-      // //const userRole = (user?.role || "").toLowerCase();
-      // console.log(data);
-      // if (role === "Organizer") {
-      //   navigate("/Homepage-Organizer");
-      // }
-      // else
-      //   navigate("/Dashboard");
+      //route by role
+      if (backendRole === "organizer")
+        navigate("/Homepage-Organizer");
+      else if(backendRole === "volunteer")
+        navigate("/Dashboard");
+      else
+        setErrorMsg("Something went wrong");
 
-      // Route strictly by backend role (source of truth)
+
+      // Route strictly by backend role
       if (backendRole === "organizer") {
         navigate("/Homepage-Organizer");
       } else if (backendRole === "volunteer") {

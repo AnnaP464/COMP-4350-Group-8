@@ -5,7 +5,7 @@ const RegisterRequest = z.object({
   username: z.string().min(3).max(32),
   email: z.string().email(),
   password: z.string().min(8),
-  role: z.enum(["Volunteer", "Organization"]),
+  role: z.enum(["Volunteer", "Organizer"]),
 });
 const UserPublic = z
   .object({ id: z.string(), username: z.string(), role: z.string() })
@@ -39,6 +39,13 @@ const Event = z
       .passthrough(),
   })
   .passthrough();
+const CreateEventSchema = z.object({
+  jobName: z.string().min(1),
+  description: z.string().min(1),
+  location: z.string().min(1),
+  startTime: z.string().datetime({ offset: true }),
+  endTime: z.string().datetime({ offset: true }),
+});
 
 export const schemas = {
   RegisterRequest,
@@ -49,6 +56,7 @@ export const schemas = {
   RefreshResponse,
   TokenErrorResponse,
   Event,
+  CreateEventSchema,
 };
 
 const endpoints = makeApi([
@@ -156,6 +164,11 @@ Optionally send a verification email before enabling sensitive actions.
         type: "Query",
         schema: z.string().datetime({ offset: true }).optional(),
       },
+      {
+        name: "mine",
+        type: "Query",
+        schema: z.enum(["0", "1"]).optional(),
+      },
     ],
     response: z.array(Event),
     errors: [
@@ -167,6 +180,32 @@ Optionally send a verification email before enabling sensitive actions.
       {
         status: 500,
         description: `Internal server error.`,
+        schema: z.void(),
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/v1/events",
+    alias: "postV1events",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: CreateEventSchema,
+      },
+    ],
+    response: Event,
+    errors: [
+      {
+        status: 400,
+        description: `Bad Request`,
+        schema: z.void(),
+      },
+      {
+        status: 401,
+        description: `Unauthorized`,
         schema: z.void(),
       },
     ],

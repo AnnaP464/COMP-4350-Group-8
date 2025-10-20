@@ -2,17 +2,23 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+  background: url("./helping-hands.jpg") no-repeat center center fixed;
+  background-size: cover;
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
 }
 
 .login-container {
   display: flex;
+  /* flex-direction: column; */
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  /* background: linear-gradient(135deg, #e0eafc, #cfdef3); */
+  min-height: 100vh;
+  /* background: linear-gradient(135deg, #e0eafc, #cfdef3);
   background: url("./helping-hands.jpg") no-repeat center center fixed;
+  background-attachment: fixed;
   background-size: cover;
-  font-family: "Segoe UI", sans-serif;
+  font-family: "Segoe UI", sans-serif; */
 }
 
 .login-box {

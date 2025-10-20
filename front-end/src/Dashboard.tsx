@@ -24,11 +24,9 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch("http://localhost:4000/v1/", {
+        const response = await fetch("http://localhost:4000/v1/events", {
           method: "GET",
-          headers: {
-            "Content-type": "application/json"
-          }
+          headers: {"Accept": "application/json"}
         });
 
         if (!response.ok) throw new Error("Failed to fetch events");
@@ -48,6 +46,8 @@ const Dashboard: React.FC = () => {
 
     //clear local state
     localStorage.removeItem("user");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
 
     try {
       const response = await fetch("http://localhost:4000/v1/auth/logout", {
@@ -71,6 +71,7 @@ const Dashboard: React.FC = () => {
         }
       }//alert(`Log-out successful! Token: ${data.token}`);
 
+      //log out success
       navigate("/", { replace: true });
       // optionally redirect:
       // window.location.href = "/dashboard";

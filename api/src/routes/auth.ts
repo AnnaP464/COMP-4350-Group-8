@@ -50,7 +50,7 @@ import { validateRequest } from "../middleware/validateRequest";
  *           example: "StrongPassword123!"
  *         role:
  *           type: string
- *           enum: [Volunteer, Organization]
+ *           enum: [Volunteer, Organizer]
  *           example: "Volunteer"
  *  
  *
@@ -242,21 +242,21 @@ export function makeAuthRouter(ctrl: AuthController) {
 
     // Registration 
     r.post(
-        "/v1/auth/register",
+        "/register",
         validateRequest({ body: schemas.RegisterRequest }),
         ctrl.register,
     );
 
     // Login 
     r.post(
-        "/v1/auth/login",
+        "/login",
         validateRequest({ body: schemas.LoginRequest }),
         ctrl.login,
     );
 
     // Refresh (cookie middleware automatically parses cookies)
     r.post(
-        "/v1/auth/refresh",
+        "/refresh",
        // validateRequest({ body: schemas.RefreshRequest}), // body optional for now
         ctrl.refresh,
     );
@@ -270,7 +270,7 @@ export function makeAuthRouter(ctrl: AuthController) {
     */
     // Logout (authenticate to identify user)
     r.post(
-        "/v1/auth/logout",
+        "/logout",
         ctrl.logout,
     );
   return r;
