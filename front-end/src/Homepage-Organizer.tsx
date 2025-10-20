@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import "./authChoice.css"; // re-use your existing styles
 import { useNavigate } from "react-router-dom";
+import { Clock, MapPin, Calendar } from "lucide-react";
+
 
 type PublicUser = { 
   email: string; 
@@ -10,7 +12,8 @@ type PublicUser = {
 type EventPost = {
   id: string;
   jobName: string;
-  minCommitment: string;
+  startTime: string;
+  endTime: string;
   location: string;
   description: string;
   createdAt: string;
@@ -18,16 +21,17 @@ type EventPost = {
 
 const HomepageOrganizer: React.FC = () => 
 {
-
   const [events, setEvents] = useState<EventPost[]>([]);
   const [showProfile, setShowProfile] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
 
   // Create Event form state
   const [jobName, setJobName] = useState("");
-  const [minCommitment, setMinCommitment] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
+
   const [user, setUser] = React.useState<PublicUser | null>(null);
 
   const [posts, setPosts] = useState<EventPost[]>([]);
@@ -56,17 +60,22 @@ const HomepageOrganizer: React.FC = () =>
 
   useEffect(() => 
   {
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
-
     const raw = localStorage.getItem("user");
-    if (raw) 
+    if(raw)
       setUser(JSON.parse(raw) as PublicUser);
+
+    const token = localStorage.getItem("access_token");
+    //send user to organizer login
+    if(!token){
+      navigate("/User-login?role=Organizer");
+      return;
+    }
+
 
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const res = await fetch("http://localhost:4000/v1/org_events", {
+        const res = await fetch("http://localhost:4000/v1/events?mine=1", {
           method: "GET",
           headers: {
             "Accept": "application/json",
@@ -78,11 +87,13 @@ const HomepageOrganizer: React.FC = () =>
         }
 
         // server may return snake_case; map to your EventPost type
+        //
         const rows = await res.json();
         const normalized: EventPost[] = (Array.isArray(rows) ? rows : []).map((r: any) => ({
           id: r.id,
           jobName: r.jobName ?? r.job_name,
-          minCommitment: r.minCommitment ?? r.min_commitment,
+          startTime: r.startTime ?? r.start_time ?? "",
+          endTime: r.endTime ?? r.end_time ?? "",
           location: r.location,
           description: r.description,
           createdAt: r.createdAt ?? r.created_at,
@@ -94,7 +105,7 @@ const HomepageOrganizer: React.FC = () =>
     };
 
     fetchEvents();
-  },[] );
+  },[navigate] );
 
 
 
@@ -109,43 +120,66 @@ const HomepageOrganizer: React.FC = () =>
   const handleCreate = async (e: React.FormEvent) => 
   {
     e.preventDefault();
-
+    console.log("button is pressed");
     // basic client-side validation
     if (!jobName.trim()) return alert("Job name is required");
-    if (!minCommitment.trim()) return alert("Minimum time commitment is required");
+    if (!startTime.trim()) return alert("Start time is required");
+    if (!endTime.trim()) return alert("End time is required");
+    if (new Date(endTime) <= new Date(startTime)) 
+      return alert("End time must be after start time");
     if (!location.trim()) return alert("Location is required");
     if (!description.trim()) return alert("Description is required");
 
-    // prepare payload in the shape your API expects
-    const payload = {
-      jobName: jobName.trim(),
-      minCommitment: minCommitment.trim(),
-      location: location.trim(),
-      description: description.trim(),
-    };
 
-    try {
-      const res = await fetch("http://localhost:4000/v1/org_events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.status === 401) { //auto-redirect if timed-out
+    try
+    { 
+      const token = localStorage.getItem("access_token");
+      if(!token){
         alert("Your session has expired. Please log in again.");
-        navigate("/User-login"); 
+        navigate("/User-login?role=Organizer");
         return;
       }
 
+      // Convert local datetime-local values to ISO UTC strings
+      const startDate = new Date(startTime)
+      const endDate = new Date(endTime)
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+        alert("Please choose valid start and end times.");
+        return;
+      }
+      const startISO = startDate.toISOString();
+      const endISO = endDate.toISOString();
+
+      // prepare payload in the shape API expects
+      const payload = {
+        jobName: jobName.trim(),
+        startTime: startISO,
+        endTime: endISO,
+        location: location.trim(),
+        description: description.trim(),
+      };
+
+      const res = await fetch("http://localhost:4000/v1/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    
+      if (res.status === 401) { //auto-redirect if timed-out
+        alert("Your session has expired. Please log in again.");
+        console.log("401");
+        navigate("/User-login?role=Organizer"); 
+        return;
+      }
+      
       if (!res.ok) {
         const errText = await res.text();
         alert(`Failed to create job: ${errText}`);
         return;
       }
-
       // Your API might return 201 + JSON of created event, or 204 with no body.
       let created: any = null;
       try {
@@ -158,7 +192,8 @@ const HomepageOrganizer: React.FC = () =>
       const toEventPost = (row: any): EventPost => ({
         id: row.id,
         jobName: row.jobName ?? row.job_name,
-        minCommitment: row.minCommitment ?? row.min_commitment,
+        startTime: row.startTime ?? row.start_time ?? startISO,
+        endTime: row.endTime ?? row.end_time ?? endISO,
         location: row.location,
         description: row.description,
         createdAt: row.createdAt ?? row.created_at ?? new Date().toISOString(),
@@ -166,16 +201,19 @@ const HomepageOrganizer: React.FC = () =>
 
       const newPost: EventPost = toEventPost(created);
 
-      //update UI
+      //update homepage to display the new post created
+      //
       setEvents(prev => [newPost, ...prev]);
       setShowCreate(false);
 
       // reset form
       setJobName("");
-      setMinCommitment("");
+      setStartTime("");
+      setEndTime("");
       setLocation("");
       setDescription("");
-    } catch (err) {
+    } 
+    catch (err) {
       console.error("Create job error:", err);
       alert("Network error — could not reach the server.");
     }
@@ -220,23 +258,6 @@ const HomepageOrganizer: React.FC = () =>
       }
     }; //log out function ends
 
-
-//     // create handler
-// const handleCreate = async (form: { jobName: string; description: string; minCommitment: string; location: string; }) => 
-//   {
-//     const res = await fetch("http://localhost:4000/v1/events", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
-//       },
-//       body: JSON.stringify(form),
-//     });
-//     if (!res.ok)/* show error */ 
-//       return; }
-//     const created = await res.json();
-//     setEvents(prev => [created, ...prev]); // optimistic update
-//   };
 
   return (
     <div className="login-container" style={{ alignItems: "stretch" }}>
@@ -308,7 +329,8 @@ const HomepageOrganizer: React.FC = () =>
             }}
           >
             <h3 style={{ marginTop: 0 }}>{user.username}'s job postings</h3>
-
+            
+            {/* display the list of events created by me */}
             {events.length === 0 ? (
               <div
                 style={{
@@ -322,46 +344,67 @@ const HomepageOrganizer: React.FC = () =>
                 No job postings posted yet.
               </div>
             ) : (
-              <div style={{ display: "grid", gap: 12, textAlign:"left"}}>
-                {events.map((ev) => (
-                  <article
-                    key={ev.id}
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {events.map((ev) => (
+                <article
+                  key={ev.id}
+                  style={{
+                    background: "white",
+                    borderRadius: 16,
+                    padding: 20,
+                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.08)",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-4px)";
+                    e.currentTarget.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.12)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 4px 10px rgba(10, 10, 10, 0.08)";
+                  }}
+                >
+                  <header
                     style={{
-                      color: "#111",
-                      border: "1px solid #eee",
-                      borderRadius: 12,
-                      padding: 14,
-                      background: "#fff",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 8,
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "baseline",
-                        gap: 8,
-                      }}
-                    >
-                      <h4 style={{ margin: 0 }}>{ev.jobName}</h4>
-                      <small style={{ color: "#777" }}>
-                        {new Date(ev.createdAt).toLocaleString()}
-                      </small>
-                    </div>
-                    <p style={{ margin: "6px 0 0 0", whiteSpace: "pre-wrap", wordBreak: "break-word",}}>
-                      {ev.description}
-                      <br></br>
-                    {/* </p>
-                    <p style={{ margin: "6px 0 0 0" }}> */}
-                      <strong>Minimum commitment:</strong> {ev.minCommitment}
-                    {/* </p>
-                    <p style={{ margin: "6px 0" }}> */}
-                      <br></br>
-                      <strong>Location:</strong> {ev.location}
-                    </p>
-                    
-                  </article>
-                ))}
+                    <h3 style={{ margin: 0, color: "#2c3e50", wordBreak:"break-word"}}>{ev.jobName}</h3>
+                    <small style={{ color: "#888" }}>
+                      {new Date(ev.createdAt).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </small>
+                  </header>
+
+                  <p style={{ margin: "8px 0 12px", color: "#444", lineHeight: 1.4, wordBreak:"break-word", whiteSpace:"pre-wrap", textAlign:"left"}}>
+                    {ev.description}
+                  </p>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "12px 20px",
+                      color: "#555",
+                      fontSize: "0.95rem",
+                    }}
+                  >
+
+                    <div> <Clock size={16}/>  <strong>Starts at:</strong> {new Date(ev.startTime).toLocaleString()} </div>
+                    <div> <Clock size={16}/>  <strong>Ends at:</strong> {new Date(ev.endTime).toLocaleString()} </div>
+                    <div> <MapPin size={16}/> <strong style={{wordBreak:"break-word"}}>Location:</strong> {ev.location} </div>
+
+                  </div>
+                </article>
+              ))}
               </div>
+
             )}
           </main>
 
@@ -484,13 +527,23 @@ const HomepageOrganizer: React.FC = () =>
                 placeholder="Job name *"
                 value={jobName}
                 onChange={(e) => setJobName(e.target.value)}
+                required
               />
               <input
                 className="text-input"
-                type="text"
-                placeholder="Minimum time commitment (e.g., 3 hrs/week) *"
-                value={minCommitment}
-                onChange={(e) => setMinCommitment(e.target.value)}
+                type="datetime-local"
+                placeholder="Start time*"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                required
+              />
+              <input
+                className="text-input"
+                type="datetime-local"
+                placeholder="End time*"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                required
               />
               <input
                 className="text-input"

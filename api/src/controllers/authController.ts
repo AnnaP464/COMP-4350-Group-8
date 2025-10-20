@@ -15,7 +15,7 @@ type PublicUser = {
   id: string;
   username: string;
   email: string;
-  role: "VOLUNTEER" | "ORG_ADMIN" | "ADMIN";
+  role: "VOLUNTEER" | "ORGANZIER" | "ADMIN";
 };
 
 //END OF STUBS
@@ -116,11 +116,15 @@ export function makeAuthController(auth: AuthService) : AuthController {
     /** POST /v1/auth/logout */
     async function logoutUser(req: Request, res: Response) {
         // Clear cookie if present; do not error if cookie-parser isn't wired yet
-        try {
+        try 
+        {
           res.clearCookie("refresh_token", {
-            ...refreshCookieOptions,
-            // clearCookie requires the same path/samesite/secure to match the original cookie
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/v1/auth/refresh",
           });
+          return res.status(204).send();
         } catch {
           // ignore
       }

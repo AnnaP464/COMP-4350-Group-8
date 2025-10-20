@@ -6,6 +6,7 @@ import type {
   LoginResult, RegisterResult, RefreshResult,
 } from "../contracts/auth.contracts";
 
+
 import type { UserPublic as PublicUser } from "../contracts/domain.types";
 import type { Role } from "../contracts/domain.types";
 import type { UserModel as User} from "../contracts/db.contracts";
@@ -34,10 +35,14 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
 
       // use bcrypt.hash to hash password 
       const password_hash = await hash(input.password, SALT_ROUNDS);
+      if (input.role !== "Organizer" && input.role !== "Volunteer")
+        throw new Error("Invalid role"); // should normally be caught earlier by zod
+      
       const user = await users.create({
         email: input.email,
         username: input.username,
-        password_hash,         
+        password_hash,
+        role: input.role as Role,         
       });
 
       //const user = await users.create(hashed_user); 

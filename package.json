@@ -23,5 +23,8 @@
     "eslint": "^9.37.0",
     "eslint-plugin-react": "^7.37.5",
     "tsx": "^4.0.0"
+  },
+  "dependencies": {
+    "lucide-react": "^0.546.0"
   }
 }

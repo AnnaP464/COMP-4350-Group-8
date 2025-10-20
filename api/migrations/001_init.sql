@@ -23,14 +23,16 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 
 
 -- events table
-CREATE TABLE events (
+CREATE TABLE IF NOT EXISTS events (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- or uuid_generate_v4()
   organizer_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   job_name       TEXT NOT NULL,
   description    TEXT NOT NULL,
-  min_commitment TEXT NOT NULL,
+  start_time     TIMESTAMP NOT NULL,
+  end_time       TIMESTAMP NOT NULL,
   location       TEXT NOT NULL,
-  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT events_start_before_end CHECK (end_time > start_time)
 );
 
 CREATE INDEX IF NOT EXISTS ix_refresh_user ON refresh_tokens(user_id);
