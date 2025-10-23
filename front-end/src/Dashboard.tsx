@@ -3,21 +3,61 @@ import React, { useEffect, useState } from "react";
 import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
 
-interface Event {
-  id: number;
-  title: string;
-  date: string;
-  duration: string;
+type EventPost = {
+  id: string;
+  jobName: string;
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  description: string;
+};
+
+function cleanEvents(rawEvents: any) {
+  const result = [];
+  const timeZone = "America/Winnipeg"
+  for (const event of rawEvents) {
+    const startTime = new Date(event.startTime);
+    const endTime = new Date(event.endTime);
+
+    if(startTime.getTime() < Date.now()){
+      if(endTime.getTime() < Date.now()){
+        console.log("This event has already passed")
+      } else{
+        console.log("This event is already in progress")
+      }
+    }
+    else{
+      result.push({
+        id: event.id,
+        jobName: (event.jobName || "").trim(),
+        startDate: startTime.toLocaleDateString("en-CA", {
+          timeZone: timeZone, year: "numeric", month: "short", day: "2-digit"
+        }),
+        endDate: endTime.toLocaleDateString("en-CA", {
+          timeZone: timeZone, year: "numeric", month: "short", day: "2-digit"
+        }),
+        startTime: startTime.toLocaleTimeString("en-CA", {
+          timeZone: timeZone, hour: "numeric", minute: "2-digit", hour12: true
+        }),
+        endTime: endTime.toLocaleTimeString("en-CA", {
+          timeZone: timeZone, hour: "numeric", minute: "2-digit", hour12: true
+        }),
+        location: (event.location || "").trim(),
+        description: (event.description || "").trim(),
+      });
+    }
+  }
+  return result;
 }
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
   // Start with dummy placeholder events
-  const [events, setEvents] = useState<Event[]>([
-    { id: 1, title: "Beach Cleanup", date: "2025-10-20", duration: "3 hours" },
-    { id: 2, title: "Food Drive", date: "2025-10-22", duration: "5 hours" },
-    { id: 3, title: "Tree Planting", date: "2025-11-01", duration: "2 hours" },
+  const [events, setEvents] = useState<EventPost[]>([
+    {id: "1", jobName: "Beach Cleanup", startDate:"Oct 28, 2025", startTime: "5:00 PM", endDate:"2025-10-20", endTime: "8:00 PM", location: "Grand Beach", description: "cleaning up trash and zebra mussels", },
   ]);
 
   // Fetch real events non-blockingly
@@ -31,8 +71,11 @@ const Dashboard: React.FC = () => {
 
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
+        
+        //deletes events which have passed and cleans up the dates and time to be more readable
+        const cleanData = cleanEvents(data);
 
-        setEvents(data); // Replace dummy with real data
+        setEvents(cleanData); // Replace dummy with real data
       } catch (error) {
         console.error("Error fetching events:", error);
       }
@@ -81,7 +124,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleSignUp = async (eventID: number) => {
+  const handleSignUp = async (eventID: string) => {
     alert("Not quite finished yet, check back soon!");
     return;
   };
@@ -101,9 +144,9 @@ const Dashboard: React.FC = () => {
       <div className="events-container">
         {events.map((event) => (
           <div className="event-box" key={event.id}>
-            <h3>{event.title}</h3>
-            <p><strong>Date:</strong> {event.date}</p>
-            <p><strong>Duration:</strong> {event.duration}</p>
+            <h4><strong>Job Name:</strong> {event.jobName}</h4>
+            <p><strong>Start Date:</strong> {event.startDate}   <strong>Start Time:</strong> {event.startTime}</p>
+            <p><strong>End Date:</strong> {event.endDate}   <strong>End Time:</strong> {event.endTime}</p>
             <button
               onClick={() => handleSignUp(event.id)}
               className="option-btn"

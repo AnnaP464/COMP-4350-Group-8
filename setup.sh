@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Step 1: Install root dependencies (lint, etc)
+# Step 1: Install root dependencies (lint, playwright)
 echo "Installing root dependencies..."
 npm install
 
