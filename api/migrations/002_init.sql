@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-
 -- events table
 CREATE TABLE IF NOT EXISTS events (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- or uuid_generate_v4()
@@ -33,6 +32,14 @@ CREATE TABLE IF NOT EXISTS events (
   location       TEXT NOT NULL,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT events_start_before_end CHECK (end_time > start_time)
+);
+
+-- Registered Users table
+CREATE TABLE IF NOT EXISTS registered_users(
+  user_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  event_id  UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  registered_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, event_id)
 );
 
 CREATE INDEX IF NOT EXISTS ix_refresh_user ON refresh_tokens(user_id);

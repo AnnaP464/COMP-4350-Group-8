@@ -23,17 +23,15 @@ DB_NAME="hivehand"
 DB_USER="hivedev"
 DB_PASSWORD="verysafe"
 
-echo "Deleting the old PostgreSQL database..."
-psql -U postgres -c "DROP DATABASE IF EXISTS $DB_NAME;"
-psql -U postgres -c "DROP USER IF EXISTS $DB_USER;"
-
-
-
-echo "Setting up a new PostgreSQL database..."
-psql -U postgres -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
-psql -U postgres -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+echo "Deleting the old PostgreSQL database & setting up a new one"
+psql -U postgres -v ON_ERROR_STOP=1 <<SQL
+DROP DATABASE IF EXISTS ${DB_NAME};
+DROP ROLE IF EXISTS ${DB_USER};
+CREATE ROLE ${DB_USER} LOGIN PASSWORD '${DB_PASSWORD}';
+CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};
+SQL
 
 export PGPASSWORD=$DB_PASSWORD
-psql -U $DB_USER -d $DB_NAME -f ./api/migrations/001_init.sql
+psql -U $DB_USER -d $DB_NAME -f ./api/migrations/002_init.sql
 
 echo "Setup complete!"
