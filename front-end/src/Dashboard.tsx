@@ -23,9 +23,9 @@ function cleanEvents(rawEvents: any) {
 
     if(startTime.getTime() < Date.now()){
       if(endTime.getTime() < Date.now()){
-        //console.log("This event has already passed")
+        console.log("This event has already passed")
       } else{
-        //console.log("This event is already in progress")
+        console.log("This event is already in progress")
       }
     }
     else{
