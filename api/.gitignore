@@ -1,1 +1,3 @@
 coverage/
+src/spec/zod.ts
+src/spec/openapi.json
