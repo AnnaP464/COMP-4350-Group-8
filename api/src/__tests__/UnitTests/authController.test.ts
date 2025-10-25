@@ -3,13 +3,19 @@ import type { Request, Response, NextFunction } from "express";
 import { makeAuthController } from "../../controllers/authController";
 
 describe("AuthController", () => {
-  let mockService: any;
-  let mockReq: Partial<Request>;
-  let mockRes: Partial<Response>;
-  let mockNext: jest.Mock;
+  let svc: {
+    register: jest.Mock;
+    login: jest.Mock;
+    refresh: jest.Mock;
+    me: jest.Mock;
+    logout: jest.Mock;
+  };
+  let req: Partial<Request>;
+  let res: Partial<Response>;
+  let next: jest.Mock;
 
   beforeEach(() => {
-    mockService = {
+    svc = {
       register: jest.fn(),
       login: jest.fn(),
       refresh: jest.fn(),
@@ -17,96 +23,116 @@ describe("AuthController", () => {
       logout: jest.fn(),
     };
 
-    mockReq = { body: {}, cookies: {} };
-    mockRes = {
+    req = { body: {}, cookies: {} };
+    res = {
       json: jest.fn().mockReturnThis(),
       status: jest.fn().mockReturnThis(),
-      cookie: jest.fn(),
+      cookie: jest.fn(), // we assert on this
     };
-    mockNext = jest.fn();
+    next = jest.fn();
   });
 
-    test("register → calls service, sets cookie, returns 201", async () => {
-        const ctrl = makeAuthController(mockService);
+  test("register → calls service, sets refresh cookie, returns 201 with access_token + user only", async () => {
+    const ctrl = makeAuthController(svc);
 
-        const mockUser = {
-            accessToken: "access123",
-            refreshToken: "refresh456",
-            user: { username: "alex", email: "alex@example.com", role: "Volunteer" },
-        };
+    const svcResult = {
+      accessToken: "access-123",
+      refreshToken: "refresh-456", // should NOT be in response body
+      user: { username: "alex", email: "alex@example.com", role: "Volunteer" },
+    };
+    svc.register.mockResolvedValue(svcResult);
 
-        mockService.register.mockResolvedValue(mockUser);
-        mockReq.body = { email: "alex@example.com", password: "pw", username: "alex" };
+    req.body = { email: "alex@example.com", password: "pw", username: "alex" };
 
-        await ctrl.register(mockReq as Request, mockRes as Response, mockNext as NextFunction);
+    await ctrl.register(req as Request, res as Response, next as NextFunction);
 
-        expect(mockService.register).toHaveBeenCalledWith(mockReq.body);
+    expect(svc.register).toHaveBeenCalledWith(req.body);
 
-        expect(mockRes.cookie).toHaveBeenCalledWith(
-            "refresh_token",
-            "refresh456",
-            expect.objectContaining({ httpOnly: true }) // or your refreshCookieOptions
-        );
+    // cookie was set with refresh token
+    expect(res.cookie).toHaveBeenCalledWith(
+      "refresh_token",
+      "refresh-456",
+      expect.objectContaining({ httpOnly: true }) //TEST FOR OTHER OPTIONS 
+    );
 
-        expect(mockRes.status).toHaveBeenCalledWith(201);
-        expect(mockRes.json).toHaveBeenCalledWith({
-            access_token: "access123",
-            user: mockUser.user,
-        });
-
-        expect(mockNext).not.toHaveBeenCalled();
+    // response status + body
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      access_token: "access-123",
+      user: svcResult.user,
+    });
+    expect(next).not.toHaveBeenCalled();
   });
 
-    test("login → calls service and returns tokens", async () => {
-        const ctrl = makeAuthController(mockService);
+  test("login → calls service, sets refresh cookie, returns access_token + user only", async () => {
+    const ctrl = makeAuthController(svc);
 
-        const mockTokens = {
-            accessToken: "access123",
-            refreshToken: "refresh456",
-            user: { username: "alex", email: "alex@example.com", role: "Volunteer" },
-        };
+    const svcResult = {
+      accessToken: "access-LOG",
+      refreshToken: "refresh-LOG", // cookie only
+      user: { username: "lee", email: "lee@example.com", role: "Volunteer" },
+    };
+    svc.login.mockResolvedValue(svcResult);
 
-        mockService.login.mockResolvedValue(mockTokens);
-        mockReq.body = { email: "alex@example.com", password: "pw" };
+    req.body = { email: "lee@example.com", password: "pw" };
 
-        await ctrl.login(mockReq as Request, mockRes as Response, mockNext);
+    await ctrl.login(req as Request, res as Response, next as NextFunction);
 
-        expect(mockService.login).toHaveBeenCalledWith(mockReq.body);
-        expect(mockRes.json).toHaveBeenCalledWith(mockTokens);
+    expect(svc.login).toHaveBeenCalledWith(req.body);
+
+    expect(res.cookie).toHaveBeenCalledWith(
+      "refresh_token",
+      "refresh-LOG",
+      expect.objectContaining({ httpOnly: true })
+    );
+
+    expect(res.json).toHaveBeenCalledWith({
+      access_token: "access-LOG",
+      user: svcResult.user,
     });
+    expect(next).not.toHaveBeenCalled();
+  });
 
-    test("refresh → sends new tokens, sets cookie", async () => {
-        const ctrl = makeAuthController(mockService);
+  test("refresh → sets new refresh cookie and returns only access_token (+ user if provided)", async () => {
+    const ctrl = makeAuthController(svc);
 
-        const tokens = {
-            accessToken: "access-NEW",
-            refreshToken: "refresh-NEW",
-            user: { username: "alex", email: "alex@example.com", role: "Volunteer" },
-        };
+    const svcResult = {
+      accessToken: "access-NEW",
+      refreshToken: "refresh-NEW", // cookie only,
+    };
+    svc.refresh.mockResolvedValue(svcResult);
 
-        mockService.refresh.mockResolvedValue(tokens);
-        mockReq.cookies = { refresh_token: "oldToken" };
+    req.cookies = { refresh_token: "oldToken" };
 
-        await ctrl.refresh(mockReq as Request, mockRes as Response, mockNext);
+    await ctrl.refresh(req as Request, res as Response, next as NextFunction);
 
-        expect(mockService.refresh).toHaveBeenCalledWith("oldToken");
-        expect(mockRes.cookie).toHaveBeenCalledWith(
-            "refresh_token",
-            "refresh-NEW",
-            expect.objectContaining({
-                httpOnly: true,
-                sameSite: "lax",
-                path: "/v1/auth/refresh",
-                // secure: process.env.NODE_ENV === "production",
-                maxAge: 30 * 24 * 60 * 60 * 1000,
-            })
-        );
-        expect(mockRes.json).toHaveBeenCalledWith({
-            access_token: "access-NEW",
-            refresh_token: "refresh-NEW",
-            user: tokens.user,
-        });
+    expect(svc.refresh).toHaveBeenCalledWith("oldToken");
+
+    // verify cookie options (don’t hardcode env-dependent flags)
+    expect(res.cookie).toHaveBeenCalledWith(
+      "refresh_token",
+      "refresh-NEW",
+      expect.objectContaining({
+        httpOnly: true,
+        path: "/v1/auth/refresh",
+        sameSite: expect.any(String), // e.g. "lax"
+        maxAge: expect.any(Number),
+      })
+    );
+
+    expect(res.json).toHaveBeenCalledWith({
+      access_token: "access-NEW",
     });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  test("controller passes errors to next(err)", async () => {
+    const ctrl = makeAuthController(svc);
+    const err = new Error("boom");
+    svc.login.mockRejectedValue(err);
+
+    await ctrl.login(req as Request, res as Response, next as NextFunction);
+
+    expect(next).toHaveBeenCalledWith(err);
+  });
 });
-
-

@@ -88,12 +88,12 @@ describe("Persistence layer User", () => {
       email: "admin@example.com",
       username: "admin",
       password_hash: "hashedpw",
-      role: "Organization",
+      role: "Organizer",
     });
 
     expect(query).toHaveBeenCalledWith(
       expect.stringContaining("INSERT INTO users"),
-      ["admin@example.com", "admin", "hashedpw", "admin"]
+      ["admin@example.com", "admin", "hashedpw", "Organizer"]
     );
     expect(result.role).toEqual(orgUser.role);
 

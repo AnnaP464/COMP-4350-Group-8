@@ -41,13 +41,13 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
       const user = await users.create({
         email: input.email,
         username: input.username,
-        password_hash,
+        password_hash: password_hash,
         role: input.role as Role,         
       });
 
       //const user = await users.create(hashed_user); 
-      const accessToken = tokens.issueAccessToken(user);
-      const { token: refreshToken, jti } = tokens.issueRefreshToken(user);
+      const accessToken = tokens.issueAccessToken({id: user.id, role: user.role});
+      const { token: refreshToken, jti } = tokens.issueRefreshToken({id: user.id, role: user.role});
 
       // persistence for refresh token
       await sessions.create({ jti, userId: user.id, expiresAt: new Date(Date.now() + 30*24*3600*1000) });
@@ -65,8 +65,8 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
       const ok = await compare(input.password, user.password_hash);
       if (!ok) throw new Error("Invalid credentials");
 
-      const accessToken = tokens.issueAccessToken(user);
-      const { token: refreshToken, jti } = tokens.issueRefreshToken(user);
+      const accessToken = tokens.issueAccessToken({id: user.id, role: user.role});
+      const { token: refreshToken, jti } = tokens.issueRefreshToken({id: user.id, role: user.role});
       await sessions.create({ jti, userId: user.id, expiresAt: new Date(Date.now() + 30*24*3600*1000) });
 
       return { accessToken, refreshToken, user: toPublicUser(user) };
@@ -99,8 +99,8 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
       const user = await users.findById(userId);
       if (!user) throw new Error("User not found");
 
-      const accessToken = tokens.issueAccessToken(user);
-      const { token: refreshToken, jti: newJti } = tokens.issueRefreshToken(user);
+      const accessToken = tokens.issueAccessToken({id: user.id, role: user.role});
+      const { token: refreshToken, jti: newJti } = tokens.issueRefreshToken({id: user.id, role: user.role});
 
       // Store the new refresh token’s jti (with its expiration timestamp)
       const newExp = new Date(Date.now() + 30*24*3600*1000);

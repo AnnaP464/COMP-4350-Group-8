@@ -4,7 +4,9 @@
   "description": "",
   "main": "src/server.ts",
   "scripts": {
-    "test": "jest --coverage",
+    "test": "jest",
+    "test:unit": "jest --selectProjects unit",
+    "test:integration": "jest --selectProjects integration --runInBand",
     "dump:spec": "ts-node ./src/spec/dump.ts",
     "gen:zod": "openapi-zod-client ./src/spec/openapi.json -o ./src/spec/zod.ts",
     "dev": "npm run dump:spec && npm run gen:zod && ts-node-dev --transpile-only --respawn src/server.ts"

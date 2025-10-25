@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   jti         UUID PRIMARY KEY,
   user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   expires_at  TIMESTAMPTZ NOT NULL,
-  revoked_at  TIMESTAMPTZ,
+  revoked_at  TIMESTAMPTZ DEFAULT NULL,
   replaced_by UUID,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );

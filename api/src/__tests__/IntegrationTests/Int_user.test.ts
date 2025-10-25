@@ -1,5 +1,5 @@
-import { users } from "../..//db/user";
-import { query } from "../..//db/connect";
+import { users } from "../../db/user";
+import { query } from "../../db/connect";
 
 describe("users repository (integration)", () => {
   afterEach(async () => {

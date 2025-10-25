@@ -13,7 +13,7 @@ jest.mock("bcryptjs", () => ({
   hash: jest.fn(),
 }));
 
-import bcrypt from "bcryptjs";
+import {compare, hash} from "bcryptjs";
 import { makeAuthService } from "../../services/authService";
 
 // Pull typed functions so we can override per-test
@@ -42,8 +42,15 @@ function makeUsersMock(initial?: Partial<UserRow>) {
   const users: jest.Mocked<Users> = {
     findByEmail:  jest.fn().mockResolvedValue(row),
     findById:     jest.fn().mockResolvedValue(row),
-    create:       jest.fn().mockResolvedValue({ ...row, id: "u2" }),
-  };
+    create:       jest.fn().mockImplementation(async (input) => {
+      const newUser = {
+        email: input.email,
+        username: input.username,
+        password_hash: input.password_hash,
+        role: (input.role ?? "Volunteer") as UserRow["role"],
+      };
+      return newUser;
+    })}
   return users;
 }
 function makeSessionsMock() {
@@ -91,7 +98,7 @@ describe("AuthService", () => {
     const auth = makeAuthService({ users, sessions });
 
     // verifyPassword must return true for success
-    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    (compare as jest.Mock).mockResolvedValue(true);
 
     const result = await auth.login({ email: baseUser.email, password: "correct-password" });
 
@@ -111,7 +118,7 @@ describe("AuthService", () => {
   test("login: invalid credentials → throws", async () => {
     const auth = makeAuthService({ users, sessions });
 
-    (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+    (compare as jest.Mock).mockResolvedValue(false);
 
     await expect(auth.login({ email: baseUser.email, password: "wrong" }))
       .rejects.toThrow(/invalid/i);
@@ -123,16 +130,17 @@ describe("AuthService", () => {
 
     // Ensure no collision
     users.findByEmail = jest.fn().mockResolvedValue(null);
+    (hash as jest.Mock).mockResolvedValue("hashedpw");
 
     const result = await auth.register({ email: "new@example.com", username: "newuser", password: "StrongPassw0rd!", role: "Volunteer" });
 
     expect(users.create).toHaveBeenCalledWith(
-      expect.objectContaining({ email: "new@example.com", username: "newuser", password_hash: expect.any(String) })
+      expect.objectContaining({ email: "new@example.com", username: "newuser", password_hash: expect.any(String), role: "Volunteer" })
     );
     expect(tokens.issueAccessToken).toHaveBeenCalled();
     expect(tokens.issueRefreshToken).toHaveBeenCalled();
     expect(sessions.create).toHaveBeenCalled();
-    expect(result.user).toEqual({ username: "newuser", email: "new@example.com", role: "Volunteer" });
+    expect(result.user).toEqual({email: "new@example.com", username: "newuser", role: "Volunteer" });
   });
 
   //Refresh Test: Success
@@ -144,8 +152,8 @@ describe("AuthService", () => {
     expect(tokens.verifyRefresh).toHaveBeenCalledWith("any.valid.token");
     expect(sessions.findByJti).toHaveBeenCalledWith("jti-OLD");
     expect(sessions.revoke).toHaveBeenCalledWith("jti-OLD");
-    expect(tokens.issueAccessToken).toHaveBeenCalledWith({ id: "u1", role: "user" });
-    expect(tokens.issueRefreshToken).toHaveBeenCalledWith({ id: "u1", role: "user" });
+    expect(tokens.issueAccessToken).toHaveBeenCalledWith({ id: "u1", role: "Volunteer" });
+    expect(tokens.issueRefreshToken).toHaveBeenCalledWith({ id: "u1", role: "Volunteer" });
     expect(sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({ jti: "jti-NEW", userId: "u1", expiresAt: expect.any(Date) })
     );
