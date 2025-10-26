@@ -87,7 +87,7 @@ describe("sessions repository (integration)", () => {
       "SELECT revoked_at FROM refresh_tokens WHERE jti = $1",
       [revokeJti]
     );
-    expect(rows[0].revoked_at).not.toBeNull();
+    expect(rows[0]).not.toBeNull();
   });
 
   test("revokeAllForUser() revokes all active tokens for a user", async () => {

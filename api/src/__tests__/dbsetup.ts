@@ -1,5 +1,4 @@
 import { execSync } from "child_process";
-import { query } from "../../db/connect";
 
 beforeAll(async () => {
   console.log("Resetting test database:", process.env.DATABASE_URL);

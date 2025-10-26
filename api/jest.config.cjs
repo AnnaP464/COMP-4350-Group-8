@@ -15,11 +15,10 @@ module.exports = {
       preset: "ts-jest",
       testEnvironment: "node",
       testMatch:  ["**/src/__tests__/IntegrationTests/*.test.ts"],
-      setupFilesAfterEnv: ["<rootDir>/src/__tests__/IntegrationTests/dbsetup.ts"],
+      setupFilesAfterEnv: ["<rootDir>/src/__tests__/dbsetup.ts"],
       maxWorkers: 1, // run serially
-      forceExit: true, // ensure DB connections close
+      runInBand: true,
       detectOpenHandles: true,  // warns on hanging handles
-      verbose: true,
     }
   ],
   verbose: true,
