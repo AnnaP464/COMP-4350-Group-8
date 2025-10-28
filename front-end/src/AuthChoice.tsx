@@ -70,24 +70,6 @@ const Login: React.FC = () => {
                 </div>
             </>
         )}
-
-        { (role === "Guest")  && (
-            <>
-                <h2 className="title">{role} Portal</h2>
-                <p className="subtitle">{subtitle}</p>
-                <div className="options">
-
-                <Link to={""} className="option-btn">
-                    Proceed
-                </Link>
-                <button
-                    className = "guest-btn"
-                    onClick={() => setRole("")}>
-                    Back to Role Selection
-                </button>
-                </div>
-            </>
-        )}
         </div>
     </div>
   );
