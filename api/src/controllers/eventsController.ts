@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import * as svc from "../services/eventsService";
+import * as eventService from "../services/eventsService";
 import * as events from "../db/events";
 import { listMyEventsService } from "../services/eventsService";
 
@@ -42,7 +42,7 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
       const organizerId = req.user?.id;
       if (!organizerId) 
         return res.status(401).json({ message: "Unauthorized" });
-      const rows = await svc.listMyEventsService(organizerId);
+      const rows = await eventService.listMyEventsService(organizerId);
       return res.json(rows);
     }
     else{
@@ -50,6 +50,33 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
       return res.json(rows);
     }
   } catch (err) {
+    next(err);
+  }
+}
+
+// POST /v1/events/register (auth required)
+export async function registerUserForEvent(req: Request, res: Response, next: NextFunction) {
+  try
+  {
+    //check for valid user here
+    console.log("[controller] registerUserForEvent body:", req.body, "user:", req.user?.id);
+    const volunteerId = req.user?.id; // set by requireAuth middleware from access token
+    if(!volunteerId) return res.status(401).json({message: "Unauthorized"});
+
+    const {eventId} = req.body ?? {};
+    if(!eventId)
+      return res.status(400).json({message: "Missing event ID in request"});
+    
+    try{
+      const response = await eventService.registerUserForEventService(volunteerId, eventId);
+      if(!response)//make sure the row is recieved back
+        return res.status(409).json({message: "User is already registered for event"});
+    } catch (error){
+      return res.status(409).json({message:"User is already registered for an event at this time"});
+    }
+    return res.status(201).json({message: "Registered Successfully"});
+  } 
+  catch (err){
     next(err);
   }
 }

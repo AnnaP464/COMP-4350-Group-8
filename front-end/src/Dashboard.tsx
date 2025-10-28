@@ -74,7 +74,7 @@ const Dashboard: React.FC = () => {
         
         //deletes events which have passed and cleans up the dates and time to be more readable
         const cleanData = cleanEvents(data);
-
+        console.log(cleanData);
         setEvents(cleanData); // Replace dummy with real data
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -124,9 +124,51 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleSignUp = async (eventID: string) => {
-    alert("Not quite finished yet, check back soon!");
-    return;
+  const handleSignUp = async (eventId: string) => {
+    try{
+      const token = localStorage.getItem("access_token");
+      if(!token){
+        alert("Your session has expired. Please log in again.");
+        navigate("/User-login?role=Volunteer");
+        return;
+      }
+
+      //verify token before sending request off
+      //get token by user id
+
+      console.log(eventId);
+
+      const response = await fetch("http://localhost:4000/v1/events/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          eventId: eventId
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        alert(`Registration failed: ${err}`);
+        return;
+      }
+
+      if(response.status !== 204){
+        try{
+          const data = await response.json();
+        } catch (error){
+          console.error("Unexpected JSON package", error);
+        }
+      }
+
+      alert("User has been successfully registered for the event");
+
+    } catch (error) {
+      console.error("Registration Error:", error);
+      alert("Network error — could not connect to server.");
+    }
   };
 
   return (
