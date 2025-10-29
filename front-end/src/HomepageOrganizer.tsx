@@ -159,46 +159,46 @@ const HomepageOrganizer: React.FC = () => {
       console.error("Create job error:", err);
       alert("Network error — could not reach the server.");
     }
-  }; //end of event creation handler
+  };
 
 
   //handles logging out
   const handleLogout = async (e: React.FormEvent) => {
-      e.preventDefault();
+    e.preventDefault();
 
-      //clear local state
-      localStorage.removeItem("user");
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
+    //clear local state
+    localStorage.removeItem("user");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
 
-      try {
-        const response = await fetch("http://localhost:4000/v1/auth/logout", {
-          method: "POST",
-          headers: {"Content-Type": "application/json",}
-        });
-  
-        if (!response.ok) {
-          const err = await response.text();
-          alert(`Log-out failed: ${err}`);
-          return;
-        }
-  
-        if(response.status !== 204){
-          try{
-            const data = await response.json();
-          } catch (error){
-            console.error("Unexpected JSON package", error);
-          }
-        }
-  
-      navigate("/", { replace: true });
+    try {
+      const response = await fetch("http://localhost:4000/v1/auth/logout", {
+        method: "POST",
+        headers: {"Content-Type": "application/json",}
+      });
 
-        
-      } catch (error) {
-        console.error("Log-out Error:", error);
-        alert("Network error — could not connect to server.");
+      if (!response.ok) {
+        const err = await response.text();
+        alert(`Log-out failed: ${err}`);
+        return;
       }
-    }; //log out function ends
+
+      if(response.status !== 204){
+        try{
+          const data = await response.json();
+        } catch (error){
+          console.error("Unexpected JSON package", error);
+        }
+      }
+
+    navigate("/", { replace: true });
+
+      
+    } catch (error) {
+      console.error("Log-out Error:", error);
+      alert("Network error — could not connect to server.");
+    }
+  };
 
   return (
     <div className="login-container" style={{ alignItems: "stretch" }}>
@@ -332,19 +332,15 @@ const HomepageOrganizer: React.FC = () => {
                       fontSize: "0.95rem",
                     }}
                   >
-
                     <div> <Clock size={16}/>  <strong>Starts at:</strong> {ev.startDate}  {ev.startTime} </div>
                     <div> <Clock size={16}/>  <strong>Ends at:</strong> {ev.endDate}  {ev.endTime} </div>
                     <div> <MapPin size={16}/> <strong style={{wordBreak:"break-word"}}>Location:</strong> {ev.location} </div>
-
                   </div>
                 </article>
               ))}
               </div>
-
             )}
           </main>
-
           {/* Profile side panel */}
           {showProfile && (
             <aside
@@ -372,14 +368,8 @@ const HomepageOrganizer: React.FC = () => {
                   </div>
                   <div>{events.length}</div>
                 </div>
-                {/* <div>
-                  <div style={{ fontSize: 12, color: "#666" }}>Role</div>
-                  <div>{user?.role || "Organizer"}</div>
-                </div> */}
               </div>
-
               <hr style={{ margin: "12px 0" }} />
-
               <h4 style={{ marginTop: 0 }}>Change password</h4>
               <form
                 onSubmit={(e) => {
@@ -415,7 +405,6 @@ const HomepageOrganizer: React.FC = () => {
           )}
         </div>
       </div>
-
       {/* Create Event model */}
       {showCreate && (
         <div
