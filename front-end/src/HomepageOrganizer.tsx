@@ -1,27 +1,18 @@
 import React, { useMemo, useState, useEffect } from "react";
-import "./authChoice.css"; // re-use your existing styles
+import "./css/HomepageOrganizer.css"; // re-use your existing styles
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Clock, MapPin, Calendar } from "lucide-react";
-
+import * as EventHelper from "./helpers/EventHelper";
+import * as RoleHelper from "./helpers/RoleHelper";
 
 type PublicUser = { 
   email: string; 
   username: string; 
 };
 
-type EventPost = {
-  id: string;
-  jobName: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  description: string;
-  createdAt: string;
-};
-
-const HomepageOrganizer: React.FC = () => 
-{
-  const [events, setEvents] = useState<EventPost[]>([]);
+const HomepageOrganizer: React.FC = () => {
+  const [events, setEvents] = useState<EventHelper.CleanEvent[]>([]);
   const [showProfile, setShowProfile] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
 
@@ -34,32 +25,18 @@ const HomepageOrganizer: React.FC = () =>
 
   const [user, setUser] = React.useState<PublicUser | null>(null);
 
-  const [posts, setPosts] = useState<EventPost[]>([]);
+  const [posts, setPosts] = useState<EventHelper.CleanEvent[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const locationState = useLocation();
+  const state = locationState.state as RoleHelper.AuthChoiceState;
+  const role = state?.role;
 
   const navigate = useNavigate();
 
-  // //get the user and the list of events it has
-  // React.useEffect(() => 
-  // {
-  //   const raw = localStorage.getItem("user");
-  //   if (raw) 
-  //     setUser(JSON.parse(raw) as PublicUser);
-
-  //   (async () => {
-  //   const res = await fetch("http://localhost:4000/v1/org_events", {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
-  //     },
-  //   });
-  //   if (res.ok) setEvents(await res.json());
-  // })();
-  // }, []);
-
-
-  useEffect(() => 
-  {
+  useEffect(() => {
     const raw = localStorage.getItem("user");
     if(raw)
       setUser(JSON.parse(raw) as PublicUser);
@@ -67,60 +44,41 @@ const HomepageOrganizer: React.FC = () =>
     const token = localStorage.getItem("access_token");
     //send user to organizer login
     if(!token){
-      navigate("/User-login?role=Organizer");
+      navigate("/User-login", { state: { role } });
       return;
     }
-
 
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const res = await fetch("http://localhost:4000/v1/events?mine=1", {
+        const response = await fetch("http://localhost:4000/v1/events?mine=1", {
           method: "GET",
           headers: {
             "Accept": "application/json",
             "Authorization": `Bearer ${token}`,
           },
         });
-        if (!res.ok) {
+        if (!response.ok) {
            return;
         }
 
-        // server may return snake_case; map to your EventPost type
-        //
-        const rows = await res.json();
-        const normalized: EventPost[] = (Array.isArray(rows) ? rows : []).map((r: any) => ({
-          id: r.id,
-          jobName: r.jobName ?? r.job_name,
-          startTime: r.startTime ?? r.start_time ?? "",
-          endTime: r.endTime ?? r.end_time ?? "",
-          location: r.location,
-          description: r.description,
-          createdAt: r.createdAt ?? r.created_at,
-        }));
-        setEvents(normalized);
+        const rows = await response.json();
+        const cleanData = EventHelper.cleanEvents(rows);
+        setEvents(cleanData);
       } finally {
         setLoading(false);
       }
     };
 
     fetchEvents();
-  },[navigate] );
-
-
-
-
-
+  },[navigate, refreshKey] );
 
   if (!user) 
     return <div>Loading…</div>;
-    //user?.username || user?.email?.split("@")[0] || "Organizer";
 
   //handles creation of events
-  const handleCreate = async (e: React.FormEvent) => 
-  {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("button is pressed");
     // basic client-side validation
     if (!jobName.trim()) return alert("Job name is required");
     if (!startTime.trim()) return alert("Start time is required");
@@ -130,13 +88,11 @@ const HomepageOrganizer: React.FC = () =>
     if (!location.trim()) return alert("Location is required");
     if (!description.trim()) return alert("Description is required");
 
-
-    try
-    { 
+    try { 
       const token = localStorage.getItem("access_token");
       if(!token){
         alert("Your session has expired. Please log in again.");
-        navigate("/User-login?role=Organizer");
+        navigate("/User-login", { state: { role } });
         return;
       }
 
@@ -159,7 +115,7 @@ const HomepageOrganizer: React.FC = () =>
         description: description.trim(),
       };
 
-      const res = await fetch("http://localhost:4000/v1/events", {
+      const response = await fetch("http://localhost:4000/v1/events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -168,42 +124,28 @@ const HomepageOrganizer: React.FC = () =>
         body: JSON.stringify(payload),
       });
     
-      if (res.status === 401) { //auto-redirect if timed-out
+      if (response.status === 401) { //auto-redirect if timed-out
         alert("Your session has expired. Please log in again.");
         console.log("401");
-        navigate("/User-login?role=Organizer"); 
+        navigate("/User-login", { state: { role } }); 
         return;
       }
       
-      if (!res.ok) {
-        const errText = await res.text();
+      if (!response.ok) {
+        const errText = await response.text();
         alert(`Failed to create job: ${errText}`);
         return;
       }
+      
       // Your API might return 201 + JSON of created event, or 204 with no body.
       let created: any = null;
       try {
-        created = await res.json();
-      } catch {
-        // no JSON body (e.g., 204) — fallback to local echo so UI still updates
-        created = { ...payload, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+        created = await response.json();
+      } catch (error) {
+        alert("Unexpected Error: " +  error);
       }
 
-      const toEventPost = (row: any): EventPost => ({
-        id: row.id,
-        jobName: row.jobName ?? row.job_name,
-        startTime: row.startTime ?? row.start_time ?? startISO,
-        endTime: row.endTime ?? row.end_time ?? endISO,
-        location: row.location,
-        description: row.description,
-        createdAt: row.createdAt ?? row.created_at ?? new Date().toISOString(),
-      });
-
-      const newPost: EventPost = toEventPost(created);
-
-      //update homepage to display the new post created
-      //
-      setEvents(prev => [newPost, ...prev]);
+      setRefreshKey(k => k + 1);
       setShowCreate(false);
 
       // reset form
@@ -257,7 +199,6 @@ const HomepageOrganizer: React.FC = () =>
         alert("Network error — could not connect to server.");
       }
     }; //log out function ends
-
 
   return (
     <div className="login-container" style={{ alignItems: "stretch" }}>
@@ -374,11 +315,7 @@ const HomepageOrganizer: React.FC = () =>
                   >
                     <h3 style={{ margin: 0, color: "#2c3e50", wordBreak:"break-word"}}>{ev.jobName}</h3>
                     <small style={{ color: "#888" }}>
-                      {new Date(ev.createdAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+                      {ev.createdAtDate} {ev.createdAtTime}
                     </small>
                   </header>
 
@@ -396,8 +333,8 @@ const HomepageOrganizer: React.FC = () =>
                     }}
                   >
 
-                    <div> <Clock size={16}/>  <strong>Starts at:</strong> {new Date(ev.startTime).toLocaleString()} </div>
-                    <div> <Clock size={16}/>  <strong>Ends at:</strong> {new Date(ev.endTime).toLocaleString()} </div>
+                    <div> <Clock size={16}/>  <strong>Starts at:</strong> {ev.startDate}  {ev.startTime} </div>
+                    <div> <Clock size={16}/>  <strong>Ends at:</strong> {ev.endDate}  {ev.endTime} </div>
                     <div> <MapPin size={16}/> <strong style={{wordBreak:"break-word"}}>Location:</strong> {ev.location} </div>
 
                   </div>
@@ -479,7 +416,7 @@ const HomepageOrganizer: React.FC = () =>
         </div>
       </div>
 
-      {/* Create Event modal */}
+      {/* Create Event model */}
       {showCreate && (
         <div
           role="dialog"

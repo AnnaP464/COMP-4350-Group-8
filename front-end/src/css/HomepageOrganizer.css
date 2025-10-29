@@ -1,0 +1,92 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: url("./helping-hands.jpg") no-repeat center center fixed;
+  background-size: cover;
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.login-container {
+  display: flex;
+  /* flex-direction: column; */
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  /* background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  background: url("./helping-hands.jpg") no-repeat center center fixed;
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: "Segoe UI", sans-serif; */
+}
+
+.login-box {
+  background: rgba(255,255,255,0.8);
+  border-radius: 15px;
+  padding: 40px 60px;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  width: 320px;
+  backdrop-filter: blue(8px);
+}
+
+.title {
+  font-size: 1.6em;
+  margin-bottom: 20px;
+  color: #0a0a0a;
+}
+
+.subtitle {
+  color: #0a0a0a;
+  margin-bottom: 20px;
+  font-size: 0.95em;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option-btn,
+.guest-btn {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.option-btn {
+  background-color: green;
+  color: white;
+}
+
+.option-btn:hover {
+  background-color: #014232;
+}
+
+.guest-btn {
+  background-color: white;
+  color: #333;
+}
+
+.guest-btn:hover {
+  background-color: white;
+}
+
+.text-input{
+  background-color: white;
+  color: black
+}
+
+::placeholder{
+  color: black;
+}
+
+.errorMsg{
+  color: #d00; margin-bottom: 8px;
+}
+

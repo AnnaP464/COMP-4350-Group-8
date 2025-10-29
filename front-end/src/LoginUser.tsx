@@ -1,24 +1,20 @@
 import React, { useState } from "react";
-import "./authChoice.css";  // Reuse same styling
+import "./css/AuthChoice.css";  // Reuse same styling
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import * as RoleHelper from "./helpers/RoleHelper"
 
 const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const { search } = useLocation();
-  const queryParams = new URLSearchParams(search);
-  const role = queryParams.get("role");
-  const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as RoleHelper.AuthChoiceState;
+  const role = state?.role;
+  const subtitle = RoleHelper.subtitle(role)
 
-  let subtitle = "";
-  if(role === "Organizer"){
-    subtitle = "Manage your events and volunteers";
-  } else if(role === "Volunteer"){
-    subtitle = "Join and contribute to causes";
-  }
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,20 +64,11 @@ const LoginUser: React.FC = () => {
         return;
       }
 
-      //route by role
-      if (backendRole === "organizer")
-        navigate("/Homepage-Organizer");
-      else if(backendRole === "volunteer")
-        navigate("/Dashboard");
-      else
-        setErrorMsg("Something went wrong");
-
-
       // Route strictly by backend role
       if (backendRole === "organizer") {
-        navigate("/Homepage-Organizer");
+        navigate("/Homepage-Organizer", { state: { role } });
       } else if (backendRole === "volunteer") {
-        navigate("/Dashboard");
+        navigate("/Dashboard", { state: { role } });
       } else {
         // Unknown role: send them back or show a safe default
         setErrorMsg("Invalid email or password.");
@@ -98,12 +85,8 @@ const LoginUser: React.FC = () => {
       <div className="login-box">
         <h2 className="title">{role} Log-in</h2>
         <p className="subtitle">{subtitle}</p>
-
-        {/* only redner when there is log-in error */}
         {errorMsg && <p className="errorMsg">{errorMsg}</p>}
-
         <form onSubmit={handleSubmit} className="options" style={{ gap: 10 }}>
-
           <input
             className="text-input"
             type="email"
@@ -112,6 +95,7 @@ const LoginUser: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+
           <input
             className="text-input"
             type="password"
