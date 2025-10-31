@@ -28,12 +28,12 @@ CREATE DATABASE hivehand OWNER hivedev;
 psql -h 127.0.0.1 -U hivedev -d hivehand -f .\migrations\001_init.sql
 ```
 
-## ii) Install API dependencies if needed
+## ii) Install Server dependencies if needed
 ```bash
 npm install
 ```
 
-## iii) Run the API
+## iii) Run the Server
 ```bash
 npm run dev
 ```
