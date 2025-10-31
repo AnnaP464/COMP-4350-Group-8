@@ -3,6 +3,7 @@ import "./css/AuthChoice.css";  // Reuse same styling
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper"
+import {Link} from "react-router-dom";
 
 const SignupUser: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -60,7 +61,7 @@ const SignupUser: React.FC = () => {
           else if(errorData.message)
             setErrorMsg(errorData.message);
         }
-        catch{
+        catch (error) {
           setErrorMsg("Unexpected error from server");
           console.log("Error from server");
         }
@@ -91,7 +92,7 @@ const SignupUser: React.FC = () => {
             value={username}
             onChange={(e) => {setErrorMsg(""); 
               setUsername(e.target.value);}}
-            required
+            //required
           />
 
           <input
@@ -101,7 +102,7 @@ const SignupUser: React.FC = () => {
             value={email}
             onChange={(e) => {setErrorMsg("");
               setEmail(e.target.value)}}
-            required
+            //required
           />
 
           <input
@@ -111,7 +112,7 @@ const SignupUser: React.FC = () => {
             value={password}
             onChange={(e) => {setErrorMsg(""); 
               setPassword(e.target.value)}}
-            required
+            //required
           />
 
           <input
@@ -121,16 +122,16 @@ const SignupUser: React.FC = () => {
             value={confirmPassword}
             onChange={(e) => {setErrorMsg("");
               setConfirmPassword(e.target.value)}}
-            required
+            //required
           />
 
           <button className="option-btn" type="submit">
             Sign-up
           </button>
 
-          <a href="/" className="guest-btn" style={{ textAlign: "center" }}>
+          <Link to="/" className="guest-btn" style={{ textAlign: "center" }}>
             Back to Role Selection
-          </a>
+          </Link>
         </form>
       </div>
     </div>

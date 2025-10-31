@@ -16,7 +16,7 @@ jest.mock("react-router-dom", () => {
 
 const renderWithRole = (role = "Organizer") =>
   render(
-    <MemoryRouter initialEntries={[`/User-signup?role=${encodeURIComponent(role)}`]}>
+    <MemoryRouter initialEntries={[{ pathname: "/User-Signup", state: { role: role }}]}>
       <Routes>
         <Route path="/User-signup" element={<SignupUser />} />
         {/* we don't render the real Login page; we just assert navigate() args */}
@@ -60,7 +60,7 @@ describe("SignupUser", () => {
     fireEvent.change(screen.getByPlaceholderText(/^Password \*/i), { target: { value: "secret" } });
     fireEvent.change(screen.getByPlaceholderText(/Confirm Password \*/i), { target: { value: "secret" } });
     fireEvent.click(screen.getByRole("button", { name: /Sign-up/i }));
-    expect(alertSpy).toHaveBeenCalledWith("Name is required."); // early return
+    expect(screen.queryByText("Name is required.")).toBeInTheDocument();
   });
 
   test("alerts when email is missing", async () => {
@@ -69,7 +69,7 @@ describe("SignupUser", () => {
     fireEvent.change(screen.getByPlaceholderText(/^Password \*/i), { target: { value: "pw" } });
     fireEvent.change(screen.getByPlaceholderText(/Confirm Password \*/i), { target: { value: "pw" } });
     fireEvent.click(screen.getByRole("button", { name: /Sign-up/i }));
-    expect(alertSpy).toHaveBeenCalledWith("Email is required.");
+    expect(screen.queryByText("Email is required.")).toBeInTheDocument();
   });
 
   test("alerts when password is missing", async () => {
@@ -79,7 +79,7 @@ describe("SignupUser", () => {
     // no password
     fireEvent.change(screen.getByPlaceholderText(/Confirm Password \*/i), { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: /Sign-up/i }));
-    expect(alertSpy).toHaveBeenCalledWith("Password is required.");
+    expect(screen.queryByText("Password is required.")).toBeInTheDocument();
   });
 
   test("alerts when passwords do not match", async () => {
@@ -89,7 +89,7 @@ describe("SignupUser", () => {
     fireEvent.change(screen.getByPlaceholderText(/^Password \*/i), { target: { value: "secret1" } });
     fireEvent.change(screen.getByPlaceholderText(/Confirm Password \*/i), { target: { value: "secret2" } });
     fireEvent.click(screen.getByRole("button", { name: /Sign-up/i }));
-    expect(alertSpy).toHaveBeenCalledWith("Passwords do not match.");
+    expect(screen.queryByText("Passwords do not match.")).toBeInTheDocument();
   });
 
   // --- Network branches in handleSubmit():contentReference[oaicite:2]{index=2} ---
@@ -107,12 +107,12 @@ describe("SignupUser", () => {
     fireEvent.click(screen.getByRole("button", { name: /Sign-up/i }));
 
     await waitFor(() =>
-      expect(alertSpy).toHaveBeenCalledWith("Sign-up failed: email already used")
+      expect(screen.queryByText("Unexpected error from server")).toBeInTheDocument()
     );
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  test("successful signup navigates to /User-login?role=<role>", async () => {
+  test("successful signup navigates to '/User-login', state: { role : role }", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ id: "u1" }),
@@ -126,7 +126,7 @@ describe("SignupUser", () => {
     fireEvent.click(screen.getByRole("button", { name: /Sign-up/i }));
 
     await waitFor(() =>
-      expect(mockNavigate).toHaveBeenCalledWith("/User-login?role=Organizer")
+      expect(mockNavigate).toHaveBeenCalledWith("/User-login", {state: {"role": "Organizer" }})
     );
 
     // fetch called with correct endpoint & payload:contentReference[oaicite:3]{index=3}

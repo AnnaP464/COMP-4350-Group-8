@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import "./css/AuthChoice.css";  // Reuse same styling
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import * as RoleHelper from "./helpers/RoleHelper"
+import * as RoleHelper from "./helpers/RoleHelper";
+import {Link} from "react-router-dom";
 
 const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -93,7 +94,7 @@ const LoginUser: React.FC = () => {
             placeholder="Email *"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            //required
           />
 
           <input
@@ -102,16 +103,16 @@ const LoginUser: React.FC = () => {
             placeholder="Password *"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
+            //required
           />
 
           <button className="option-btn" type="submit">
             Log-in
           </button>
 
-          <a href="/" className="guest-btn" style={{ textAlign: "center" }}>
+          <Link to="/" className="guest-btn" style={{ textAlign: "center" }}>
             Back to Role Selection
-          </a>
+          </Link>
         </form>
       </div>
     </div>

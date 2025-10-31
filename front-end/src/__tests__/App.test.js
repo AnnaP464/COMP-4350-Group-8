@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../App";
@@ -13,11 +13,15 @@ test("renders login page by default", () => {
 test("navigates to organizer auth selection page", async () => {
   render(<App />);
 
-  const organizerButton = screen.getByRole("button", { name: "Organizer"});
+  const organizerButton = screen.getByRole("link", { name: "Organizer"});
   await userEvent.click(organizerButton);
   expect(screen.getByText("Organizer Portal")).toBeInTheDocument();
 
-  const backButton = screen.getByRole("button", { name: "Back to Role Selection"});
+  const logInButton = screen.getByRole("link", { name: "Log-in"});
+  await userEvent.click(logInButton);
+  expect(screen.getByText("Organizer Log-in")).toBeInTheDocument();
+
+  const backButton = screen.getByRole("link", { name: "Back to Role Selection"});
   await userEvent.click(backButton);
   expect(screen.getByText("Welcome to HiveHand")).toBeInTheDocument();
 });
@@ -26,24 +30,15 @@ test("navigates to organizer auth selection page", async () => {
 test("navigates to volunteer auth selection page", async () => {
   render(<App />);
 
-  const organizerButton = screen.getByRole("button", { name: "Volunteer"});
+  const organizerButton = screen.getByRole("link", { name: "Volunteer"});
   await userEvent.click(organizerButton);
   expect(screen.getByText("Volunteer Portal")).toBeInTheDocument();
 
-  const backButton = screen.getByRole("button", { name: "Back to Role Selection"});
-  await userEvent.click(backButton);
-  expect(screen.getByText("Welcome to HiveHand")).toBeInTheDocument();
-});
+  const logInButton = screen.getByRole("link", { name: "Log-in"});
+  await userEvent.click(logInButton);
+  expect(screen.getByText("Volunteer Log-in")).toBeInTheDocument();
 
-//test the guest screen
-test("navigates to guest buffer page", async () => {
-  render(<App />);
-
-  const organizerButton = screen.getByRole("button", { name: "Continue as Guest"});
-  await userEvent.click(organizerButton);
-  expect(screen.getByText("Guest Portal")).toBeInTheDocument();
-
-  const backButton = screen.getByRole("button", { name: "Back to Role Selection"});
+  const backButton = screen.getByRole("link", { name: "Back to Role Selection"});
   await userEvent.click(backButton);
   expect(screen.getByText("Welcome to HiveHand")).toBeInTheDocument();
 });

@@ -11,22 +11,22 @@ export type CleanEvent = {
   createdAtTime: string;
 };
 
-export function cleanEvents(rawEvents: any[]): CleanEvent[] {
+export function cleanEvents(rawEvents: any[], upComingOnly: boolean): CleanEvent[] {
   const result: CleanEvent[] = [];
   for (const event of rawEvents) {
-    const item = cleanEvent(event);
+    const item = cleanEvent(event, upComingOnly);
     if (item) result.push(item);
   }
   return result;
 }
 
-export function cleanEvent(rawEvent: any){
+export function cleanEvent(rawEvent: any, upComingOnly: boolean){
   const startTime = new Date(rawEvent.startTime);
   const endTime = new Date(rawEvent.endTime);
   const createdAtTime = new Date(rawEvent.createdAt);
   const timeZone = "America/Winnipeg"
 
-  if(startTime.getTime() < Date.now()){
+  if(upComingOnly && startTime.getTime() < Date.now()){
       return null;
   }
   else{

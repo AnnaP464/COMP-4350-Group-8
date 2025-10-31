@@ -58,14 +58,22 @@ const HomepageOrganizer: React.FC = () => {
             "Authorization": `Bearer ${token}`,
           },
         });
+        
         if (!response.ok) {
            return;
         }
 
         const rows = await response.json();
-        const cleanData = EventHelper.cleanEvents(rows);
+
+        
+        const cleanData = EventHelper.cleanEvents(rows, false);
+        console.log(rows)
+        console.log(cleanData)
         setEvents(cleanData);
-      } finally {
+      } catch (error) {
+        console.log("The GET event call failed" + error);
+      } 
+      finally {
         setLoading(false);
       }
     };
@@ -103,6 +111,11 @@ const HomepageOrganizer: React.FC = () => {
         alert("Please choose valid start and end times.");
         return;
       }
+
+      //band aid fix for our timezone, we are 5 hours behind UTC
+      startDate.setMinutes(startDate.getMinutes() - startDate.getTimezoneOffset());
+      endDate.setMinutes(endDate.getMinutes() - endDate.getTimezoneOffset());
+
       const startISO = startDate.toISOString();
       const endISO = endDate.toISOString();
 
@@ -193,7 +206,6 @@ const HomepageOrganizer: React.FC = () => {
 
     navigate("/", { replace: true });
 
-      
     } catch (error) {
       console.error("Log-out Error:", error);
       alert("Network error — could not connect to server.");
@@ -201,29 +213,10 @@ const HomepageOrganizer: React.FC = () => {
   };
 
   return (
-    <div className="login-container" style={{ alignItems: "stretch" }}>
+    <div className="navigation-container" style={{ alignItems: "stretch" }}>
       {/* Top bar */}
-      <div
-        className="login-box"
-        style={{
-          width: "100%",
-          maxWidth: 1200,
-          padding: 0,
-          background: "transparent",
-          boxShadow: "none",
-        }}
-      >
-        <header
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "16px 12px",
-            borderBottom: "1px solid #e5e5e5",
-            background: "white",
-            borderRadius: 12,
-          }}
-        >
+      <div className="navigation-box">
+        <header className="navigation-header">
           <div>
             <h2 className="title" style={{ margin: 0 }}>
               HiveHand - {user.username}
@@ -232,7 +225,7 @@ const HomepageOrganizer: React.FC = () => {
               Homepage
             </p>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="button-box" style={{ display: "flex", gap: 8 }}>
             <button
               className="option-btn"
               onClick={() => setShowCreate(true)}
@@ -249,53 +242,24 @@ const HomepageOrganizer: React.FC = () => {
             </button>
           </div>
         </header>
-
         {/* Content area: Feed +  Profile panel */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: showProfile ? "1fr 320px" : "1fr",
-            gap: 16,
-            marginTop: 16,
-          }}
+        <div className="content-box"
+          style={{gridTemplateColumns: showProfile ? "1fr 320px" : "1fr"}}
         >
           {/* Feed */}
-          <main
-            style={{
-              background: "#3e2b2bff",
-              borderRadius: 12,
-              padding: 16,
-              minHeight: 260,
-              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-            }}
-          >
+          <main className="feed-box">
             <h3 style={{ marginTop: 0 }}>{user.username}'s job postings</h3>
             
             {/* display the list of events created by me */}
             {events.length === 0 ? (
-              <div
-                style={{
-                  border: "1px dashed #cfcfcf",
-                  borderRadius: 12,
-                  padding: 20,
-                  textAlign: "center",
-                  color: "#777",
-                }}
-              >
+              <div className="empty-postings-box">
                 No job postings posted yet.
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {events.map((ev) => (
-                <article
+                <article className="event-info-box"
                   key={ev.id}
-                  style={{
-                    background: "white",
-                    borderRadius: 16,
-                    padding: 20,
-                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.08)",
-                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                  }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-4px)";
                     e.currentTarget.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.12)";
@@ -305,14 +269,7 @@ const HomepageOrganizer: React.FC = () => {
                     e.currentTarget.style.boxShadow = "0 4px 10px rgba(10, 10, 10, 0.08)";
                   }}
                 >
-                  <header
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: 8,
-                    }}
-                  >
+                  <header className="event-header">
                     <h3 style={{ margin: 0, color: "#2c3e50", wordBreak:"break-word"}}>{ev.jobName}</h3>
                     <small style={{ color: "#888" }}>
                       {ev.createdAtDate} {ev.createdAtTime}
@@ -323,15 +280,7 @@ const HomepageOrganizer: React.FC = () => {
                     {ev.description}
                   </p>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "12px 20px",
-                      color: "#555",
-                      fontSize: "0.95rem",
-                    }}
-                  >
+                  <div className="job-start-end-times">
                     <div> <Clock size={16}/>  <strong>Starts at:</strong> {ev.startDate}  {ev.startTime} </div>
                     <div> <Clock size={16}/>  <strong>Ends at:</strong> {ev.endDate}  {ev.endTime} </div>
                     <div> <MapPin size={16}/> <strong style={{wordBreak:"break-word"}}>Location:</strong> {ev.location} </div>
@@ -343,16 +292,8 @@ const HomepageOrganizer: React.FC = () => {
           </main>
           {/* Profile side panel */}
           {showProfile && (
-            <aside
-              style={{
-                background: "white",
-                borderRadius: 12,
-                padding: 16,
-                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-                height: "fit-content",
-              }}
-            >
-              <h3 style={{ marginTop: 0 }}>Profile</h3>
+            <aside className="profile-box">
+              <h3  style={{ marginTop: 0 }}>Profile</h3>
               <div style={{ display: "grid", gap: 8, marginBottom: 12, color: "black"}}>
                 <div>
                   <div style={{ fontSize: 12, color: "#666" }}>Organizer</div>
@@ -407,41 +348,15 @@ const HomepageOrganizer: React.FC = () => {
       </div>
       {/* Create Event model */}
       {showCreate && (
-        <div
+        <div className="create-event-screen"
           role="dialog"
           aria-modal="true"
-          onClick={() => setShowCreate(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.3)",
-            display: "grid",
-            placeItems: "center",
-            padding: 16,
-            zIndex: 50,
-          }}
-        >
-          <div
+          onClick={() => setShowCreate(false)}>
+          <div className="create-event-box"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "100%",
-              maxWidth: 560,
-              background: "#819a91ff",
-              borderRadius: 12,
-              padding: 16,
-              boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
-            }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 8,
-              }}
-            >
+            <div className="create-event-title">
               <h3 style={{ margin: 0 }}>Create a job post</h3>
-
             </div>
             <form
               onSubmit={handleCreate}
@@ -453,23 +368,25 @@ const HomepageOrganizer: React.FC = () => {
                 placeholder="Job name *"
                 value={jobName}
                 onChange={(e) => setJobName(e.target.value)}
-                required
+                //required
               />
               <input
+                id="start-time-input"
                 className="text-input"
                 type="datetime-local"
-                placeholder="Start time*"
+                placeholder="Start time *"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                required
+                //required
               />
               <input
+                id="end-time-input"
                 className="text-input"
                 type="datetime-local"
-                placeholder="End time*"
+                placeholder="End time *"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                required
+                //required
               />
               <input
                 className="text-input"

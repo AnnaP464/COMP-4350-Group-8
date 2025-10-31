@@ -22,7 +22,9 @@ const Dashboard: React.FC = () => {
 
   // Start with dummy placeholder events
   const [events, setEvents] = useState<EventPost[]>([
-    {id: "1", jobName: "Beach Cleanup", startDate:"Oct 28, 2025", startTime: "5:00 PM", endDate:"2025-10-20", endTime: "8:00 PM", location: "Grand Beach", description: "cleaning up trash and zebra mussels", createdAtDate : "Oct 22", createdAtTime: "9:00AM"},
+    {id: "1", jobName: "Beach Cleanup", startDate:"Oct 28, 2025", startTime: "11:00 AM", endDate:"2025-10-20", endTime: "12:00 PM", location: "Grand Beach", description: "cleaning up trash and zebra mussels", createdAtDate : "Oct 22", createdAtTime: "9:00AM"},
+    {id: "2", jobName: "Food Drive", startDate:"Oct 28, 2025", startTime: "1:00 PM", endDate:"2025-10-20", endTime: "3:00 PM", location: "City Hall", description: "cleaning up trash and zebra mussels", createdAtDate : "Oct 22", createdAtTime: "9:00AM"},
+    {id: "3", jobName: "Tree Planting", startDate:"Oct 28, 2025", startTime: "5:00 PM", endDate:"2025-10-20", endTime: "8:00 PM", location: "Assiniboine Park", description: "cleaning up trash and zebra mussels", createdAtDate : "Oct 22", createdAtTime: "9:00AM"},
   ]);
 
   // Fetch real events non-blockingly
@@ -34,12 +36,13 @@ const Dashboard: React.FC = () => {
           headers: {"Accept": "application/json"}
         });
 
+        
+
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
         
         //deletes events which have passed and cleans up the dates and time to be more readable
-        const cleanData = cleanEvents(data);
-        console.log(cleanData);
+        const cleanData = cleanEvents(data, false);
         setEvents(cleanData); // Replace dummy with real data
       } catch (error) {
         console.error("Error fetching events:", error);

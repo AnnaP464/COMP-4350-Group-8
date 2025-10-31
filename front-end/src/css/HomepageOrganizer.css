@@ -1,14 +1,5 @@
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background: url("./helping-hands.jpg") no-repeat center center fixed;
-  background-size: cover;
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-}
-
-.login-container {
+/* renamed to navigation-container */
+.navigation-container {
   display: flex;
   /* flex-direction: column; */
   justify-content: center;
@@ -21,72 +12,107 @@ html, body, #root {
   font-family: "Segoe UI", sans-serif; */
 }
 
-.login-box {
+/* renamed to navigation-box */
+.navigation-box {
   background: rgba(255,255,255,0.8);
   border-radius: 15px;
   padding: 40px 60px;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
   text-align: center;
-  width: 320px;
   backdrop-filter: blue(8px);
+  width: 100%;
+  max-width: 1200px;
+  padding: 0px;
+  background: transparent;
+  box-shadow: none;
 }
 
-.title {
-  font-size: 1.6em;
-  margin-bottom: 20px;
-  color: #0a0a0a;
-}
-
-.subtitle {
-  color: #0a0a0a;
-  margin-bottom: 20px;
-  font-size: 0.95em;
-}
-
-.options {
+/* renamed to navigation-header */
+.navigation-header {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 12px;
+  border-bottom: 1px solid #e5e5e5;
+  background: white;
+  border-radius: 12px;
 }
 
-.option-btn,
-.guest-btn {
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1em;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.content-box {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
 }
 
-.option-btn {
-  background-color: green;
-  color: white;
+.feed-box {
+  background: #3e2b2bff;
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 260px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
-.option-btn:hover {
-  background-color: #014232;
+.empty-postings-box {
+  border: 1px dashed #cfcfcf;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: #777;
 }
 
-.guest-btn {
-  background-color: white;
-  color: #333;
+.event-info-box {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.guest-btn:hover {
-  background-color: white;
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
-.text-input{
-  background-color: white;
-  color: black
+.job-start-end-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  color: #555;
+  font-size: 0.95rem
 }
 
-::placeholder{
-  color: black;
+.profile-box {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  height: fit-content;
 }
 
-.errorMsg{
-  color: #d00; margin-bottom: 8px;
+.create-event-screen {
+  position: fixed;
+  inset: 0px;
+  background: rgba(0,0,0,0.3);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 50px;
 }
 
+.create-event-box {
+  width: 100%;
+  max-width: 560px;
+  background: #819a91ff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.create-event-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}

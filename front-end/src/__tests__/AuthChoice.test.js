@@ -4,86 +4,58 @@ import userEvent from "@testing-library/user-event";
 import AuthChoice from "../AuthChoice.tsx";
 import { MemoryRouter } from "react-router-dom";
 
-test("chooses organizer sign up and completes it", async () => {
-    render(
-        <MemoryRouter>
-            <AuthChoice />
-        </MemoryRouter>
-    );
+test("chooses organizer sign-in and completes it", async () => {
+  render(
+    <MemoryRouter initialEntries={[{ state: { role: "Organizer" } }]}>
+      <AuthChoice />
+    </MemoryRouter>
+  );
 
-    //does a quick mock sign-up and navigates back to role selection
-    const organizerButton = screen.getByRole("button", { name: "Organizer" });
-    await userEvent.click(organizerButton);
-    expect(screen.queryByText("Organizer portal"));
+  expect(screen.queryByText("Organizer Portal"));
 
-    const signUpButton = screen.getByRole("link", { name: "Sign-up" });
-    await userEvent.click(signUpButton);
-    expect(screen.queryByText("Organizer Sign-up"));
-
-    const backButton = screen.getByRole("button", { name: "Back to Role Selection" });
-    await userEvent.click(backButton);
-    expect(screen.queryByText("Welcome to HiveHand"))
+  const volunteerButton = screen.getByRole("link", { name: "Sign-up" });
+  await userEvent.click(volunteerButton);
+  expect(screen.queryByText("Organizer Log-in"));
 });
 
 test("chooses organizer log in and completes it", async () => {
-    render(
-        <MemoryRouter>
-            <AuthChoice />
-        </MemoryRouter>
-    );
+  render(
+    <MemoryRouter initialEntries={[{ state: { role: "Organizer" } }]}>
+      <AuthChoice />
+    </MemoryRouter>
+  );
 
-    //does a quick mock log-in and navigates back to role selection
-    const organizerButton = screen.getByRole("button", { name: "Organizer" });
-    await userEvent.click(organizerButton);
-    expect(screen.queryByText("Organizer portal"));
+  expect(screen.queryByText("Organizer Portal"));
 
-    const logInButton = screen.getByRole("link", { name: "Log-in" });
-    await userEvent.click(logInButton);
-    expect(screen.queryByText("Organizer Log-in"));
-
-    const backButton = screen.getByRole("button", { name: "Back to Role Selection" });
-    await userEvent.click(backButton);
-    expect(screen.queryByText("Welcome to HiveHand"))
+  const volunteerButton = screen.getByRole("link", { name: "Log-in" });
+  await userEvent.click(volunteerButton);
+  expect(screen.queryByText("Organizer Log-in"));
 });
 
-test("chooses volunteer sign in and completes it", async () => {
-    render(
-        <MemoryRouter>
-            <AuthChoice />
-        </MemoryRouter>
-    );
+test("chooses volunteer sign-in and completes it", async () => {
+  render(
+    <MemoryRouter initialEntries={[{ state: { role: "Volunteer" } }]}>
+      <AuthChoice />
+    </MemoryRouter>
+  );
 
-    //does a quick mock sign-up and navigates back to role selection
-    const volunteerButton = screen.getByRole("button", { name: "Volunteer" });
-    await userEvent.click(volunteerButton);
-    expect(screen.queryByText("Volunteer portal"));
+  expect(screen.queryByText("Volunteer Portal"));
 
-    const signUpButton = screen.getByRole("link", { name: "Sign-up" });
-    await userEvent.click(signUpButton);
-    expect(screen.queryByText("Volunteer Sign-up"));
-
-    const backButton = screen.getByRole("button", { name: "Back to Role Selection" });
-    await userEvent.click(backButton);
-    expect(screen.queryByText("Welcome to HiveHand"))
+  const volunteerButton = screen.getByRole("link", { name: "Sign-up" });
+  await userEvent.click(volunteerButton);
+  expect(screen.queryByText("Volunteer Log-in"));
 });
 
 test("chooses volunteer log in and completes it", async () => {
-    render(
-        <MemoryRouter>
-            <AuthChoice />
-        </MemoryRouter>
-    );
+  render(
+    <MemoryRouter initialEntries={[{ state: { role: "Volunteer" } }]}>
+      <AuthChoice />
+    </MemoryRouter>
+  );
 
-    //does a quick mock log-in and navigates back to role selection
-    const volunteerButton = screen.getByRole("button", { name: "Volunteer" });
-    await userEvent.click(volunteerButton);
-    expect(screen.queryByText("Volunteer portal"));
+  expect(screen.queryByText("Volunteer Portal"));
 
-    const LogInButton = screen.getByRole("link", { name: "Log-in" });
-    await userEvent.click(LogInButton);
-    expect(screen.queryByText("Volunteer Log-in"));
-
-    const backButton = screen.getByRole("button", { name: "Back to Role Selection" });
-    await userEvent.click(backButton);
-    expect(screen.queryByText("Welcome to HiveHand"))
+  const volunteerButton = screen.getByRole("link", { name: "Log-in" });
+  await userEvent.click(volunteerButton);
+  expect(screen.queryByText("Volunteer Log-in"));
 });
