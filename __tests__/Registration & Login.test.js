@@ -98,7 +98,7 @@ test("Checks for user persistance on page reload to show user is not stored in b
     deleteUserData(email);
 });
 
-function deleteUserData(email: String){
+function deleteUserData(email){
     try {
         execSync(
         `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,

@@ -143,7 +143,7 @@ test("New volunteer registration, login, try to sign up for an event and log out
 });
 
 //deletes the user with the email address from the database
-function deleteUserData(email: String){
+function deleteUserData(email){
     try {
         execSync(
         `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,

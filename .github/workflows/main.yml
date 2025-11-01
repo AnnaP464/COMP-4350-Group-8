@@ -134,11 +134,11 @@ jobs:
           PGPASSWORD: postgres
         run: |
           # create role if it doesn't exist
-          psql -h localhost -U postgres -d hivehand -c 'DO $$ BEGIN CREATE ROLE hivedev LOGIN PASSWORD ''verysafe''; EXCEPTION WHEN duplicate_object THEN NULL; END $$;'
+          psql -h localhost -U postgres -d hivehand -c "DO \$\$ BEGIN CREATE ROLE hivedev LOGIN PASSWORD 'verysafe'; EXCEPTION WHEN duplicate_object THEN NULL; END \$\$;"
           # grant db to that role
-          psql -h localhost -U postgres -d hivehand -c 'GRANT ALL PRIVILEGES ON DATABASE hivehand TO hivedev;'
+          psql -h localhost -U postgres -d hivehand -c "GRANT ALL PRIVILEGES ON DATABASE hivehand TO hivedev;"
           # give it the schema
-          psql -h localhost -U postgres -d hivehand -c 'ALTER SCHEMA public OWNER TO hivedev;'
+          psql -h localhost -U postgres -d hivehand -c "ALTER SCHEMA public OWNER TO hivedev;"
           # run your migration
           psql -h localhost -U postgres -d hivehand -f ./api/migrations/001_init.sql
       # Start API & FE; let Playwright's webServer (or wait-on) handle readiness
