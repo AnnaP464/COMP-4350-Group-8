@@ -5,17 +5,19 @@ const email = "test3@test.com"
 const password = "testtest"
 const orgName = "testInc"
 
+test.describe.configure({ mode: "serial" });
+
 test.beforeAll(async () => {
-    //deletes user to make sure test will go well
-    deleteUserData(email);
+  deleteUserData(email);
 });
 
-test.afterAll( async () => {
-    //deletes user for future tests
-    deleteUserData(email);
+test.afterAll(async () => {
+  deleteUserData(email);
 });
 
 test("Tests that the registration and login features work for a new user", async ({ page }) => {
+    //goes to the default role selection page
+    deleteUserData(email);
     //goes to the default role selection page
     await page.goto("/"); 
 
@@ -23,9 +25,8 @@ test("Tests that the registration and login features work for a new user", async
         page.getByRole("heading", { level: 2, name: /welcome to hivehand/i })
     ).toBeVisible();
 
-    //first checks that the user doesnt yet exist
-    await expect(page.getByRole("button", { name: "Organizer" })).toBeVisible();
-    await page.getByRole("button", {name: "Organizer"}).click();
+    await expect(page.getByRole("link", { name: "Organizer" })).toBeVisible();
+    await page.getByRole("link", {name: "Organizer"}).click();
     await expect(page.getByText("Organizer Portal")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Log-in" })).toBeVisible();
@@ -37,9 +38,11 @@ test("Tests that the registration and login features work for a new user", async
     await page.getByRole("button", {name: "Log-in"}).click();
     await expect(page.getByText("Invalid email or password")).toBeVisible();
 
-    //registers new user
-    await expect(page.getByRole("button", { name: "Organizer" })).toBeVisible();
-    await page.getByRole("button", {name: "Organizer"}).click();
+    await expect(page.getByRole("link", { name: "Back to Role Selection" })).toBeVisible();
+    await page.getByRole("link", {name: "Back to Role Selection"}).click();
+
+    await expect(page.getByRole("link", { name: "Organizer" })).toBeVisible();
+    await page.getByRole("link", {name: "Organizer"}).click();
     await expect(page.getByText("Organizer Portal")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Sign-up" })).toBeVisible();
@@ -54,7 +57,6 @@ test("Tests that the registration and login features work for a new user", async
     await expect(page.getByRole("button", { name: "Sign-up" })).toBeVisible();
     await page.getByRole("button", {name: "Sign-up"}).click();
 
-    //logs in as new user
     await expect(page.getByRole("button", { name: "Log-in" })).toBeVisible();
     await page.getByPlaceholder("Email *").fill(email);
     await page.getByPlaceholder("Password *").fill(password);
@@ -74,8 +76,8 @@ test("Checks for user persistance on page reload to show user is not stored in b
     await page.reload();
 
      //registers new user
-    await expect(page.getByRole("button", { name: "Organizer" })).toBeVisible();
-    await page.getByRole("button", {name: "Organizer"}).click();
+    await expect(page.getByRole("link", { name: "Organizer" })).toBeVisible();
+    await page.getByRole("link", {name: "Organizer"}).click();
     await expect(page.getByText("Organizer Portal")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Log-in" })).toBeVisible();
@@ -85,13 +87,21 @@ test("Checks for user persistance on page reload to show user is not stored in b
     await page.getByPlaceholder("Email *").fill(email);
     await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
+
     await expect(page.getByText("HiveHand - testInc")).toBeVisible();
+
+    await expect(page.getByRole("button", { name: "Profile" })).toBeVisible();
+    await page.getByRole("button", {name: "Profile"}).click();
+    await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();
+    await page.getByRole("button", {name: "Log-out"}).click();
+
+    deleteUserData(email);
 });
 
 function deleteUserData(email: String){
     try {
         execSync(
-        `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = ${email}/";`,
+        `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,
         {
             stdio: 'inherit',
             env: {

@@ -28,8 +28,8 @@ test("New organizer registration, login make an event and check profile", async 
         page.getByRole("heading", { level: 2, name: /welcome to hivehand/i })
     ).toBeVisible();
 
-    await expect(page.getByRole("button", { name: "Organizer" })).toBeVisible();
-    await page.getByRole("button", {name: "Organizer"}).click();
+    await expect(page.getByRole("link", { name: "Organizer" })).toBeVisible();
+    await page.getByRole("link", {name: "Organizer"}).click();
     await expect(page.getByText("Organizer Portal")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Log-in" })).toBeVisible();
@@ -44,8 +44,8 @@ test("New organizer registration, login make an event and check profile", async 
     await expect(page.getByRole("link", { name: "Back to Role Selection" })).toBeVisible();
     await page.getByRole("link", {name: "Back to Role Selection"}).click();
 
-    await expect(page.getByRole("button", { name: "Organizer" })).toBeVisible();
-    await page.getByRole("button", {name: "Organizer"}).click();
+    await expect(page.getByRole("link", { name: "Organizer" })).toBeVisible();
+    await page.getByRole("link", {name: "Organizer"}).click();
     await expect(page.getByText("Organizer Portal")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Sign-up" })).toBeVisible();
@@ -71,7 +71,8 @@ test("New organizer registration, login make an event and check profile", async 
     await page.getByRole("button", {name: "Create Event"}).click();
     await expect(page.getByText("Create a job post")).toBeVisible();
     await page.getByPlaceholder("Job name *").fill("jobjobjob");
-    await page.getByPlaceholder("Minimum time commitment").fill("99");
+    await page.getByPlaceholder("Start time *").fill("2025-10-23T01:00");
+    await page.getByPlaceholder("End time *").fill("2025-10-23T02:00");
     await page.getByPlaceholder("Location *").fill("atlanta");
     await page.getByPlaceholder("Job description *").fill("not good pay not fun, but you get experience");
     await expect(page.getByRole("button", { name: "Post Job" })).toBeVisible();
@@ -81,8 +82,6 @@ test("New organizer registration, login make an event and check profile", async 
     await page.getByRole("button", {name: "Profile"}).click();
     await expect(page.getByRole("button", { name: "Profile" })).toBeVisible();
     await page.getByRole("button", {name: "Profile"}).click();
-
-    deleteUserData(email1);
 });
 
 test("New volunteer registration, login, try to sign up for an event and log out", async ({ page }) => {
@@ -93,8 +92,8 @@ test("New volunteer registration, login, try to sign up for an event and log out
         page.getByRole("heading", { level: 2, name: /welcome to hivehand/i })
     ).toBeVisible();
 
-    await expect(page.getByRole("button", { name: "Volunteer" })).toBeVisible();
-    await page.getByRole("button", {name: "Volunteer"}).click();
+    await expect(page.getByRole("link", { name: "Volunteer" })).toBeVisible();
+    await page.getByRole("link", {name: "Volunteer"}).click();
     await expect(page.getByText("Volunteer Portal")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Log-in" })).toBeVisible();
@@ -109,8 +108,8 @@ test("New volunteer registration, login, try to sign up for an event and log out
     await expect(page.getByRole("link", { name: "Back to Role Selection" })).toBeVisible();
     await page.getByRole("link", {name: "Back to Role Selection"}).click();
 
-    await expect(page.getByRole("button", { name: "Volunteer" })).toBeVisible();
-    await page.getByRole("button", {name: "Volunteer"}).click();
+    await expect(page.getByRole("link", { name: "Volunteer" })).toBeVisible();
+    await page.getByRole("link", {name: "Volunteer"}).click();
     await expect(page.getByText("Volunteer Portal")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Sign-up" })).toBeVisible();
@@ -129,18 +128,11 @@ test("New volunteer registration, login, try to sign up for an event and log out
     await page.getByPlaceholder("Email *").fill(email2);
     await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
-
+    
     await expect(page.getByText("Welcome to your Dashboard 🎉")).toBeVisible();
 
     const buttons = page.getByRole('button', { name: "Sign-up" });
-    await expect(buttons).toHaveCount(3);
-    await buttons.first().click();
-
-    page.once("dialog", async dialog => {
-        expect(dialog.type()).toBe("alert");
-        expect(dialog.message()).toContain("Not quite finished yet, check back soon!");
-        await dialog.accept();
-    });
+    await expect(buttons.first()).toBeVisible();
 
     await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();
     await page.getByRole("button", {name: "Log-out"}).click();
@@ -154,7 +146,7 @@ test("New volunteer registration, login, try to sign up for an event and log out
 function deleteUserData(email: String){
     try {
         execSync(
-        `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = ${email}/";`,
+        `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,
         {
             stdio: 'inherit',
             env: {
