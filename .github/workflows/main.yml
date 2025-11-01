@@ -147,6 +147,9 @@ jobs:
           # run your migration
           psql -h localhost -U postgres -d hivehand -f ./api/migrations/001_init.sql
       # Start API & FE; let Playwright's webServer (or wait-on) handle readiness
+      - name: Install API dev deps
+        run: npm install --workspace api --include=dev
+
       - name: Start API
         run: |
           npm --workspace api run dev:ci > /tmp/api.log 2>&1 &
