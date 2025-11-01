@@ -3,6 +3,8 @@ const router = Router();
 import { AuthController } from "../contracts/authController.contracts";
 import { schemas}  from "../spec/zod";
 import { validateRequest } from "../middleware/validateRequest";
+import { requireAuth } from "../middleware/requireAuth";
+import { users } from "../db/user";
 
 /**
  * @swagger
@@ -261,13 +263,29 @@ export function makeAuthRouter(ctrl: AuthController) {
         ctrl.refresh,
     );
 
-    /* “me” endpoint
+    // “me” endpoint
     r.get(
-        "/v1/auth/me",
-        authenticate, // authenticate format of request
-        ctrl.me,
-    );
-    */
+        "/me", 
+        requireAuth(), async (req, res) => {
+        // req.user is set by requireAuth()
+        const u = await users.findById(req.user!.id);
+        if (!u) return res.status(404).json({ message: "User not found" });
+
+        res.json({
+            id: u.id,
+            username: u.username, 
+            email: u.email,
+            role: u.role,
+            createdAt: u.created_at,
+        });
+    });
+    // r.get(
+    //     "/v1/auth/me",
+    //     //authenticate, // authenticate format of request
+    //     ctrl.me,
+    // );
+
+
     // Logout (authenticate to identify user)
     r.post(
         "/logout",

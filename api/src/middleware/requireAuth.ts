@@ -58,7 +58,7 @@ declare global {
 // }
 
 
-// /api/src/middleware/requireAuth.ts
+
 export function requireAuth() {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {

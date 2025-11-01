@@ -150,7 +150,7 @@ const HomepageOrganizer: React.FC = () => {
         return;
       }
       
-      // Your API might return 201 + JSON of created event, or 204 with no body.
+      
       let created: any = null;
       try {
         created = await response.json();
@@ -290,6 +290,7 @@ const HomepageOrganizer: React.FC = () => {
               </div>
             )}
           </main>
+          
           {/* Profile side panel */}
           {showProfile && (
             <aside className="profile-box">
