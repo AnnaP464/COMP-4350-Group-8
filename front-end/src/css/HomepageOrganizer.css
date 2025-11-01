@@ -4,7 +4,7 @@
   /* flex-direction: column; */
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  /* min-height: 100vh; */
   /* background: linear-gradient(135deg, #e0eafc, #cfdef3);
   background: url("./helping-hands.jpg") no-repeat center center fixed;
   background-attachment: fixed;
@@ -61,7 +61,7 @@
 }
 
 .event-info-box {
-  background: white;
+  background: #f9f1fa;
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);

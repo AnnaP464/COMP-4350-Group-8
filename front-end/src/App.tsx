@@ -6,6 +6,7 @@ import SignupUser from './SignupUser';
 import LoginUser from './LoginUser';
 import HomepageOrganizer from "./HomepageOrganizer.tsx";
 import Dashboard from "./Dashboard.tsx";
+import VolunteerProfile from "./VolunteerProfile.tsx";
 
 function App() {
   return(
@@ -18,6 +19,7 @@ function App() {
         <Route path="/User-login" element={<LoginUser />} />
         <Route path="/Homepage-Organizer" element={<HomepageOrganizer />}/>
         <Route path="/Dashboard" element={<Dashboard/>}/>
+        <Route path="/VolunteerProfile" element={<VolunteerProfile/>}/>
       </Routes>
     </BrowserRouter>
   );

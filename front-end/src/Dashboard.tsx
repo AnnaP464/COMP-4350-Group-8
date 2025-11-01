@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 //import "./authChoice.css";// Reuse same styling
 import "./css/Dashboard.css";
+import "./css/HomepageOrganizer.css";
 import { useNavigate } from "react-router-dom";
 import { cleanEvents } from "./helpers/EventHelper";
+import { Clock, MapPin, Calendar } from "lucide-react";
 
 type EventPost = {
   id: string;
@@ -19,28 +21,39 @@ type EventPost = {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [username, setUsername] = useState<string | null>(null);
 
   // Start with dummy placeholder events
   const [events, setEvents] = useState<EventPost[]>([
-    {id: "1", jobName: "Beach Cleanup", startDate:"Oct 28, 2025", startTime: "11:00 AM", endDate:"2025-10-20", endTime: "12:00 PM", location: "Grand Beach", description: "cleaning up trash and zebra mussels", createdAtDate : "Oct 22", createdAtTime: "9:00AM"},
-    {id: "2", jobName: "Food Drive", startDate:"Oct 28, 2025", startTime: "1:00 PM", endDate:"2025-10-20", endTime: "3:00 PM", location: "City Hall", description: "cleaning up trash and zebra mussels", createdAtDate : "Oct 22", createdAtTime: "9:00AM"},
-    {id: "3", jobName: "Tree Planting", startDate:"Oct 28, 2025", startTime: "5:00 PM", endDate:"2025-10-20", endTime: "8:00 PM", location: "Assiniboine Park", description: "cleaning up trash and zebra mussels", createdAtDate : "Oct 22", createdAtTime: "9:00AM"},
+    { id: "1", jobName: "Beach Cleanup", startDate: "Oct 28, 2025", startTime: "11:00 AM", endDate: "2025-10-20", endTime: "12:00 PM", location: "Grand Beach", description: "cleaning up trash and zebra mussels", createdAtDate: "Oct 22", createdAtTime: "9:00AM" },
+    { id: "2", jobName: "Food Drive", startDate: "Oct 28, 2025", startTime: "1:00 PM", endDate: "2025-10-20", endTime: "3:00 PM", location: "City Hall", description: "cleaning up trash and zebra mussels", createdAtDate: "Oct 22", createdAtTime: "9:00AM" },
+    { id: "3", jobName: "Tree Planting", startDate: "Oct 28, 2025", startTime: "5:00 PM", endDate: "2025-10-20", endTime: "8:00 PM", location: "Assiniboine Park", description: "cleaning up trash and zebra mussels", createdAtDate: "Oct 22", createdAtTime: "9:00AM" },
   ]);
 
   // Fetch real events non-blockingly
   useEffect(() => {
+    const raw = localStorage.getItem("user");
+    if (!raw) return;
+    try {
+      const u = JSON.parse(raw);
+      if (u?.username) 
+        setUsername(u.username);
+    } catch {
+        setUsername("");
+    }
+    
     const fetchEvents = async () => {
       try {
         const response = await fetch("http://localhost:4000/v1/events", {
           method: "GET",
-          headers: {"Accept": "application/json"}
+          headers: { "Accept": "application/json" }
         });
 
-        
+
 
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
-        
+
         //deletes events which have passed and cleans up the dates and time to be more readable
         const cleanData = cleanEvents(data, false);
         setEvents(cleanData); // Replace dummy with real data
@@ -74,10 +87,10 @@ const Dashboard: React.FC = () => {
         return;
       }
 
-      if(response.status !== 204){
-        try{
+      if (response.status !== 204) {
+        try {
           const data = await response.json();
-        } catch (error){
+        } catch (error) {
           console.error("Unexpected JSON package", error);
         }
       }//alert(`Log-out successful! Token: ${data.token}`);
@@ -93,9 +106,9 @@ const Dashboard: React.FC = () => {
   };
 
   const handleSignUp = async (eventId: string) => {
-    try{
+    try {
       const token = localStorage.getItem("access_token");
-      if(!token){
+      if (!token) {
         alert("Your session has expired. Please log in again.");
         navigate("/User-login?role=Volunteer");
         return;
@@ -123,10 +136,10 @@ const Dashboard: React.FC = () => {
         return;
       }
 
-      if(response.status !== 204){
-        try{
+      if (response.status !== 204) {
+        try {
           const data = await response.json();
-        } catch (error){
+        } catch (error) {
           console.error("Unexpected JSON package", error);
         }
       }
@@ -141,6 +154,33 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
+      <div className="navigation-container" style={{ alignItems: "stretch" }}>
+        <div className="navigation-box">
+                  <header className="navigation-header">
+          <div>
+            <h2 className="title" style={{ margin: 0 }}>
+              HiveHand - {username}
+            </h2>
+            <p className="subtitle" style={{ marginTop: 4 }}>
+              Homepage
+            </p>
+          </div>
+          <div className="button-box" style={{ display: "flex", gap: 8 }}>
+            
+            <button
+              className="guest-btn"
+              title="Profile & settings"
+              onClick={() => navigate("/VolunteerProfile")}
+            >
+              Profile
+            </button>
+          </div>
+        </header>
+
+
+        </div>
+      </div>
+
       <h1>Welcome to your Dashboard 🎉</h1>
 
       <form onSubmit={handleLogout}>
@@ -151,22 +191,46 @@ const Dashboard: React.FC = () => {
 
       <h2 className="section-title">Available Events</h2>
 
-      <div className="events-container">
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {events.map((event) => (
-          <div className="event-box" key={event.id}>
-            <h4><strong>Job Name:</strong> {event.jobName}</h4>
-            <p><strong>Start Date:</strong> {event.startDate}   <strong>Start Time:</strong> {event.startTime}</p>
-            <p><strong>End Date:</strong> {event.endDate}   <strong>End Time:</strong> {event.endTime}</p>
-            <p><strong>Create At Date:</strong> {event.createdAtDate}   <strong> Created At Time:</strong> {event.createdAtTime}</p>
+          <article className="event-info-box"
+            key={event.id}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-4px)";
+              e.currentTarget.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.12)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "none";
+              e.currentTarget.style.boxShadow = "0 4px 10px rgba(10, 10, 10, 0.08)";
+            }}
+          >
+            <header className="event-header">
+              <h3 style={{ margin: 0, color: "#2c3e50", wordBreak: "break-word" }}>{event.jobName}</h3>
+              <small style={{ color: "#888" }}>
+                {event.createdAtDate} {event.createdAtTime}
+              </small>
+            </header>
+
+            <p style={{ margin: "8px 0 12px", color: "#444", lineHeight: 1.4, wordBreak: "break-word", whiteSpace: "pre-wrap", textAlign: "left" }}>
+              {event.description}
+            </p>
+
+            <div className="job-start-end-times">
+              <div> <Clock size={16} />  <strong>Starts at:</strong> {event.startDate}  {event.startTime} </div>
+              <div> <Clock size={16} />  <strong>Ends at:</strong> {event.endDate}  {event.endTime} </div>
+              <div> <MapPin size={16}/> <strong style={{ wordBreak: "break-word" }}>Location:</strong> {event.location} </div>
+            </div>
+
             <button
-              onClick={() => handleSignUp(event.id)}
-              className="option-btn"
-              type="button"
-            >
-              Sign-up
-            </button>
-          </div>
-        ))}
+            onClick={() => handleSignUp(event.id)}
+            className="option-btn"
+            type="button"
+            style={{ marginTop:12 }}
+          >
+            Sign-up
+          </button>
+        </article>
+        ))}   
       </div>
     </div>
   );
