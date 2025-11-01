@@ -150,7 +150,7 @@ jobs:
       # Start API & FE; let Playwright's webServer (or wait-on) handle readiness
       - name: Start API
         run: |
-          npm run dev:api > /tmp/api.log 2>&1 &
+          npm --workspace api run dev:ci > /tmp/api.log 2>&1 &
           sleep 5
           echo "=== API LOG ==="
           cat /tmp/api.log || true
