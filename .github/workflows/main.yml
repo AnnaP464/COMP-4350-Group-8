@@ -124,9 +124,15 @@ jobs:
         run: npm ci
         working-directory: front-end
 
+      - name: Cache Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       # Install Playwright browsers & Linux deps
       - name: Install Playwright
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
 
       # Prepare DB schema (create app user and run migrations)
       - name: Prepare database
