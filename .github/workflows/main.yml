@@ -116,6 +116,14 @@ jobs:
       - name: Install root deps
         run: npm ci
 
+      - name: Install API deps
+        run: npm ci
+        working-directory: api
+
+      - name: Install front-end deps
+        run: npm ci
+        working-directory: front-end
+
       # Install Playwright browsers & Linux deps
       - name: Install Playwright
         run: npx playwright install --with-deps
@@ -150,7 +158,7 @@ jobs:
 
       - name: Wait for servers
         run: npx wait-on -t 120000 "http://localhost:4000" "http://localhost:5173"
-
+        
       - name: Run Playwright tests
         env:
           BASE_URL: "http://localhost:5173"
