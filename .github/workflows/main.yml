@@ -117,8 +117,7 @@ jobs:
         run: npm ci
 
       - name: Install API deps
-        run: npm ci
-        working-directory: api
+        run: npm ci --workspace api   # 👈 add this
 
       - name: Install front-end deps
         run: npm ci
