@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 //import "./authChoice.css";// Reuse same styling
 import "./css/Dashboard.css";
 import "./css/HomepageOrganizer.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { cleanEvents } from "./helpers/EventHelper";
 import { Clock, MapPin, Calendar } from "lucide-react";
+import * as RoleHelper from "./helpers/RoleHelper";
 
 type EventPost = {
   id: string;
@@ -22,6 +23,10 @@ type EventPost = {
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState<string | null>(null);
+
+  const location = useLocation();
+  const state = location.state as RoleHelper.AuthChoiceState;
+  const role = state?.role;
 
   // Start with dummy placeholder events
   const [events, setEvents] = useState<EventPost[]>([
@@ -48,8 +53,6 @@ const Dashboard: React.FC = () => {
           method: "GET",
           headers: { "Accept": "application/json" }
         });
-
-
 
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
@@ -110,7 +113,7 @@ const Dashboard: React.FC = () => {
       const token = localStorage.getItem("access_token");
       if (!token) {
         alert("Your session has expired. Please log in again.");
-        navigate("/User-login?role=Volunteer");
+        navigate("/User-login", { state: { role } });
         return;
       }
 
@@ -130,7 +133,17 @@ const Dashboard: React.FC = () => {
         })
       });
 
-      if (!response.ok) {
+      if(response.status == 401){
+        //login expired 
+        alert("Your session has expired. Please log in again.");
+        navigate("/User-login", { state: { role } });
+        return;
+      } 
+      else if (response.status == 409){
+        alert("User is already registered for an event at this time");
+        return;
+      }
+      else if (!response.ok) {
         const err = await response.text();
         alert(`Registration failed: ${err}`);
         return;
@@ -170,7 +183,7 @@ const Dashboard: React.FC = () => {
             <button
               className="guest-btn"
               title="Your registered events"
-              onClick={() => navigate("/My-Registrations")}
+              onClick={() => navigate("/My-Registrations", { state: { role } })}
             >
               My events
             </button>
@@ -178,7 +191,7 @@ const Dashboard: React.FC = () => {
             <button
               className="guest-btn"
               title="Profile & settings"
-              onClick={() => navigate("/VolunteerProfile")}
+              onClick={() => navigate("/VolunteerProfile", { state: { role } })}
             >
               Profile
             </button>
@@ -230,13 +243,13 @@ const Dashboard: React.FC = () => {
             </div>
 
             <button
-            onClick={() => handleSignUp(event.id)}
-            className="option-btn"
-            type="button"
-            style={{ marginTop:12 }}
-          >
+              onClick={() => handleSignUp(event.id)}
+              className="option-btn"
+              type="button"
+              style={{ marginTop:12 }}
+            >
             Sign-up
-          </button>
+            </button>
         </article>
         ))}   
       </div>

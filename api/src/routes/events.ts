@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEvent, listEvents, registerUserForEvent } from "../controllers/eventsController";
+import { createEvent, listEvents, registerUserForEvent, deregisterUserForEvent } from "../controllers/eventsController";
 import { requireAuth } from "../middleware/requireAuth"; // your JWT middleware
 import { validateRequest } from "../middleware/validateRequest";
 //import { z } from "zod";
@@ -172,6 +172,49 @@ import { schemas} from "../spec/zod";
  *         description: Server error
  */
 
+/**
+ * @swagger
+ * /v1/events/deregister:
+ *   delete:
+ *     tags: [Events]
+ *     summary: Deregister the authenticated user for an event
+ *     description: Deregisters the currently authenticated user for the specified event.
+ *     security:
+ *       - bearerAuth: []         # requires Authorization: Bearer <token>
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - eventId
+ *             properties:
+ *               eventId:
+ *                 type: string
+ *                 example: "evt_56789"
+ *     responses:
+ *       200:
+ *         description: Successfully deregistered the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User deregistered for event successfully."
+ *       400:
+ *         description: Missing or invalid fields
+ *       401:
+ *         description: Unauthorized — missing or invalid token
+ *       500:
+ *         description: Server error
+ */
+
 const r = Router();
 
 // Public: list all events (optionally filter to "mine" via ?mine=1)
@@ -210,6 +253,12 @@ r.post(
   "/register",
   requireAuth(),
   registerUserForEvent
+);
+
+r.delete(
+  "/deregister",
+  requireAuth(),
+  deregisterUserForEvent
 );
 
 //r.post("/",createEvent);                           // POST /v1/events      -> create

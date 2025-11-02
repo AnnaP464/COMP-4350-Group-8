@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Clock,
   CheckCircle2,
@@ -11,10 +11,9 @@ import {
 } from "lucide-react";
 import "./css/VolunteerProfile.css";
 import {getAvatarInitials, formatMonthYear} from "./helpers/UserInfoHelper.tsx";
+import * as RoleHelper from "./helpers/RoleHelper";
 
 type Me = { id: string; username: string; email?: string; role: string, createdAt: string};
-
-
 
 const VolunteerProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -23,15 +22,18 @@ const VolunteerProfile: React.FC = () => {
   const [showGoalDialog, setShowGoalDialog] = useState(false);
   const [goalInput, setGoalInput] = useState<string>("");
 
-
   const [me, setMe] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const location = useLocation();
+  const state = location.state as RoleHelper.AuthChoiceState;
+  const role = state?.role;
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
       alert("Please sign in first.");
-      navigate("/User-login?role=Volunteer", { replace: true });
+      navigate("/User-login", { replace: true, state: { role } });
       return;
     }
 
@@ -49,7 +51,7 @@ const VolunteerProfile: React.FC = () => {
         });
         if (res.status === 401) {
           alert("Session expired. Please log in again.");
-          navigate("/User-login?role=Volunteer", { replace: true });
+          navigate("/User-login", { replace: true, state: { role } });
           return;
         }
         const data = await res.json();
@@ -124,7 +126,7 @@ if (!me) return <main className="vp-container">Could not load profile.</main>;
           <button
             className="vp-btn secondary"
             type="button"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/Dashboard", { state: { role } })}
           >
             Back to Dashboard
           </button>

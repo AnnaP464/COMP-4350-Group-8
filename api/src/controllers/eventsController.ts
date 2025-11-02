@@ -95,5 +95,29 @@ export async function registerUserForEvent(req: Request, res: Response, next: Ne
   }
 }
 
+// DELETE /v1/events/deregister (auth required)
+export async function deregisterUserForEvent(req: Request, res: Response, next: NextFunction) {
+  try
+  {
+    //check for valid user here
+    console.log("[controller] deregisterUserForEvent body:", req.body, "user:", req.user?.id);
+    const volunteerId = req.user?.id; // set by requireAuth middleware from access token
+    if(!volunteerId) return res.status(401).json({message: "Unauthorized"});
+
+    const {eventId} = req.body ?? {};
+    if(!eventId)
+      return res.status(400).json({message: "Missing event ID in request"});
+  
+    const response = await eventService.deregisterUserForEventService(volunteerId, eventId);
+    if(!response)//make sure the row is recieved back
+      return res.status(409).json({message: "User is already deregistered for event"});
+
+    return res.status(201).json({message: "Deregistered Successfully"});
+  } 
+  catch (err){
+    next(err);
+  }
+}
+
 
 

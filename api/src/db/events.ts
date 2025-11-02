@@ -79,7 +79,7 @@ export async function listAll(): Promise<EventRow[]> {
 }
 
 export async function listCollisions(userId: string, eventId: string): Promise<EventRow[]> {
-  const {rows} = await query<EventRow>(
+  const { rows } = await query<EventRow>(
     `
     SELECT 1
     FROM registered_users ru
@@ -102,7 +102,7 @@ export async function listCollisions(userId: string, eventId: string): Promise<E
 
 export async function registerUserForEvent(userId: string, eventId: string): Promise<EventRow | null>{
   try{
-    const {rows} = await query<EventRow>(
+    const { rows } = await query<EventRow>(
       `
       INSERT INTO registered_users (user_id, event_id)
       VALUES ($1,$2)
@@ -118,6 +118,22 @@ export async function registerUserForEvent(userId: string, eventId: string): Pro
     console.log("The user is already registered for this event: " + error);
     return null;
   }
+}
+
+export async function deregisterUserForEvent(userId: string, eventId: string): Promise<EventRow>{
+  const { rows } = await query<EventRow>(
+    `
+    DELETE
+    FROM registered_users as ru
+    WHERE ru.user_id = $1 AND ru.event_id = $2
+    RETURNING 
+    user_id AS "userID",
+    event_id AS "eventID"
+    `,
+    [userId, eventId]
+  );
+
+  return rows[0];
 }
 
 export async function listRegisteredEventsByUser(userId: string): Promise<EventRow[]> {
