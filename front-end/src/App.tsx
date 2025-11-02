@@ -7,6 +7,7 @@ import LoginUser from './LoginUser';
 import HomepageOrganizer from "./HomepageOrganizer.tsx";
 import Dashboard from "./Dashboard.tsx";
 import VolunteerProfile from "./VolunteerProfile.tsx";
+import VolunteerRegisteredEvents from "./VolunteerRegisteredEvents.tsx";
 
 function App() {
   return(
@@ -20,6 +21,7 @@ function App() {
         <Route path="/Homepage-Organizer" element={<HomepageOrganizer />}/>
         <Route path="/Dashboard" element={<Dashboard/>}/>
         <Route path="/VolunteerProfile" element={<VolunteerProfile/>}/>
+        <Route path="/My-Registrations" element={<VolunteerRegisteredEvents/>}/>      
       </Routes>
     </BrowserRouter>
   );

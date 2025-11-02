@@ -34,9 +34,13 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
 
 // GET /v1/events
 //(?mine=1 to filter to current organizer)
+//(?registered=1 to filter to events registered by current volunteer)
 export async function listEvents(req: Request, res: Response, next: NextFunction) {
   try {
     const mine = String(req.query.mine || "").toLowerCase() === "1";
+    const registered = String(req.query.registered || "").toLowerCase() === "1";
+
+    //organizer events
     if (mine) 
     {
       const organizerId = req.user?.id;
@@ -45,6 +49,16 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
       const rows = await eventService.listMyEventsService(organizerId);
       return res.json(rows);
     }
+    //volunteer registered 
+    else if(registered) {
+      const userId = req.user?.id;
+      if (!userId) 
+        return res.status(401).json({ message: "Unauthorized" });
+      const rows = await eventService.listRegisteredEventsService(userId);
+      return res.json(rows);
+    }
+
+    //else list all events
     else{
       const rows = await events.listAll();
       return res.json(rows);
@@ -80,4 +94,6 @@ export async function registerUserForEvent(req: Request, res: Response, next: Ne
     next(err);
   }
 }
+
+
 

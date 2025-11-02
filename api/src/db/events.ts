@@ -1,6 +1,5 @@
 import { query } from "./connect";
 
-// Shape your code already expects in TS
 export type EventRow = {
   id: string;
   organizerId: string;
@@ -120,3 +119,26 @@ export async function registerUserForEvent(userId: string, eventId: string): Pro
     return null;
   }
 }
+
+export async function listRegisteredEventsByUser(userId: string): Promise<EventRow[]> {
+  const { rows } = await query<EventRow>(
+    `
+    SELECT
+      e.id,
+      e.organizer_id AS "organizerId",
+      e.job_name     AS "jobName",
+      e.description,
+      e.start_time   AS "startTime",
+      e.end_time     AS "endTime",
+      e.location,
+      e.created_at   AS "createdAt"
+    FROM registered_users ru
+    JOIN events e ON e.id = ru.event_id
+    WHERE ru.user_id = $1
+    ORDER BY e.start_time ASC
+    `,
+    [userId]
+  );
+  return rows;
+}
+
