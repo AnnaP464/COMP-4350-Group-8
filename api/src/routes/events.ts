@@ -87,6 +87,11 @@ import { schemas} from "../spec/zod";
  *         name: mine
  *         schema: { type: string, enum: ["0","1"] }
  *         description: If "1", only include events created by the authenticated
+ *       - in: query
+ *         name: registered
+ *         schema: { type: string, enum: ["0","1"] }
+ *         description: If "1", only include events the authenticated user is registered for.
+ *
  *     responses:
  *       200:
  *         description: A list of events.
@@ -176,10 +181,13 @@ r.get(
   "/",
   //validateRequest({ query: schemas.ListEventsQuery }),
   (req, res, next) => {
+    //organizer events
     const wantsMine = String(req.query.mine || "").toLowerCase() === "1";
-    if (!wantsMine) 
+    //volunteer registered events
+    const wantsRegistered = String(req.query.registered || "").toLowerCase() === "1";
+    if (! (wantsMine || wantsRegistered) ) 
       return next();
-    // run the real auth middleware when mine=1
+    // run the real auth middleware when either filter is requested
     return requireAuth()(req, res, next);
   },
   listEvents

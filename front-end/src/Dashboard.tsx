@@ -169,6 +169,14 @@ const Dashboard: React.FC = () => {
             
             <button
               className="guest-btn"
+              title="Your registered events"
+              onClick={() => navigate("/My-Registrations")}
+            >
+              My events
+            </button>
+
+            <button
+              className="guest-btn"
               title="Profile & settings"
               onClick={() => navigate("/VolunteerProfile")}
             >
