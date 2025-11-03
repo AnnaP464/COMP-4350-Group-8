@@ -41,6 +41,7 @@ function mockInitialEventsFetchOk(events = [{
     json: async () => events,
   });
 }
+
 function mockInitialEventsFetchFail() {
   (global.fetch).mockResolvedValueOnce({
     ok: false,
@@ -48,7 +49,6 @@ function mockInitialEventsFetchFail() {
     json: async () => ({}),
   });
 }
-
 
 test("Tries to sign up for an event", async () => {
     render(
@@ -75,10 +75,11 @@ test("Will try to logout and go to the role selection screen", async () => {
     await userEvent.click(button);
     expect(screen.queryByText("Welcome to HiveHand"));
 });
-
-
-
 test("renders placeholder events immediately, then replaces with fetched events", async () => {
+  localStorage.setItem(
+    "user",
+    JSON.stringify({ username: "Nadya", role: "Volunteer" })
+  );
   // 1st fetch: GET events -> ok with one event "Mock Event"
   mockInitialEventsFetchOk([{ 
     id: "8fcbb58b-7953-4a3b-a2a0-759f306b3d3f",
@@ -91,7 +92,11 @@ test("renders placeholder events immediately, then replaces with fetched events"
     createdAt: "2025-10-29T05:35:34.446Z"
   }]);
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   // placeholder titles should appear first (from initial state)
   expect(screen.getByText(/Beach Cleanup/i)).toBeInTheDocument();
@@ -102,12 +107,23 @@ test("renders placeholder events immediately, then replaces with fetched events"
   await waitFor(() => {
     expect(screen.getByText(/Replaced Event/i)).toBeInTheDocument();
   });
+
+  localStorage.clear();
 });
 
 test("handles fetch failure path (logs an error)", async () => {
+  localStorage.setItem(
+    "user",
+    JSON.stringify({ username: "Anna", role: "Volunteer" })
+  );
+
   mockInitialEventsFetchFail();
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   await waitFor(() => {
     expect(console.error).toHaveBeenCalledWith(
@@ -122,7 +138,11 @@ test("logout success (204): clears localStorage and navigates home", async () =>
   // 2nd fetch: POST /auth/logout -> 204
   (global.fetch).mockResolvedValueOnce({ ok: true, status: 204, text: async () => "" });
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
@@ -148,7 +168,11 @@ test("logout success but non-204: attempts to parse JSON (and still navigates)",
     },
   });
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
@@ -172,7 +196,11 @@ test("logout failure (non-ok): alerts and does NOT navigate", async () => {
     text: async () => "Bad request",
   });
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
@@ -183,30 +211,21 @@ test("logout failure (non-ok): alerts and does NOT navigate", async () => {
 });
 
 test("Sign-up button triggers the placeholder alert", async () => {
-  mockInitialEventsFetchOk([
-    { 
-      id: "8fcbb58b-7953-4a3b-a2a0-759f306b3d3f",
-      organizerId: "51d6573c-5d62-4b3d-9853-b09e6095e367",
-      jobName: "Cleanup Drive",
-      description: "moon stuff",
-      startTime: "2025-11-01T00:00:00.000Z",
-      endTime: "2025-11-01T02:00:00.000Z",
-      location: "moon",
-      createdAt: "2025-10-29T05:35:34.446Z"
-    },
-  ]);
+  mockInitialEventsFetchOk();
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
-  await waitFor(() => screen.getByText(/Cleanup Drive/i));
+  await waitFor(() => screen.getByText(/event 8/i));
   fireEvent.click(screen.getByRole("button", { name: /sign-up/i }));
 
   expect(window.alert).toHaveBeenCalledWith(
     "Your session has expired. Please log in again."
   );
 });
-
-
 
 test("logout: non-OK response triggers alert and returns (covers !response.ok)", async () => {
   // 1) initial GET
@@ -219,7 +238,11 @@ test("logout: non-OK response triggers alert and returns (covers !response.ok)",
     text: async () => "Bad request",
   });
 
-  const { container } = render(<Dashboard />);
+  const { container } = render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   // ensure initial fetch finishes
   await waitFor(() => expect(screen.getByText(/Welcome to your Dashboard/i)).toBeInTheDocument());
@@ -246,7 +269,11 @@ test("logout: OK but non-204 parses JSON then navigates (covers response.status 
     json: async () => ({ message: "bye" }),
   });
 
-  const { container } = render(<Dashboard />);
+  const { container } = render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   await waitFor(() => expect(screen.getByText(/Welcome to your Dashboard/i)).toBeInTheDocument());
 

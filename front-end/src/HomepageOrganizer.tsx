@@ -67,11 +67,9 @@ const HomepageOrganizer: React.FC = () => {
 
         
         const cleanData = EventHelper.cleanEvents(rows, false);
-        console.log(rows)
-        console.log(cleanData)
         setEvents(cleanData);
       } catch (error) {
-        console.log("The GET event call failed" + error);
+        console.log("The GET event call failed");
       } 
       finally {
         setLoading(false);

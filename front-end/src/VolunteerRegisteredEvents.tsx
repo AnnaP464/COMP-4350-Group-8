@@ -40,8 +40,6 @@ const MyRegistrations: React.FC = () => {
       //verify token before sending request off
       //get token by user id
 
-      console.log(eventId);
-
       const response = await fetch("http://localhost:4000/v1/events/deregister", {
         method: "DELETE",
         headers: {

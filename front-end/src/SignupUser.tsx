@@ -63,7 +63,6 @@ const SignupUser: React.FC = () => {
         }
         catch (error) {
           setErrorMsg("Unexpected error from server");
-          console.log("Error from server");
         }
         return;
       }
