@@ -235,6 +235,7 @@ const HomepageOrganizer: React.FC = () => {
               className="guest-btn"
               onClick={() => setShowProfile((s) => !s)}
               title="Profile & settings"
+              style= {{backgroundColor:"green", color:"white"}}
             >
               Profile
             </button>

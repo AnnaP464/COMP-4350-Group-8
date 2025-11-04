@@ -32,6 +32,7 @@ CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};
 SQL
 
 export PGPASSWORD=$DB_PASSWORD
+psql -U $DB_USER -d $DB_NAME -f ./api/migrations/001_init.sql
 psql -U $DB_USER -d $DB_NAME -f ./api/migrations/002_init.sql
 
 echo "Setup complete!"

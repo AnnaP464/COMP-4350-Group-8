@@ -129,7 +129,11 @@ const MyRegistrations: React.FC = () => {
         <header className="myreg-header">
             <h2 className="myreg-title">My Events</h2>
             <div className="myreg-actions">
-            <button className="myreg-btn" onClick={() => navigate("/Dashboard", { state: { role } })}>
+            <button 
+              className="myreg-btn" 
+              onClick={() => navigate("/Dashboard", { state: { role } })}
+              style= {{backgroundColor:"green"}}
+            >
                 Back to Dashboard
             </button>
             </div>

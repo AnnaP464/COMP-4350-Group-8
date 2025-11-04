@@ -167,46 +167,47 @@ const Dashboard: React.FC = () => {
     <div className="dashboard-container">
       <div className="navigation-container" style={{ alignItems: "stretch" }}>
         <div className="navigation-box">
-                  <header className="navigation-header">
-          <div>
-            <h2 className="title" style={{ margin: 0 }}>
-              HiveHand - {username}
-            </h2>
-            <p className="subtitle" style={{ marginTop: 4 }}>
-              Homepage
-            </p>
-          </div>
-          <div className="button-box" style={{ display: "flex", gap: 8 }}>
-            
-            <button
-              className="guest-btn"
-              title="Your registered events"
-              onClick={() => navigate("/My-Registrations", { state: { role } })}
-            >
-              My events
-            </button>
+          <header className="navigation-header">
+            <div>
+              <h2 className="title" style={{ margin: 0 }}>
+                Welcome to your Dashboard - {username}
+              </h2>
+              <p className="subtitle" style={{ marginTop: 4, left: 0}}>
+                Homepage
+              </p>
+            </div>
+            <div className="button-box" style={{ display: "flex", gap: 8 }}>
+              
+              <button
+                className="option_btn"
+                title="Your registered events"
+                onClick={() => navigate("/My-Registrations", { state: { role } })}
+                style= {{backgroundColor:"green"}}
+              >
+                My events
+              </button>
 
-            <button
-              className="guest-btn"
-              title="Profile & settings"
-              onClick={() => navigate("/VolunteerProfile", { state: { role } })}
-            >
-              Profile
-            </button>
-          </div>
-        </header>
+              <button
+                className="option-btn"
+                title="Profile & settings"
+                onClick={() => navigate("/VolunteerProfile", { state: { role } })}
+                style= {{backgroundColor:"green"}}
+              >
+                Profile
+              </button>
 
-
+              <button 
+                className="option_btn"
+                title="Log-out"
+                onClick={handleLogout}
+                style= {{backgroundColor:"green"}}
+              >
+                Log-out
+              </button>
+            </div>
+          </header>
         </div>
       </div>
-
-      <h1>Welcome to your Dashboard 🎉</h1>
-
-      <form onSubmit={handleLogout}>
-        <button className="option-btn" type="submit">
-          Log-out
-        </button>
-      </form>
 
       <h2 className="section-title">Available Events</h2>
 
