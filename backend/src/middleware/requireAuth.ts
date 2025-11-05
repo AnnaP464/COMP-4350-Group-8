@@ -1,4 +1,3 @@
-// /api/src/middleware/requireAuth.ts
 import type { Request, Response, NextFunction } from "express";
 import * as tokens from "../services/tokenService"; // you already have this
 import {users} from "../db/user";                 // findById

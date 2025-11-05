@@ -32,7 +32,7 @@ What issues we will probably encounter and work on in the upcoming sprint
 
 ## Code Gallery
 
-Each of us put our best code forward with a link to the commit where it came from (she will check)
+Each of us put our best code forward with a link to the commit where it came from (they will check)
 
 ### Anna Pavlova
 

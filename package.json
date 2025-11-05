@@ -1,17 +1,17 @@
 {
   "private": true,
   "workspaces": [
-    "api",
-    "front-end"
+    "backend",
+    "frontend"
   ],
   "name": "hivehand",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "lint": "eslint . --ext .js,.ts,.tsx",
-    "dev:api": "npm --workspace api run dev",
-    "dev:web": "npm --workspace front-end run dev",
-    "build": "npm -w api run build && npm -w front-end run build",
+    "dev:api": "npm --workspace backend run dev",
+    "dev:web": "npm --workspace frontend run dev",
+    "build": "npm -w api run build && npm -w frontend run build",
     "test": "playwright test --reporter=list",
     "test:ui": "playwright test --ui",
     "test:show-trace": "playwright show-trace test-results/**/trace.zip"

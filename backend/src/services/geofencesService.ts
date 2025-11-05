@@ -36,12 +36,12 @@ export function makeGeofencesService(deps: { repo: GeofencesRepo }): GeofencesSe
       return (await repo.getFence(rec.id)) as GeofenceView;
     },
 
-    // Get all fences for an event (normalized for API)
+    // Get all fences for an event (normalized for backend)
     async listByEvent(eventId: string): Promise<GeofenceView[]> {
       return repo.listFencesByEvent(eventId);
     },
 
-    // Get one by id (normalized for API)
+    // Get one by id (normalized for backend)
     async getById(id: string): Promise<GeofenceView | null> {
       return repo.getFence(id);
     },

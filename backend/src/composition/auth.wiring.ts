@@ -1,6 +1,6 @@
 import { makeAuthService } from "../services/authService";
 import { makeAuthController } from "../controllers/authController";
-import { makeAuthRouter } from "../routes/auth";
+import { makeAuthRouter } from "../routes/authRoutes";
 
 // concrete persistence adapters (your files)
 import { users } from "../db/user";

@@ -34,9 +34,9 @@ To run the project you need to run the npm run dev command in the api and the fr
 ## [Sprint 1](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%201/sprint1.md)
 ## Tech Stack
 
-##### Front End 
+##### Frontend 
 React - Our team has previous experience with React and similar technology (Angular), and it’s ideal for building interactive UIs quickly.
-##### Back End
+##### Backend
 Node.js
 - Same language (TypeScript/JavaScript) on both sides reduces context switching and speeds up development. Great for I/O-heavy apps (lots of short API calls, DB reads/writes).
 

@@ -5,7 +5,7 @@ import { validateRequest } from "../middleware/validateRequest";
 //import { z } from "zod";
 import { schemas} from "../spec/zod";
 import type { GeofencesController } from "../contracts/geofences.ctrl.contracts";
-import { createEventsGeofencesRoutes } from "./geofence";
+import { createEventGeofencesRoutes } from "./geofenceRoutes";
 /**
  * @swagger
  * tags:
@@ -173,14 +173,7 @@ import { createEventsGeofencesRoutes } from "./geofence";
  *         description: Server error
  */
 
-<<<<<<< HEAD
 
-export function createEventsRouter(deps: {
-  geofencesController: GeofencesController;
-  // ...other controllers for events domain
-}) {
-  const r = Router();
-=======
 /**
  * @swagger
  * /v1/events/deregister:
@@ -224,43 +217,45 @@ export function createEventsRouter(deps: {
  *         description: Server error
  */
 
-const r = Router();
+export function createEventsRouter(deps: {
+  geofencesController: GeofencesController;
+  // ...other controllers for events domain
+}) {
+  const r = Router();
 
-// Public: list all events (optionally filter to "mine" via ?mine=1)
-//r.get("/", listEvents);    
-// validate query first, then only auth if ?mine=1
-r.get(
-  "/",
-  //validateRequest({ query: schemas.ListEventsQuery }),
-  (req, res, next) => {
-    //organizer events
-    const wantsMine = String(req.query.mine || "").toLowerCase() === "1";
-    //volunteer registered events
-    const wantsRegistered = String(req.query.registered || "").toLowerCase() === "1";
-    if (! (wantsMine || wantsRegistered) ) 
-      return next();
-    // run the real auth middleware when either filter is requested
-    return requireAuth()(req, res, next);
-  },
-  listEvents
-);
-//Auth-only : create event 
-// r.post("/", requireAuth, (req, res, next) => {
-//   console.log("Route reached");
-//   next();
-// },validateRequest({ body: schemas.CreateEventSchema }), createEvent);   
-r.post(
-  "/",
-  requireAuth(),
-  (req, _res, next) => { console.log("[router] after requireAuth"); next(); },
-  validateRequest({ body: schemas.CreateEventSchema }),
-  (req, _res, next) => { console.log("[router] after validateRequest"); next(); },
-  createEvent
-);
->>>>>>> main
+  // Public: list all events (optionally filter to "mine" via ?mine=1)
+  //r.get("/", listEvents);    
+  // validate query first, then only auth if ?mine=1
+  r.get(
+    "/",
+    //validateRequest({ query: schemas.ListEventsQuery }),
+    (req, res, next) => {
+      //organizer events
+      const wantsMine = String(req.query.mine || "").toLowerCase() === "1";
+      //volunteer registered events
+      const wantsRegistered = String(req.query.registered || "").toLowerCase() === "1";
+      if (! (wantsMine || wantsRegistered) ) 
+        return next();
+      // run the real auth middleware when either filter is requested
+      return requireAuth()(req, res, next);
+    },
+    listEvents
+  );
+  //Auth-only : create event 
+  // r.post("/", requireAuth, (req, res, next) => {
+  //   console.log("Route reached");
+  //   next();
+  // },validateRequest({ body: schemas.CreateEventSchema }), createEvent);   
+  r.post(
+    "/",
+    requireAuth(),
+    (req, _res, next) => { console.log("[router] after requireAuth"); next(); },
+    validateRequest({ body: schemas.CreateEventSchema }),
+    (req, _res, next) => { console.log("[router] after validateRequest"); next(); },
+    createEvent
+  );
 
 
-<<<<<<< HEAD
   // Public: list all events (optionally filter to "mine" via ?mine=1)
   //r.get("/", listEvents);    
   // validate query first, then only auth if ?mine=1
@@ -296,23 +291,21 @@ r.post(
     registerUserForEvent
   );
 
-
   // your existing event routes here...
   // r.get("/:eventId", ...);
   // r.post("/", ...);
 
   // geofences under /events
-  r.use(createEventsGeofencesRoutes(deps.geofencesController));
+  r.use(createEventGeofencesRoutes(deps.geofencesController));
+
+  r.delete(
+    "/deregister",
+    requireAuth(),
+    deregisterUserForEvent
+  );
+
+  //r.post("/",createEvent);                           // POST /v1/events      -> create
 
   return r;
 }
-=======
-r.delete(
-  "/deregister",
-  requireAuth(),
-  deregisterUserForEvent
-);
-
-//r.post("/",createEvent);                           // POST /v1/events      -> create
->>>>>>> main
 

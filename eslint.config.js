@@ -42,13 +42,13 @@ export default [
 
   // TypeScript for API (server-side)
   {
-    files: ["api/**/*.ts"],
+    files: ["backend/**/*.ts"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
-        project: path.join(__dirname, "api/tsconfig.json"), // ✅ absolute path
+        project: path.join(__dirname, "backend/tsconfig.json"), // ✅ absolute path
         tsconfigRootDir: __dirname
       },
       globals: {
@@ -71,13 +71,13 @@ export default [
 
   // TypeScript + React for Front-end
   {
-    files: ["front-end/**/*.{ts,tsx}"],
+    files: ["frontend/**/*.{ts,tsx}"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
-        project: path.join(__dirname, "front-end/tsconfig.eslint.json"), // <-- use the real app tsconfig
+        project: path.join(__dirname, "frontend/tsconfig.eslint.json"), // <-- use the real app tsconfig
         tsconfigRootDir: __dirname
       },
       globals: { window: "readonly", document: "readonly", process: "readonly", __dirname: "readonly", module: "readonly" }

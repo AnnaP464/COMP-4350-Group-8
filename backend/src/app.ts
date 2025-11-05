@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
 
-//CORS: allow your Vite dev server to call the API
+//CORS: allow your Vite dev server to call the backend
 const CORS_ORIGIN = "http://localhost:5173";
 const corsOptions = {
   origin: CORS_ORIGIN,

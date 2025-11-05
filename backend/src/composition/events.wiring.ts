@@ -7,7 +7,7 @@ import { makeGeofencesController } from "../controllers/geofenceController"; // 
 
 //  Events router (top layer). It accepts DI (geofencesController) and internally
 //  composes the geofence route file so all event paths are authored here.
-import { makeEventsRouter } from "../routes/events";
+import { createEventsRouter } from "../routes/eventsRoutes";
 
 // If your repo needs a db handle/pool, import it here (or pass from caller).
 // import { pool } from "../db/pool"; 
@@ -20,4 +20,4 @@ const geofencesService = makeGeofencesService({ repo: geofences });
 const geofencesController = makeGeofencesController({ service: geofencesService });
 
 // 4) Build and export a ready-to-mount router for /v1/events
-export const eventsRouter = makeEventsRouter({ geofencesController });
+export const eventsRouter = createEventsRouter({ geofencesController });

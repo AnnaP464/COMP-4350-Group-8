@@ -15,7 +15,7 @@ export default defineConfig({
   webServer: [
     {
       // API server
-      command: 'npm run dev:api',
+      command: 'npm run dev:backend',
       url: 'http://localhost:4000/health',
       reuseExistingServer: true
     },

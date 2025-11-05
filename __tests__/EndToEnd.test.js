@@ -129,7 +129,7 @@ test("New volunteer registration, login, try to sign up for an event and log out
     await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
     
-    await expect(page.getByText("Welcome to your Dashboard 🎉")).toBeVisible();
+    await expect(page.getByText("Welcome to your Dashboard")).toBeVisible();
 
     const buttons = page.getByRole('button', { name: "Sign-up" });
     await expect(buttons.first()).toBeVisible();

@@ -23,7 +23,7 @@ node -v
 ```
 
 # 3) Install dependencies
-Go to /front-end and run:
+Go to /frontend and run:
 ```bash
 npm install
 ```
@@ -39,7 +39,7 @@ Open the link you get from the output in a browser to view the app
 The instructions for running backend is in /api/README.md
 
 # Tests
-To run front-end tests navigate to /front-end
+To run frontend tests navigate to /frontend
 ```bash
 npx jest --coverage
 ```

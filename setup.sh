@@ -5,14 +5,14 @@ echo "Installing root dependencies..."
 npm install
 
 # Step 2: Install API dependencies
-echo "Installing API dependencies..."
-cd api
+echo "Installing backend dependencies..."
+cd backend
 npm install
 cd ..
 
 # Step 3: Install frontend dependencies
 echo "Installing frontend dependencies..."
-cd front-end
+cd frontend
 npm install
 cd ..
 
@@ -32,7 +32,9 @@ CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};
 SQL
 
 export PGPASSWORD=$DB_PASSWORD
-psql -U $DB_USER -d $DB_NAME -f ./api/migrations/001_init.sql
-psql -U $DB_USER -d $DB_NAME -f ./api/migrations/002_init.sql
+psql -U $DB_USER -d $DB_NAME -f ./backend/migrations/001_init.sql
+psql -U $DB_USER -d $DB_NAME -f ./backend/migrations/002_init.sql
+psql -U $DB_USER -d $DB_NAME -f ./backend/migrations/003_Event_geofence.sql
+psql -U $DB_USER -d $DB_NAME -f ./backend/migrations/004_Event_attendance.sql
 
 echo "Setup complete!"
