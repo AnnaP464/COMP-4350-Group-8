@@ -4,7 +4,8 @@ import { requireAuth } from "../middleware/requireAuth"; // your JWT middleware
 import { validateRequest } from "../middleware/validateRequest";
 //import { z } from "zod";
 import { schemas} from "../spec/zod";
-
+import type { GeofencesController } from "../contracts/geofences.ctrl.contracts";
+import { createEventsGeofencesRoutes } from "./geofence";
 /**
  * @swagger
  * tags:
@@ -172,6 +173,14 @@ import { schemas} from "../spec/zod";
  *         description: Server error
  */
 
+<<<<<<< HEAD
+
+export function createEventsRouter(deps: {
+  geofencesController: GeofencesController;
+  // ...other controllers for events domain
+}) {
+  const r = Router();
+=======
 /**
  * @swagger
  * /v1/events/deregister:
@@ -248,13 +257,56 @@ r.post(
   (req, _res, next) => { console.log("[router] after validateRequest"); next(); },
   createEvent
 );
+>>>>>>> main
 
-r.post(
-  "/register",
-  requireAuth(),
-  registerUserForEvent
-);
 
+<<<<<<< HEAD
+  // Public: list all events (optionally filter to "mine" via ?mine=1)
+  //r.get("/", listEvents);    
+  // validate query first, then only auth if ?mine=1
+  r.get(
+    "/",
+    //validateRequest({ query: schemas.ListEventsQuery }),
+    (req, res, next) => {
+      const wantsMine = String(req.query.mine || "").toLowerCase() === "1";
+      if (!wantsMine) 
+        return next();
+      // run the real auth middleware when mine=1
+      return requireAuth()(req, res, next);
+    },
+    listEvents
+  );
+  //Auth-only : create event 
+  // r.post("/", requireAuth, (req, res, next) => {
+  //   console.log("Route reached");
+  //   next();
+  // },validateRequest({ body: schemas.CreateEventSchema }), createEvent);   
+  r.post(
+    "/",
+    requireAuth(),
+    (req, _res, next) => { console.log("[router] after requireAuth"); next(); },
+    validateRequest({ body: schemas.CreateEventSchema }),
+    (req, _res, next) => { console.log("[router] after validateRequest"); next(); },
+    createEvent
+  );
+
+  r.post(
+    "/register",
+    requireAuth(),
+    registerUserForEvent
+  );
+
+
+  // your existing event routes here...
+  // r.get("/:eventId", ...);
+  // r.post("/", ...);
+
+  // geofences under /events
+  r.use(createEventsGeofencesRoutes(deps.geofencesController));
+
+  return r;
+}
+=======
 r.delete(
   "/deregister",
   requireAuth(),
@@ -262,5 +314,5 @@ r.delete(
 );
 
 //r.post("/",createEvent);                           // POST /v1/events      -> create
+>>>>>>> main
 
-export default r;
