@@ -1,5 +1,5 @@
 import React from "react";
-import {render, screen} from "@testing-library/react"
+import {render, screen, waitFor, fireEvent} from "@testing-library/react"
 import userEvent from "@testing-library/user-event";
 import Dashboard from "../Dashboard.tsx";
 import { MemoryRouter } from "react-router-dom";
@@ -25,13 +25,23 @@ beforeEach(() => {
 });
 
 // Helper to render with an initial GET /v1/ response (or failure)
-function mockInitialEventsFetchOk(events = [{ id: 99, title: "Mock Event", date: "2025-12-12", duration: "1 hour" }]) {
+function mockInitialEventsFetchOk(events = [{ 
+  id: "5e9d21a6-95b7-4b55-a8f7-9648bdf782cb",
+  organizerId: "51d6573c-5d62-4b3d-9853-b09e6095e367",
+  jobName: "event 8",
+  description: "moon stuff",
+  startTime: "2025-10-23T01:00:00.000Z",
+  endTime: "2025-10-24T02:00:00.000Z",
+  location: "moon",
+  createdAt: "2025-10-29T05:09:05.344Z"
+}]) {
   (global.fetch).mockResolvedValueOnce({
     ok: true,
     status: 200,
     json: async () => events,
   });
 }
+
 function mockInitialEventsFetchFail() {
   (global.fetch).mockResolvedValueOnce({
     ok: false,
@@ -39,7 +49,6 @@ function mockInitialEventsFetchFail() {
     json: async () => ({}),
   });
 }
-
 
 test("Tries to sign up for an event", async () => {
     render(
@@ -66,14 +75,28 @@ test("Will try to logout and go to the role selection screen", async () => {
     await userEvent.click(button);
     expect(screen.queryByText("Welcome to HiveHand"));
 });
-
-
-
 test("renders placeholder events immediately, then replaces with fetched events", async () => {
+  localStorage.setItem(
+    "user",
+    JSON.stringify({ username: "Nadya", role: "Volunteer" })
+  );
   // 1st fetch: GET events -> ok with one event "Mock Event"
-  mockInitialEventsFetchOk([{ id: 1, title: "Replaced Event", date: "2025-10-31", duration: "2 hours" }]);
+  mockInitialEventsFetchOk([{ 
+    id: "8fcbb58b-7953-4a3b-a2a0-759f306b3d3f",
+    organizerId: "51d6573c-5d62-4b3d-9853-b09e6095e367",
+    jobName: "Replaced Event",
+    description: "moon stuff",
+    startTime: "2025-11-01T00:00:00.000Z",
+    endTime: "2025-11-01T02:00:00.000Z",
+    location: "moon",
+    createdAt: "2025-10-29T05:35:34.446Z"
+  }]);
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   // placeholder titles should appear first (from initial state)
   expect(screen.getByText(/Beach Cleanup/i)).toBeInTheDocument();
@@ -84,12 +107,23 @@ test("renders placeholder events immediately, then replaces with fetched events"
   await waitFor(() => {
     expect(screen.getByText(/Replaced Event/i)).toBeInTheDocument();
   });
+
+  localStorage.clear();
 });
 
 test("handles fetch failure path (logs an error)", async () => {
+  localStorage.setItem(
+    "user",
+    JSON.stringify({ username: "Anna", role: "Volunteer" })
+  );
+
   mockInitialEventsFetchFail();
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   await waitFor(() => {
     expect(console.error).toHaveBeenCalledWith(
@@ -104,7 +138,11 @@ test("logout success (204): clears localStorage and navigates home", async () =>
   // 2nd fetch: POST /auth/logout -> 204
   (global.fetch).mockResolvedValueOnce({ ok: true, status: 204, text: async () => "" });
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
@@ -130,7 +168,11 @@ test("logout success but non-204: attempts to parse JSON (and still navigates)",
     },
   });
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
@@ -154,7 +196,11 @@ test("logout failure (non-ok): alerts and does NOT navigate", async () => {
     text: async () => "Bad request",
   });
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
@@ -165,21 +211,21 @@ test("logout failure (non-ok): alerts and does NOT navigate", async () => {
 });
 
 test("Sign-up button triggers the placeholder alert", async () => {
-  mockInitialEventsFetchOk([
-    { id: 7, title: "Cleanup Drive", date: "2025-11-11", duration: "3 hours" },
-  ]);
+  mockInitialEventsFetchOk();
 
-  render(<Dashboard />);
+  render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
-  await waitFor(() => screen.getByText(/Cleanup Drive/i));
+  await waitFor(() => screen.getByText(/event 8/i));
   fireEvent.click(screen.getByRole("button", { name: /sign-up/i }));
 
   expect(window.alert).toHaveBeenCalledWith(
-    "Not quite finished yet, check back soon!"
+    "Your session has expired. Please log in again."
   );
 });
-
-
 
 test("logout: non-OK response triggers alert and returns (covers !response.ok)", async () => {
   // 1) initial GET
@@ -192,10 +238,14 @@ test("logout: non-OK response triggers alert and returns (covers !response.ok)",
     text: async () => "Bad request",
   });
 
-  const { container } = render(<Dashboard />);
+  const { container } = render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   // ensure initial fetch finishes
-  await waitFor(() => expect(screen.getByText(/X/i)).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText(/Welcome to your Dashboard/i)).toBeInTheDocument());
 
   // submit the form directly to guarantee onSubmit runs
   const form = container.querySelector("form");
@@ -219,9 +269,13 @@ test("logout: OK but non-204 parses JSON then navigates (covers response.status 
     json: async () => ({ message: "bye" }),
   });
 
-  const { container } = render(<Dashboard />);
+  const { container } = render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
-  await waitFor(() => expect(screen.getByText(/X/i)).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText(/Welcome to your Dashboard/i)).toBeInTheDocument());
 
   // submit the form (triggers handleLogout)
   const form = container.querySelector("form");

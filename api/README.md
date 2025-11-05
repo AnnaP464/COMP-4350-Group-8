@@ -15,12 +15,19 @@ Password for postgres: the password you set while installation
 ```bash
 psql -h 127.0.0.1 -U postgres -d postgres
 ```
+Then enter password of postgres
 Then run:
 ```bash
-CREATE ROLE hivedev WITH LOGIN PASSSWORD 'verysafe'
+CREATE ROLE hivedev WITH LOGIN PASSWORD 'verysafe';
 CREATE DATABASE hivehand OWNER hivedev;
 \q
 ```
+
+To see the db:
+```bash
+psql -h 127.0.0.1 -U hivedev -d hivedev
+```
+then enter password of hivedev
 # 3) Navigate to /api
 
 ## i) Run the DB migration

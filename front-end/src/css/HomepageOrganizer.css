@@ -1,0 +1,118 @@
+/* renamed to navigation-container */
+.navigation-container {
+  display: flex;
+  /* flex-direction: column; */
+  justify-content: center;
+  align-items: center;
+  /* min-height: 100vh; */
+  /* background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  background: url("./helping-hands.jpg") no-repeat center center fixed;
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: "Segoe UI", sans-serif; */
+}
+
+/* renamed to navigation-box */
+.navigation-box {
+  background: rgba(255,255,255,0.8);
+  border-radius: 15px;
+  padding: 40px 60px;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  backdrop-filter: blue(8px);
+  width: 100%;
+  max-width: 1200px;
+  padding: 0px;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* renamed to navigation-header */
+.navigation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 12px;
+  border-bottom: 1px solid #e5e5e5;
+  background: white;
+  border-radius: 12px;
+}
+
+.content-box {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.feed-box {
+  background: #3e2b2bff;
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 260px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.empty-postings-box {
+  border: 1px dashed #cfcfcf;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: #777;
+}
+
+.event-info-box {
+  background: #f9f1fa;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.job-start-end-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  color: #555;
+  font-size: 0.95rem
+}
+
+.profile-box {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  height: fit-content;
+}
+
+.create-event-screen {
+  position: fixed;
+  inset: 0px;
+  background: rgba(0,0,0,0.3);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 50px;
+}
+
+.create-event-box {
+  width: 100%;
+  max-width: 560px;
+  background: #819a91ff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.create-event-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}

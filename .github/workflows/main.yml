@@ -66,7 +66,7 @@ jobs:
           CI: true
 
   e2e:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     # PostgreSQL service for the API
     services:
@@ -117,46 +117,60 @@ jobs:
         run: npm ci
 
       - name: Install API deps
-        run: npm ci
-        working-directory: api
+        run: npm ci --workspace api   # 👈 add this
 
       - name: Install front-end deps
         run: npm ci
         working-directory: front-end
 
+      - name: Cache Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       # Install Playwright browsers & Linux deps
       - name: Install Playwright
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
 
       # Prepare DB schema (create app user and run migrations)
       - name: Prepare database
         env:
           PGPASSWORD: postgres
         run: |
-          psql -h localhost -U postgres -d hivehand -c "DO $$ BEGIN CREATE ROLE hivedev LOGIN PASSWORD 'verysafe'; EXCEPTION WHEN duplicate_object THEN NULL; END $$;"
-          # Optional: grant if your API connects as hivedev
+          # create role if it doesn't exist
+          psql -h localhost -U postgres -d hivehand -c "DO \$\$ BEGIN CREATE ROLE hivedev LOGIN PASSWORD 'verysafe'; EXCEPTION WHEN duplicate_object THEN NULL; END \$\$;"
+          # grant db to that role
           psql -h localhost -U postgres -d hivehand -c "GRANT ALL PRIVILEGES ON DATABASE hivehand TO hivedev;"
-          # If your migrations create tables in public schema, ensure privileges
+          # give it the schema
           psql -h localhost -U postgres -d hivehand -c "ALTER SCHEMA public OWNER TO hivedev;"
-          # Run your project migration file
+          # run your migration
           psql -h localhost -U postgres -d hivehand -f ./api/migrations/001_init.sql
-
       # Start API & FE; let Playwright's webServer (or wait-on) handle readiness
+      - name: Install API dev deps
+        run: npm install --workspace api --include=dev
+
       - name: Start API
-        run: nohup npm run dev:api > /tmp/api.log 2>&1 &
-      
+        run: |
+          npm --workspace api run dev:ci > /tmp/api.log 2>&1 &
+          sleep 5
+          echo "=== API LOG ==="
+          cat /tmp/api.log || true
+
       - name: Start Front-end
-        run: nohup npm run dev --prefix front-end > /tmp/front.log 2>&1 &
+        run: |
+          npm run dev:web > /tmp/front.log 2>&1 &
+          sleep 5
+          echo "=== FRONT LOG ==="
+          cat /tmp/front.log || true
 
-      # Optional: sanity wait if your webServer doesn't wait itself
       - name: Wait for servers
-        run: npx wait-on -t 120000 "${API_HEALTH_URL}" http://localhost:5173
-
+        run: npx wait-on -t 120000 "http://localhost:4000" "http://localhost:5173"
+        
       - name: Run Playwright tests
         env:
-          # Many projects pick up baseURL from env
-          BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}
-        run: npx playwright test --reporter=list,html
+          BASE_URL: "http://localhost:5173"
+        run: npx playwright test --workers=1 --reporter=list,html
 
       # Always upload HTML report, traces, screenshots on failure
       - name: Upload Playwright report

@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "${PGPORT}:${PGPORT}"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./api/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    # Load extra app secrets (JWTs, etc.)
+    env_file:
+      - ./api/.env
+    environment:
+      # Compose builds this from root .env vars above
+      DATABASE_URL: ${DATABASE_URL}
+      PGHOST: db
+      PGPORT: ${PGPORT}
+      PGDATABASE: ${DATABASE_NAME}
+      PGUSER: ${DATABASE_USER}
+      PGPASSWORD: ${DATABASE_PASSWORD}
+      PORT: ${API_PORT}
+      NODE_ENV: ${NODE_ENV}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT}:${API_PORT}"
+
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    # remove env_file here unless you actually have ./front-end/.env
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    command: ["npm","run","dev","--","--host","0.0.0.0","--port","${FRONTEND_PORT}","--strictPort"]
+
+volumes:
+  dbdata:

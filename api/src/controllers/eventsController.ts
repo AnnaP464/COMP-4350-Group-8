@@ -34,9 +34,13 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
 
 // GET /v1/events
 //(?mine=1 to filter to current organizer)
+//(?registered=1 to filter to events registered by current volunteer)
 export async function listEvents(req: Request, res: Response, next: NextFunction) {
   try {
     const mine = String(req.query.mine || "").toLowerCase() === "1";
+    const registered = String(req.query.registered || "").toLowerCase() === "1";
+
+    //organizer events
     if (mine) 
     {
       const organizerId = req.user?.id;
@@ -45,6 +49,16 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
       const rows = await eventService.listMyEventsService(organizerId);
       return res.json(rows);
     }
+    //volunteer registered 
+    else if(registered) {
+      const userId = req.user?.id;
+      if (!userId) 
+        return res.status(401).json({ message: "Unauthorized" });
+      const rows = await eventService.listRegisteredEventsService(userId);
+      return res.json(rows);
+    }
+
+    //else list all events
     else{
       const rows = await events.listAll();
       return res.json(rows);
@@ -80,4 +94,30 @@ export async function registerUserForEvent(req: Request, res: Response, next: Ne
     next(err);
   }
 }
+
+// DELETE /v1/events/deregister (auth required)
+export async function deregisterUserForEvent(req: Request, res: Response, next: NextFunction) {
+  try
+  {
+    //check for valid user here
+    console.log("[controller] deregisterUserForEvent body:", req.body, "user:", req.user?.id);
+    const volunteerId = req.user?.id; // set by requireAuth middleware from access token
+    if(!volunteerId) return res.status(401).json({message: "Unauthorized"});
+
+    const {eventId} = req.body ?? {};
+    if(!eventId)
+      return res.status(400).json({message: "Missing event ID in request"});
+  
+    const response = await eventService.deregisterUserForEventService(volunteerId, eventId);
+    if(!response)//make sure the row is recieved back
+      return res.status(409).json({message: "User is already deregistered for event"});
+
+    return res.status(201).json({message: "Deregistered Successfully"});
+  } 
+  catch (err){
+    next(err);
+  }
+}
+
+
 

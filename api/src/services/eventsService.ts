@@ -32,3 +32,11 @@ export async function registerUserForEventService(volunteerId: string, eventId: 
   
   return events.registerUserForEvent(volunteerId, eventId);// will return just one row of the event & user ids 
 }
+
+export async function deregisterUserForEventService(volunteerId: string, eventId: string){
+  return events.deregisterUserForEvent(volunteerId, eventId);
+}
+
+export async function listRegisteredEventsService(userId: string) {
+  return events.listRegisteredEventsByUser(userId);
+}

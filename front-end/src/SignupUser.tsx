@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import "./authChoice.css";  // Reuse same styling
+import "./css/AuthChoice.css";  // Reuse same styling
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import * as RoleHelper from "./helpers/RoleHelper"
+import {Link} from "react-router-dom";
 
 const SignupUser: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -10,25 +12,14 @@ const SignupUser: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const { search } = useLocation();
-  const queryParams = new URLSearchParams(search);
-  const role = queryParams.get("role");
+  const location = useLocation();
+  const state = location.state as RoleHelper.AuthChoiceState;
+  const role = state?.role;
+  const subtitle = RoleHelper.subtitle(role)
+  const textFieldDesc = RoleHelper.textFieldDesc(role);
+
   const navigate = useNavigate();
 
-  let textFieldDesc = "";
-  let subtitle = "";
-  if(role === "Organizer"){
-    textFieldDesc = "Organization name *";
-    subtitle = "Manage your events and volunteers";
-  } else if(role === "Volunteer"){
-    textFieldDesc = "Your username *";
-    subtitle = "Join and contribute to causes";
-  } else {
-    textFieldDesc = "This text should not appear"
-    subtitle = "This text should not appear";
-  }
-
-  //if required fields empty, then handleSubmit doesn't run
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -49,9 +40,6 @@ const SignupUser: React.FC = () => {
           email,
           password,
           role,
-          // role,: (role ?? "").toLowerCase() === "organizer" ? "organizer"
-          //     : (role ?? "").toLowerCase() === "volunteer" ? "volunteer"
-          //     : "", // or omit role to trigger backend validation error
         }),
       });
 
@@ -73,15 +61,14 @@ const SignupUser: React.FC = () => {
           else if(errorData.message)
             setErrorMsg(errorData.message);
         }
-        catch{
+        catch (error) {
           setErrorMsg("Unexpected error from server");
-          console.log("Error from server");
         }
         return;
       }
 
       const data = await response.json();
-      navigate(`/User-login?role=${role}`);
+      navigate("/User-login", { state: { role } });
 
     } catch (error) {
       console.error("Sign-up error:", error);
@@ -95,10 +82,7 @@ const SignupUser: React.FC = () => {
       <div className="login-box">
         <h2 className="title">{role} Sign-up</h2>
         <p className="subtitle">{subtitle}</p>
-
-        {/* only redner when there is sign-up error */}
         {errorMsg && <p className="errorMsg">{errorMsg}</p>}
-
         <form onSubmit={handleSubmit} className="options" style={{ gap: 10 }}>
           <input
             className="text-input"
@@ -107,8 +91,9 @@ const SignupUser: React.FC = () => {
             value={username}
             onChange={(e) => {setErrorMsg(""); 
               setUsername(e.target.value);}}
-            required
+            //required
           />
+
           <input
             className="text-input"
             type="email"
@@ -116,8 +101,9 @@ const SignupUser: React.FC = () => {
             value={email}
             onChange={(e) => {setErrorMsg("");
               setEmail(e.target.value)}}
-            required
+            //required
           />
+
           <input
             className="text-input"
             type="password"
@@ -125,8 +111,9 @@ const SignupUser: React.FC = () => {
             value={password}
             onChange={(e) => {setErrorMsg(""); 
               setPassword(e.target.value)}}
-            required
+            //required
           />
+
           <input
             className="text-input"
             type="password"
@@ -134,16 +121,16 @@ const SignupUser: React.FC = () => {
             value={confirmPassword}
             onChange={(e) => {setErrorMsg("");
               setConfirmPassword(e.target.value)}}
-            required
+            //required
           />
 
           <button className="option-btn" type="submit">
             Sign-up
           </button>
 
-          <a href="/" className="guest-btn" style={{ textAlign: "center" }}>
+          <Link to="/" className="guest-btn" style={{ textAlign: "center" }}>
             Back to Role Selection
-          </a>
+          </Link>
         </form>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEvent, listEvents, registerUserForEvent } from "../controllers/eventsController";
+import { createEvent, listEvents, registerUserForEvent, deregisterUserForEvent } from "../controllers/eventsController";
 import { requireAuth } from "../middleware/requireAuth"; // your JWT middleware
 import { validateRequest } from "../middleware/validateRequest";
 //import { z } from "zod";
@@ -88,6 +88,11 @@ import { createEventsGeofencesRoutes } from "./geofence";
  *         name: mine
  *         schema: { type: string, enum: ["0","1"] }
  *         description: If "1", only include events created by the authenticated
+ *       - in: query
+ *         name: registered
+ *         schema: { type: string, enum: ["0","1"] }
+ *         description: If "1", only include events the authenticated user is registered for.
+ *
  *     responses:
  *       200:
  *         description: A list of events.
@@ -168,14 +173,94 @@ import { createEventsGeofencesRoutes } from "./geofence";
  *         description: Server error
  */
 
+<<<<<<< HEAD
 
 export function createEventsRouter(deps: {
   geofencesController: GeofencesController;
   // ...other controllers for events domain
 }) {
   const r = Router();
+=======
+/**
+ * @swagger
+ * /v1/events/deregister:
+ *   delete:
+ *     tags: [Events]
+ *     summary: Deregister the authenticated user for an event
+ *     description: Deregisters the currently authenticated user for the specified event.
+ *     security:
+ *       - bearerAuth: []         # requires Authorization: Bearer <token>
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - eventId
+ *             properties:
+ *               eventId:
+ *                 type: string
+ *                 example: "evt_56789"
+ *     responses:
+ *       200:
+ *         description: Successfully deregistered the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User deregistered for event successfully."
+ *       400:
+ *         description: Missing or invalid fields
+ *       401:
+ *         description: Unauthorized — missing or invalid token
+ *       500:
+ *         description: Server error
+ */
+
+const r = Router();
+
+// Public: list all events (optionally filter to "mine" via ?mine=1)
+//r.get("/", listEvents);    
+// validate query first, then only auth if ?mine=1
+r.get(
+  "/",
+  //validateRequest({ query: schemas.ListEventsQuery }),
+  (req, res, next) => {
+    //organizer events
+    const wantsMine = String(req.query.mine || "").toLowerCase() === "1";
+    //volunteer registered events
+    const wantsRegistered = String(req.query.registered || "").toLowerCase() === "1";
+    if (! (wantsMine || wantsRegistered) ) 
+      return next();
+    // run the real auth middleware when either filter is requested
+    return requireAuth()(req, res, next);
+  },
+  listEvents
+);
+//Auth-only : create event 
+// r.post("/", requireAuth, (req, res, next) => {
+//   console.log("Route reached");
+//   next();
+// },validateRequest({ body: schemas.CreateEventSchema }), createEvent);   
+r.post(
+  "/",
+  requireAuth(),
+  (req, _res, next) => { console.log("[router] after requireAuth"); next(); },
+  validateRequest({ body: schemas.CreateEventSchema }),
+  (req, _res, next) => { console.log("[router] after validateRequest"); next(); },
+  createEvent
+);
+>>>>>>> main
 
 
+<<<<<<< HEAD
   // Public: list all events (optionally filter to "mine" via ?mine=1)
   //r.get("/", listEvents);    
   // validate query first, then only auth if ?mine=1
@@ -221,4 +306,13 @@ export function createEventsRouter(deps: {
 
   return r;
 }
+=======
+r.delete(
+  "/deregister",
+  requireAuth(),
+  deregisterUserForEvent
+);
+
+//r.post("/",createEvent);                           // POST /v1/events      -> create
+>>>>>>> main
 
