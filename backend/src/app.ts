@@ -19,7 +19,7 @@ const corsOptions = {
   origin: CORS_ORIGIN,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: false, // you're not using cookies for access tokens
+  credentials: true, // you're not using cookies for access tokens
 };
 app.use(cors(corsOptions));
 //app.options("*", cors(corsOptions)); // <-- crucial for Authorization preflight
