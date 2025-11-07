@@ -49,9 +49,11 @@ Between sprints 1 & 2 the most challenging aspects of development have changed. 
 ## Code Gallery
 
 ### Anna Pavlova
-I am proud of the this [commit](https://github.com/AnnaP464/COMP-4350-Group-8/commit/3268f6d56a5012ad19c4a5f3b0717a3cb2b765ac).
+I am proud of this [commit](https://github.com/AnnaP464/COMP-4350-Group-8/commit/3268f6d56a5012ad19c4a5f3b0717a3cb2b765ac).
 I implemented a feature for signing up for events that touched all layers of our project. Frontend logic to send the request, authentication, routing, logic and database are all involved, the feature worked as expected and though a console.log() is present for on the go debugging i think it shows my grasp of the structure of our project. Specifically i want to note the changes made to routes/events.ts, this file contains the @swagger comments which define our api and it was a challenge to understand how exactly to connect the backend and frontend before this file made sense in its' role of defining end points. 
 
 ### Noah McInnes
+I am proud of this [commit](https://github.com/AnnaP464/COMP-4350-Group-8/commit/95e26f87832821690b9189a8c2a28478f44e44c8).
+I had to find an image of postgres for docker that comes with postgis for our geospatial data, as prior to this the new geofence backend would not run with the official postgres images. This became a bigger issue because official postgres images including ones with the postgis binaries are only for x86 architecture and they wouldnt run in docker on my mac, as M chip macs are arm processors. This is inspite of chat gpt confidently proclaiming that docker would simply emulate it. Eventually I found a multi architecture image by reading docs and then adjusted the docker-compose to function properly. 
 
 ### Sudipta Sarker
