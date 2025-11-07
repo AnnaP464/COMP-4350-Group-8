@@ -2,11 +2,21 @@
 
 ## Regression Testing
 
+Since our test suite is compact and runs quite quickly we run the entire test suite when we want to test existing featues.
+The way to run our test suites in root, frontend or backend directories is:
+
+```
+npm run test 
+```
+
+If running in root make sure the front and backend are booted up since the acceptance tests access the database.
 ---
 
 ## Changes to the Testinging Plan
 
-Did our testing plan change why or why not
+Our testing plan has remained largely the same, with a few changes:
+
+Mainly we have less coverage on the frontend pages due to how rapidly the development has outpaced testing due to the time constaints of this sprint.
 
 ---
 
