@@ -36,7 +36,7 @@ Also a pic of the profiler output
 
 ## Last Sprint
 
-What issues we will probably encounter and work on in the upcoming sprint
+Between sprints 1 & 2 the most challenging aspects of development have changed. At the beginning of the project it was defining what we are capable of finishing in time for submission, due to the structure of the project needing to be setup first. For sprint 2 we have spent a larger amount of time on fixing issues with our rapidly expading feature set & infrastructure, like tests working locally but not through github actions, or the way that docker doesnt setup the same way between ARM and x64 processors. As weve taken on more tech-debt we have had to devote a larger amount of time to testing & debugging than previously and we will likely lessen this trend for sprint 3. Due to how Docker will soon host our testing suite and the goals in terms of final funtionality have become clearly visible, we dont expect scope creep to be a contributing factor to our tech debt and we can really hone in the tests all passing & code being cleaner.
 
 ---
 

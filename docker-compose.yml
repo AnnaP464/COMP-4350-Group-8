@@ -38,6 +38,8 @@ services:
     volumes:
       - ./backend:/backend:cached          # your code from host
       - zodgen:/backend/src/spec 
+      - ./backend:/backend
+      - /backend/node_modules
     depends_on:
       db:
         condition: service_healthy
