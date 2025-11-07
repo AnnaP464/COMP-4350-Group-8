@@ -37,6 +37,12 @@ The overall average of the project is 41% that is quite a bit lower than at the 
 
 We need to run a profiler on our api to test every end point for speed and which can be sped up and why or why not.
 Also a pic of the profiler output
+Here we can see the activity after clicking submit on a valid user registration form: 
+![alt text](image-4.png)
+
+Unfortunately since this is being run on docker containers that are local the response times are nearly instantanous, and it seems the only load times are the fetching of the page itself since that is a larger file than the json packages fetch sends and recieves. The profiler displays nearly identical results for all other pages regarless of function performed, all taking <1ms and in the case of a page load taking 1ms. as you can also see when organizer home page loaded:
+
+![alt text](image-1.png)
 
 ---
 
