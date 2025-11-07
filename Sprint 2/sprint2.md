@@ -26,6 +26,8 @@ A system architecrure document is present in the backend of our project: [Server
 
 We will go over the coverage of each layer here.
 
+![alt text](<system diagram.png>)
+
 ---
 
 ## Profiler
