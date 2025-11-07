@@ -17,6 +17,7 @@ If running in root make sure the front and backend are booted up since the accep
 Our testing plan has remained largely the same, with a few changes:
 
 Mainly we have less coverage on the frontend pages due to how rapidly the development has outpaced testing due to the time constaints of this sprint.
+Otherwise the testing plan has remained the same, unit, integration, and acceptance tests are going to be updated to match the current version of the project at the beginning of sprint 3.
 
 ---
 
@@ -26,7 +27,9 @@ A system architecrure document is present in the backend of our project: [Server
 
 We will go over the coverage of each layer here.
 
-![alt text](<system diagram.png>)
+![alt text](<system diagram.png>)e
+
+The overall average of the project is 41% that is quite a bit lower than at the beginning of this sprint. A major reason for this decrease is due to the integration tests not working. The middleware layer only serves to help other layers do their authentication and is tested relative to other layers. Also the end to end & acceptance tests do not print out a coverage test because the tests actually click through the application as it is rendered.
 
 ---
 
