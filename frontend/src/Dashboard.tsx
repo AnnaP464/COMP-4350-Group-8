@@ -7,6 +7,8 @@ import { cleanEvents } from "./helpers/EventHelper";
 import { Clock, MapPin, Calendar } from "lucide-react";
 import * as RoleHelper from "./helpers/RoleHelper";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 type EventPost = {
   id: string;
   jobName: string;
@@ -49,7 +51,7 @@ const Dashboard: React.FC = () => {
     
     const fetchEvents = async () => {
       try {
-        const response = await fetch("http://localhost:4000/v1/events", {
+        const response = await fetch(`${API_URL}/v1/events`, {
           method: "GET",
           headers: { "Accept": "application/json" }
         });
@@ -77,7 +79,7 @@ const Dashboard: React.FC = () => {
     localStorage.removeItem("refresh_token");
 
     try {
-      const response = await fetch("http://localhost:4000/v1/auth/logout", {
+      const response = await fetch(`${API_URL}/v1/auth/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -120,7 +122,7 @@ const Dashboard: React.FC = () => {
       //verify token before sending request off
       //get token by user id
 
-      const response = await fetch("http://localhost:4000/v1/events/register", {
+      const response = await fetch(`${API_URL}/v1/events/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

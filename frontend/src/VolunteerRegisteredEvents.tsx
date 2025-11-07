@@ -5,6 +5,10 @@ import { Clock, MapPin } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
 import * as RoleHelper from "./helpers/RoleHelper";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
+
 type EventPost = {
   id: string;
   jobName: string;
@@ -40,7 +44,7 @@ const MyRegistrations: React.FC = () => {
       //verify token before sending request off
       //get token by user id
 
-      const response = await fetch("http://localhost:4000/v1/events/deregister", {
+      const response = await fetch(`${API_URL}/v1/events/deregister`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -86,7 +90,7 @@ const MyRegistrations: React.FC = () => {
     (async () => {
       try {
         // If your backend uses a different path, change it here (see backend snippet below)
-        const res = await fetch("http://localhost:4000/v1/events?registered=1", {
+        const res = await fetch(`${API_URL}/v1/events?registered=1`, {
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,

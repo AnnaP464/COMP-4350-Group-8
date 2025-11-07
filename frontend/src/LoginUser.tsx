@@ -5,6 +5,9 @@ import { useNavigate } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper";
 import {Link} from "react-router-dom";
 
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +27,7 @@ const LoginUser: React.FC = () => {
     if (!password.trim()) return alert("Password is required.");
 
     try {
-      const response = await fetch("http://localhost:4000/v1/auth/login", {
+      const response = await fetch(`${API_URL}/v1/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

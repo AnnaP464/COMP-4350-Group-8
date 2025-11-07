@@ -6,6 +6,8 @@ import { Clock, MapPin, Calendar } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
 import * as RoleHelper from "./helpers/RoleHelper";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 type PublicUser = { 
   email: string; 
   username: string; 
@@ -51,7 +53,7 @@ const HomepageOrganizer: React.FC = () => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:4000/v1/events?mine=1", {
+        const response = await fetch(`${API_URL}/v1/events?mine=1`, {
           method: "GET",
           headers: {
             "Accept": "application/json",
@@ -126,7 +128,7 @@ const HomepageOrganizer: React.FC = () => {
         description: description.trim(),
       };
 
-      const response = await fetch("http://localhost:4000/v1/events", {
+      const response = await fetch(`${API_URL}/v1/events`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -183,7 +185,7 @@ const HomepageOrganizer: React.FC = () => {
     localStorage.removeItem("refresh_token");
 
     try {
-      const response = await fetch("http://localhost:4000/v1/auth/logout", {
+      const response = await fetch(`${API_URL}/v1/auth/logout`, {
         method: "POST",
         headers: {"Content-Type": "application/json",}
       });

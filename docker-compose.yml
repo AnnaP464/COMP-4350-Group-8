@@ -35,6 +35,9 @@ services:
       PGPASSWORD: ${DATABASE_PASSWORD}
       PORT: ${BACKEND_PORT}
       NODE_ENV: ${NODE_ENV}
+    volumes:
+      - ./backend:/backend:cached          # your code from host
+      - zodgen:/backend/src/spec 
     depends_on:
       db:
         condition: service_healthy
@@ -47,6 +50,9 @@ services:
       dockerfile: Dockerfile
     environment:
       VITE_API_URL: ${VITE_API_URL}
+    volumes:
+      - ./frontend:/frontend:delegated
+      - /frontend/node_modules   
     depends_on:
       backend:
         condition: service_started
@@ -56,3 +62,4 @@ services:
 
 volumes:
   dbdata:
+  zodgen:

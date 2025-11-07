@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper"
 import {Link} from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const SignupUser: React.FC = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -30,7 +32,7 @@ const SignupUser: React.FC = () => {
     if (!password.trim()) return setErrorMsg("Password is required.");
     if (password !== confirmPassword) return setErrorMsg("Passwords do not match.");
     try {
-      const response = await fetch("http://localhost:4000/v1/auth/register", {
+      const response = await fetch(`${API_URL}/v1/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
