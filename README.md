@@ -13,8 +13,9 @@ HiveHand is a platform for hosting and finding volunteering oppertunities. Volun
 Our project is built to run on Windows and Apple OS. 
 To run our project you will need a few downloads
 1) Node.js + npm which powers our React typescript environment [download here](https://nodejs.org)
-2) PostgreSQL for the database, when setting up the database be sure to set a password you can easily recall[download here](https://www.postgresql.org/download/windows/)
-3) Git to run the setup script, optional if you are ok with manually running the setup commands [download here](https://git-scm.com/downloads/win)
+2) PostgreSQL for the database, when setting up the database be sure to set a password you can easily recall [download here](https://www.postgresql.org/download/windows/)
+3) PostGIS for the geospacial data [download here](https://postgis.net/documentation/getting_started/)
+4) Git to run the setup script, optional if you are ok with manually running the setup commands [download here](https://git-scm.com/downloads/win)
 
 ## Getting Docker Images Setup
 
@@ -32,6 +33,9 @@ To run the project you need to run the npm run dev command in the api and the fr
 ## [Sprint 0](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%200/sprint0.md)
 
 ## [Sprint 1](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%201/sprint1.md)
+
+## [Sprint 2](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%202/sprint2.md)
+
 ## Tech Stack
 
 ##### Frontend 
