@@ -25,7 +25,7 @@ CREATE DATABASE hivehand OWNER hivedev;
 
 To see the db:
 ```bash
-psql -h 127.0.0.1 -U hivedev -d hivedev
+psql -h 127.0.0.1 -U hivedev -d hivehand
 ```
 then enter password of hivedev
 # 3) Navigate to /backend
