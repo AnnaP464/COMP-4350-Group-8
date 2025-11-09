@@ -10,6 +10,7 @@ import {
   User,
 } from "lucide-react";
 import "./css/VolunteerProfile.css";
+import EditProfileDialog from "./components/EditVolunteerProfile.tsx";
 import {getAvatarInitials, formatMonthYear} from "./helpers/UserInfoHelper.tsx";
 import * as RoleHelper from "./helpers/RoleHelper";
 
@@ -28,6 +29,8 @@ const VolunteerProfile: React.FC = () => {
   const location = useLocation();
   const state = location.state as RoleHelper.AuthChoiceState;
   const role = state?.role;
+
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -57,7 +60,8 @@ const VolunteerProfile: React.FC = () => {
         const data = await res.json();
         setMe(data);
       } catch (e) {
-        console.error("Failed to load profile", e);
+        alert("Failed to load profile.");
+        navigate("/Dashboard", { replace: true, state: { role } });
       } finally {
         setLoading(false);
       }
@@ -128,17 +132,27 @@ if (!me) return <main className="vp-container">Could not load profile.</main>;
             type="button"
             onClick={() => navigate("/Dashboard", { state: { role } })}
           >
-            Back to Dashboard
+            Back to dashboard
           </button>
           <button
             className="vp-btn primary"
             type="button"
-            //onClick={() => navigate("  ")}
+            onClick={() => setShowEditDialog(true)}
           >
             Edit Profile
           </button>
         </div>
+        
       </section>
+
+      {showEditDialog && (
+        <EditProfileDialog
+          open={showEditDialog}
+          onClose={() => setShowEditDialog(false)}
+          user={me}
+          // onSave={null}
+        />
+      )}
 
       {/* Quick Stats */}
       <section className="vp-grid">
@@ -232,43 +246,43 @@ if (!me) return <main className="vp-container">Could not load profile.</main>;
             onClick={(e) => e.stopPropagation()}
             >
             <h3 style={{ marginTop: 0, marginBottom: 8 }}>{hoursGoal ? "Change Hours Goal" : "Set Hours Goal"}</h3>
-            <form
-                onSubmit={(e) => {
-                e.preventDefault();
-                const n = Number(goalInput);
-                if (!Number.isFinite(n) || n <= 0) {
-                    alert("Please enter a positive number of hours.");
-                    return;
-                }
-                setHoursGoal(n);
-                localStorage.setItem("hoursGoal", String(n));
-                setShowGoalDialog(false);
-                }}
-                style={{ display: "grid", gap: 10 }}
-            >
-                <input
-                className="text-input"
-                type="number"
-                min={1}
-                step={1}
-                placeholder="e.g., 100"
-                value={goalInput}
-                onChange={(e) => setGoalInput(e.target.value)}
-                autoFocus
-                />
-                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                <button
-                    type="button"
-                    className="guest-btn"
-                    onClick={() => setShowGoalDialog(false)}
-                >
-                    Cancel
-                </button>
-                <button type="submit" className="option-btn">
-                    Save Goal
-                </button>
-                </div>
-            </form>
+              <form
+                  onSubmit={(e) => {
+                  e.preventDefault();
+                  const n = Number(goalInput);
+                  if (!Number.isFinite(n) || n <= 0) {
+                      alert("Please enter a positive number of hours.");
+                      return;
+                  }
+                  setHoursGoal(n);
+                  localStorage.setItem("hoursGoal", String(n));
+                  setShowGoalDialog(false);
+                  }}
+                  style={{ display: "grid", gap: 10 }}
+              >
+                  <input
+                    className="text-input"
+                    type="number"
+                    min={1}
+                    step={1}
+                    placeholder="e.g., 100"
+                    value={goalInput}
+                    onChange={(e) => setGoalInput(e.target.value)}
+                    autoFocus
+                  />
+                  <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                  <button
+                      type="button"
+                      className="guest-btn"
+                      onClick={() => setShowGoalDialog(false)}
+                  >
+                      Cancel
+                  </button>
+                  <button type="submit" className="option-btn">
+                      Save Goal
+                  </button>
+                  </div>
+              </form>
             </div>
         </div>
         )}

@@ -7,6 +7,7 @@ import {Link} from "react-router-dom";
 
 const API_URL = "http://localhost:4000";
 //const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const msg = "Invalid email or password"
 
 const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -42,7 +43,6 @@ const LoginUser: React.FC = () => {
       //login failed
       if (!response.ok) {
         const err = await response.text();
-        let msg = "Invalid email or password"
         //alert(`Login failed: ${err}`);
         setErrorMsg(msg);
         return;
@@ -64,7 +64,7 @@ const LoginUser: React.FC = () => {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         localStorage.removeItem("user");
-        setErrorMsg("Invalid email or password.");
+        setErrorMsg(errorMsg);
         return;
       }
 
@@ -75,7 +75,7 @@ const LoginUser: React.FC = () => {
         navigate("/Dashboard", { state: { role } });
       } else {
         // Unknown role: send them back or show a safe default
-        setErrorMsg("Invalid email or password.");
+        setErrorMsg(errorMsg);
       }
 
     } catch (error) {
