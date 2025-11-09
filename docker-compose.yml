@@ -35,11 +35,13 @@ services:
       PGPASSWORD: ${DATABASE_PASSWORD}
       PORT: ${BACKEND_PORT}
       NODE_ENV: ${NODE_ENV}
+      PUBLIC_BASE_URL: http://localhost:${BACKEND_PORT}
     volumes:
       - ./backend:/backend:cached          # your code from host
       - zodgen:/backend/src/spec 
       - ./backend:/backend
       - /backend/node_modules
+      - uploads:/uploads # for pic upload
     depends_on:
       db:
         condition: service_healthy
@@ -65,3 +67,4 @@ services:
 volumes:
   dbdata:
   zodgen:
+  uploads: #pic uploads
