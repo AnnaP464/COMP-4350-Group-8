@@ -1,3 +1,10 @@
+/* -------------------------------------------------------
+   Volunteer Profile — Page Layout & Widgets
+   -------------------------------------------------------
+   Used by: VolunteerProfile.tsx
+   ----------------------------------------------------- */
+
+/* Theme tokens */
 :root {
   --bg: #f8fafc;
   --card: #ffffff;
@@ -9,6 +16,245 @@
   --shadow: 0 10px 24px rgba(2, 8, 23, 0.06);
   --radius: 18px;
 }
+
+/* Page frame */
+.vp-container {
+  max-width: 1100px;
+  margin: 24px auto 64px;
+  padding: 0 16px;
+  color: var(--ink);
+  background: rgba(24, 22, 22, 0.35); 
+  box-shadow: none;
+  border: 0;
+  padding: 0;
+}
+
+/* Keep gaps so the page bg shows between sections */
+.vp-grid,
+.vp-columns,
+.section-head {
+  gap: 16px;
+}
+
+/* Make the hero not look boxed if you removed the page card */
+.vp-hero { margin-bottom: 18px; }
+
+/* Card & minor text */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+}
+.muted { color: var(--muted); }
+
+/* =======================================================
+   Header (Hero)
+   ======================================================= */
+.vp-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.vp-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.vp-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand), #7c3aed);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+}
+
+.vp-id .vp-name {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 22px;
+  margin: 0 0 6px;
+}
+
+.vp-meta {
+  margin: 0;
+  color: var(--muted);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Hero actions */
+.vp-hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.vp-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.vp-btn.primary {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(37,99,235,0.3);
+}
+.vp-btn.primary:hover { transform: translateY(-1px); }
+.vp-btn.primary:focus { outline: 3px solid var(--ring); }
+
+.vp-btn.secondary {
+  background: var(--brand-quiet);
+  color: var(--brand);
+}
+.vp-btn.secondary:hover { background: #bfdbfe; }
+
+/* =======================================================
+   Quick Stats
+   ======================================================= */
+.vp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--brand-quiet);
+  display: grid;
+  place-items: center;
+  color: var(--brand);
+}
+
+.stat-body .stat-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.stat-body .stat-value {
+  margin: 2px 0 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* =======================================================
+   Goal / Progress
+   ======================================================= */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progress-wrap {
+  width: 100%;
+  height: 12px;
+  background: #eef2f7;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px #e5e9f1;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand), #920565);
+  border-radius: 999px;
+  transition: width 300ms ease;
+}
+
+/* =======================================================
+   Columns: Badges & Timeline
+   ======================================================= */
+.vp-columns {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+/* Badges */
+.badge-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.badge { text-align: center; }
+.chip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--brand-quiet);
+  color: var(--brand);
+  font-weight: 600;
+  border: 1px solid #bfdbfe;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 8px 0 0 18px;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 8px; top: 0; bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+.timeline-item {
+  position: relative;
+  margin: 0 0 14px;
+  padding-left: 10px;
+}
+.timeline-dot {
+  position: absolute;
+  left: -1px; top: 4px;
+  width: 10px; height: 10px;
+  background: var(--brand);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--brand-quiet);
+}
+.timeline-title { margin: 0 0 4px; font-size: 16px; }
+.timeline-meta  { margin: 0; font-size: 13px; color: var(--muted); }
+
+/* =======================================================
+   Responsive
+   ======================================================= */
+@media (max-width: 900px) {
+  .vp-columns { grid-template-columns: 1fr; }
+  .vp-grid    { grid-template-columns: 1fr; }
+  .vp-hero    { align-items: flex-start; flex-direction: column; }
+}
+
 
 .vp-container {
   max-width: 1100px;
@@ -299,4 +545,83 @@
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+
+
+
+
+
+
+
+/* Profile Preview Enhancements */
+.profile-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  border: 3px solid #fff;
+}
+
+.profile-fields {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.profile-label {
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.profile-value {
+  font-size: 0.95rem;
+  color: #475569;
+  background: #f8fafc;
+  padding: 6px 8px;
+  border-radius: 6px;
+  width: 100%;
+  text-align: left;
+}
+
+/* Better form layout when editing */
+.edit-form {
+  display: grid;
+  gap: 16px;
+}
+
+.edit-form label {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.edit-form input,
+.edit-form textarea,
+.edit-form select {
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.edit-form textarea {
+  resize: vertical;
+  min-height: 80px;
 }

@@ -159,14 +159,14 @@ r.put(
   "/v1/users/me/profile",
   requireAuth(),
   // expects codegen to expose schemas.UserProfileUpdate
-  //validateRequest({ body: schemas.UserProfileUpdateSchema }),
+  validateRequest({ body: schemas.UserProfileUpdateSchema }),
   putMyProfile
 );
 
 r.patch(
   "/v1/users/me/profile",
   requireAuth(),
-  //validateRequest({ body: schemas.UserProfileUpdateSchema }),
+  validateRequest({ body: schemas.UserProfileUpdateSchema }),
   patchMyProfile
 );
 
@@ -242,7 +242,7 @@ r.put(
   "/v1/users/me/social-links/:platform",
   requireAuth(),
   // expects codegen to expose schemas.SocialLinkUpsert
-  // validateRequest({ body: schemas.SocialLinkUpsertSchema }),
+  validateRequest({ body: schemas.SocialLinkUpsertSchema }),
   upsertMySocialLink
 );
 

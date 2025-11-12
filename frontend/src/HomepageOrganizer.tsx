@@ -235,16 +235,21 @@ const HomepageOrganizer: React.FC = () => {
               Create Event
             </button>
             <button
-              className="guest-btn"
-              onClick={() => setShowProfile((s) => !s)}
+              className="option-btn"
+              onClick={() => navigate("/Homepage-Organizer/profile", { state: { role } })}
               title="Profile & settings"
-              style= {{backgroundColor:"green", color:"white"}}
             >
               Profile
             </button>
+
+            <button className="option-btn" type="button" onClick={handleLogout}>
+                Log-out
+            </button>
+
           </div>
         </header>
-        {/* Content area: Feed +  Profile panel */}
+        
+        {/* Content area: Feed */}
         <div className="content-box"
           style={{gridTemplateColumns: showProfile ? "1fr 320px" : "1fr"}}
         >
@@ -292,61 +297,7 @@ const HomepageOrganizer: React.FC = () => {
               </div>
             )}
           </main>
-          
-          {/* Profile side panel */}
-          {showProfile && (
-            <aside className="profile-box">
-              <h3  style={{ marginTop: 0 }}>Profile</h3>
-              <div style={{ display: "grid", gap: 8, marginBottom: 12, color: "black"}}>
-                <div>
-                  <div style={{ fontSize: 12, color: "#666" }}>Organizer</div>
-                  <div>{user.username}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 12, color: "#666" }}>Email</div>
-                  <div>{user.email}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 12, color: "#666" }}>
-                    Jobs posted
-                  </div>
-                  <div>{events.length}</div>
-                </div>
-              </div>
-              <hr style={{ margin: "12px 0" }} />
-              <h4 style={{ marginTop: 0 }}>Change password</h4>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  alert("Password change not wired yet (stub).");
-                }}
-                style={{ display: "grid", gap: 8 }}
-              >
-                <input
-                  className="text-input"
-                  type="password"
-                  placeholder="Current password"
-                />
-                <input
-                  className="text-input"
-                  type="password"
-                  placeholder="New password"
-                />
-                <input
-                  className="text-input"
-                  type="password"
-                  placeholder="Confirm new password"
-                />
-                <button className="option-btn" type="submit">
-                  Update Password
-                </button>
-              </form>
-              <br></br>
-              <button className="option-btn" type="button" onClick={handleLogout}>
-                Log-out
-              </button>
-            </aside>
-          )}
+  
         </div>
       </div>
       {/* Create Event model */}

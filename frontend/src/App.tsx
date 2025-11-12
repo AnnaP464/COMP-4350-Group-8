@@ -8,7 +8,7 @@ import HomepageOrganizer from "./HomepageOrganizer.tsx";
 import Dashboard from "./Dashboard.tsx";
 import VolunteerProfile from "./VolunteerProfile.tsx";
 import VolunteerRegisteredEvents from "./VolunteerRegisteredEvents.tsx";
-
+import OrganizerProfile from "./OrganizerProfile.tsx";
 function App() {
   return(
     //when url matches the path, react router renders the element component
@@ -21,7 +21,8 @@ function App() {
         <Route path="/Homepage-Organizer" element={<HomepageOrganizer />}/>
         <Route path="/Dashboard" element={<Dashboard/>}/>
         <Route path="/VolunteerProfile" element={<VolunteerProfile/>}/>
-        <Route path="/My-Registrations" element={<VolunteerRegisteredEvents/>}/>      
+        <Route path="/My-Registrations" element={<VolunteerRegisteredEvents/>}/>
+        <Route path="/Homepage-Organizer/profile" element={<OrganizerProfile />} />      
       </Routes>
     </BrowserRouter>
   );
