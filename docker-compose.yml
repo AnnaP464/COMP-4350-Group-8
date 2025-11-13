@@ -18,6 +18,22 @@ services:
       timeout: 3s
       retries: 12
 
+  # migrate:
+  #   image: bitnami/postgresql:latest
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   environment:
+  #     DATABASE_URL: postgres://hivedev:verysafe@db:5432/hivehand
+  #   volumes:
+  #     - ./backend/migrations:/migrations:ro
+  #       entrypoint: ["/bin/bash","-lc"]
+  #       command: >'for f in /migrations/*.sql; do
+  #       echo "Applying $$f";
+  #       psql "$$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$$f";
+  #       done;
+  #       echo "Migrations applied."'
+
   backend:
     build:
       context: ./backend
