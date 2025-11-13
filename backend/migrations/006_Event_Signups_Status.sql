@@ -17,3 +17,4 @@ WHERE status = 'applied';  -- this will flip old rows created w/o status
 CREATE INDEX IF NOT EXISTS idx_reg_users_event ON registered_users(event_id);
 CREATE INDEX IF NOT EXISTS idx_reg_users_user ON registered_users(user_id);
 CREATE INDEX IF NOT EXISTS idx_reg_users_event_status ON registered_users(event_id, status);
+CREATE INDEX IF NOT EXISTS idx_registered_users_user_status ON registered_users(user_id, status);

@@ -110,3 +110,38 @@
   gap: 6px;
   color: #dcdcdc;
 }
+
+.job-time-location {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  color: #e6abab;
+  font-size: 0.95rem
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between; /* pushes button to right */
+  align-items: center;
+  margin-top: 8px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.status-line {
+  margin-top: 8px;
+  font-size: 14px;
+  opacity: 0.8;
+  color: #f1f1f1;
+}
+
+.status-line strong {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.icon svg {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}

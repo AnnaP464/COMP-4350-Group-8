@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
-//import "./authChoice.css";// Reuse same styling
+import React, { useEffect, useState, useMemo } from "react";
 import "./css/Dashboard.css";
 import "./css/HomepageOrganizer.css";
+import "./css/AuthChoice.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cleanEvents } from "./helpers/EventHelper";
-import { Clock, MapPin, Calendar } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import * as RoleHelper from "./helpers/RoleHelper";
+import EventCard from "./components/EventCard";
+
 
 const API_URL = "http://localhost:4000";
 //const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -23,23 +25,48 @@ type EventPost = {
   createdAtTime: string;
 };
 
-const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState<string | null>(null);
+type AppStatus = "applied" | "accepted" | "rejected";
+type AppMap = Record<string, AppStatus>;
 
+const Dashboard: React.FC = () => {
+
+  const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as RoleHelper.AuthChoiceState;
   const role = state?.role;
 
-  // Start with dummy placeholder events
-  const [events, setEvents] = useState<EventPost[]>([
-    { id: "1", jobName: "Beach Cleanup", startDate: "Oct 28, 2025", startTime: "11:00 AM", endDate: "2025-10-20", endTime: "12:00 PM", location: "Grand Beach", description: "cleaning up trash and zebra mussels", createdAtDate: "Oct 22", createdAtTime: "9:00AM" },
-    { id: "2", jobName: "Food Drive", startDate: "Oct 28, 2025", startTime: "1:00 PM", endDate: "2025-10-20", endTime: "3:00 PM", location: "City Hall", description: "cleaning up trash and zebra mussels", createdAtDate: "Oct 22", createdAtTime: "9:00AM" },
-    { id: "3", jobName: "Tree Planting", startDate: "Oct 28, 2025", startTime: "5:00 PM", endDate: "2025-10-20", endTime: "8:00 PM", location: "Assiniboine Park", description: "cleaning up trash and zebra mussels", createdAtDate: "Oct 22", createdAtTime: "9:00AM" },
-  ]);
+  const [username, setUsername] = useState<string | null>(null);
 
-  // Fetch real events non-blockingly
+  //map of eventId -> status so we can render the correct button state
+  const [applications, setApplications] = useState<AppMap>({});
+  const [events, setEvents] = useState<EventPost[]>([]);
+  
+  // Build the two events lists:
+  //Accepted List & AppliedOrRejectedList
+  const acceptedList = useMemo(
+    () =>
+      events
+        .filter(e => applications[e.id] === "accepted")
+        .map(e => ({ ...e, status: "accepted" as const })),
+    [events, applications]
+  );
+
+  const appliedOrRejectedList = useMemo(
+    () =>
+      events
+        .filter(e => applications[e.id] === "applied" || applications[e.id] === "rejected")
+        .map(e => ({ ...e, status: applications[e.id] as "applied" | "rejected" })),
+    [events, applications]
+  );
+
+
+   
+  /* ---------------------------------------------------------------------------
+  Fetch real events + my application statuses non-blockingly
+  ------------------------------------------------------------------------------*/
   useEffect(() => {
+
+    //get user from local storage
     const raw = localStorage.getItem("user");
     if (!raw) return;
     try {
@@ -50,6 +77,7 @@ const Dashboard: React.FC = () => {
         setUsername("");
     }
     
+    //fetch events + my application statuses (if logged in)
     const fetchEvents = async () => {
       try {
         const response = await fetch(`${API_URL}/v1/events`, {
@@ -68,8 +96,66 @@ const Dashboard: React.FC = () => {
       }
     };
 
+
+    const fetchMyApplications = async () => {
+      const token = localStorage.getItem("access_token");
+      
+      if (!token){      // not logged in -> no application status to render
+        setApplications({});
+        return; 
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/v1/events/me/applications`, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+
+        // if (!res.ok) 
+        //   return; // ignore
+
+        if (res.status === 401) {
+          // token invalid/expired: surface it, don't silently ignore
+          const err = await res.json().catch(() => ({}));
+          alert(err?.message || "Session expired. Please log in again.");
+          // optionally navigate to login:
+          // navigate("/User-login", { state: { role } });
+          setApplications({});
+          return;
+        }
+
+        if (!res.ok) {
+          // log or surface error instead of ignoring
+          const text = await res.text().catch(() => "");
+          console.warn("Failed to fetch my applications:", res.status, text);
+          setApplications({});
+          return;
+        }
+
+        const list: Array<{ event_id: string; eventId?: string; status: AppStatus }> = await res.json();
+        console.log("Fetched user applications:", list);
+        // normalize (support either event_id from SQL or eventId from mapper)
+        const map: AppMap = {};
+        for (const row of list) {
+          const eid = (row as any).eventId ?? (row as any).event_id;
+          if (eid) 
+            map[eid] = row.status;
+        }
+        setApplications(map);
+        
+      } catch (e) {
+        console.warn("Failed to fetch my applications", e);
+      }
+    };
+
     fetchEvents();
+    fetchMyApplications(); 
   }, []);
+
+
+  
 
   const handleLogout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +181,7 @@ const Dashboard: React.FC = () => {
 
       if (response.status !== 204) {
         try {
-          const data = await response.json();
+          await response.json();
         } catch (error) {
           console.error("Unexpected JSON package", error);
         }
@@ -111,7 +197,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleSignUp = async (eventId: string) => {
+  const handleApply = async (eventId: string) => {
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -123,7 +209,7 @@ const Dashboard: React.FC = () => {
       //verify token before sending request off
       //get token by user id
 
-      const response = await fetch(`${API_URL}/v1/events/register`, {
+      const response = await fetch(`${API_URL}/v1/events/apply`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,36 +220,78 @@ const Dashboard: React.FC = () => {
         })
       });
 
-      if(response.status == 401){
-        //login expired 
-        alert("Your session has expired. Please log in again.");
+      //store the applied event in the applied list of applications
+      setApplications(prev => ({ ...prev, [eventId]: "applied" }));
+
+      const data = await response.json().catch();
+
+      //login expired
+      if(response.status == 401){ 
+        alert(data.message);
         navigate("/User-login", { state: { role } });
         return;
       } 
+      //Already applied
       else if (response.status == 409){
-        alert("User is already registered for an event at this time");
+        alert(data.message);
+        setApplications((prev) => ({ ...prev, [eventId]: "applied" }));
         return;
       }
+      //Server error
       else if (!response.ok) {
         const err = await response.text();
-        alert(`Registration failed: ${err}`);
+        alert(`Application failed: ${err}`);
         return;
       }
 
       if (response.status !== 204) {
         try {
-          const data = await response.json();
+          await response.json();
         } catch (error) {
           console.error("Unexpected JSON package", error);
         }
       }
 
-      alert("User has been successfully registered for the event");
+      //sucess 201
+      setApplications((prev) => ({ ...prev, [eventId]: "applied" }));
+      alert("Application submitted! An organizer will review it.");
 
     } catch (error) {
       console.error("Registration Error:", error);
       alert("Network error — could not connect to server.");
     }
+  };
+
+  // helper: label + disabled state based on status
+  const renderApplyButton = (eventId: string) => {
+    const status = applications[eventId];
+    if (status === "accepted") {
+      return (
+        <button className="apply-button accepted" disabled>
+          Registered
+        </button>
+      );
+    }
+    if (status === "applied") {
+      return (
+        <button className="apply-button applied" disabled>
+          Applied (Pending)
+        </button>
+      );
+    }
+    if (status === "rejected") {
+      return (
+        <button className="option-button rejected" disabled>
+          Rejected
+        </button>
+      );
+    }
+    // default — can apply
+    return (
+      <button onClick={() => handleApply(eventId)} className="apply-button apply">
+        Apply
+      </button>
+    );
   };
 
   return (
@@ -181,32 +309,41 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="button-box" style={{ display: "flex", gap: 8 }}>
               
+              {/* My accepted Events page */}
               <button
-                className="option_btn"
+                className="option-btn"
                 title="Your registered events"
-                onClick={() => navigate("/My-Registrations", { state: { role } })}
-                style= {{backgroundColor:"green"}}
+                onClick={() => navigate("/MyRegisteredEvents", { state: { role, items: acceptedList } })}
               >
                 My events
+              </button>
+
+              {/* My Applied/Rejected Events page */}
+              <button
+                className="option-btn"
+                title="My applications"
+                onClick={() => navigate("/MyApplications", { state: { role , items: appliedOrRejectedList } })}
+              >
+                My applications
               </button>
 
               <button
                 className="option-btn"
                 title="Profile & settings"
                 onClick={() => navigate("/VolunteerProfile", { state: { role } })}
-                style= {{backgroundColor:"green"}}
               >
                 Profile
               </button>
 
               <button 
-                className="option_btn"
+                className="cancel-btn"
                 title="Log-out"
                 onClick={handleLogout}
-                style= {{backgroundColor:"green"}}
               >
                 Log-out
               </button>
+
+
             </div>
           </header>
         </div>
@@ -216,44 +353,12 @@ const Dashboard: React.FC = () => {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {events.map((event) => (
-          <article className="event-info-box"
-            key={event.id}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-4px)";
-              e.currentTarget.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.12)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "none";
-              e.currentTarget.style.boxShadow = "0 4px 10px rgba(10, 10, 10, 0.08)";
-            }}
-          >
-            <header className="event-header">
-              <h3 style={{ margin: 0, color: "#2c3e50", wordBreak: "break-word" }}>{event.jobName}</h3>
-              <small style={{ color: "#888" }}>
-                {event.createdAtDate} {event.createdAtTime}
-              </small>
-            </header>
+      <div key={event.id}>
+        <EventCard ev={event} />
+        {renderApplyButton(event.id)}
+      </div>
+      ))}
 
-            <p style={{ margin: "8px 0 12px", color: "#444", lineHeight: 1.4, wordBreak: "break-word", whiteSpace: "pre-wrap", textAlign: "left" }}>
-              {event.description}
-            </p>
-
-            <div className="job-start-end-times">
-              <div> <Clock size={16} />  <strong>Starts at:</strong> {event.startDate}  {event.startTime} </div>
-              <div> <Clock size={16} />  <strong>Ends at:</strong> {event.endDate}  {event.endTime} </div>
-              <div> <MapPin size={16}/> <strong style={{ wordBreak: "break-word" }}>Location:</strong> {event.location} </div>
-            </div>
-
-            <button
-              onClick={() => handleSignUp(event.id)}
-              className="option-btn"
-              type="button"
-              style={{ marginTop:12 }}
-            >
-            Sign-up
-            </button>
-        </article>
-        ))}   
       </div>
     </div>
   );

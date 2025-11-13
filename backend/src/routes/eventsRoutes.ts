@@ -1,11 +1,23 @@
 import { Router } from "express";
-import { createEvent, listEvents, registerUserForEvent, deregisterUserForEvent } from "../controllers/eventsController";
 import { requireAuth } from "../middleware/requireAuth"; // your JWT middleware
 import { validateRequest } from "../middleware/validateRequest";
-//import { z } from "zod";
 import { schemas} from "../spec/zod";
 import type { GeofencesController } from "../contracts/geofences.ctrl.contracts";
 import { createEventGeofencesRoutes } from "./geofenceRoutes";
+
+import {
+  // existing
+  createEvent,
+  listEvents,
+  // NEW / RENAMED for application flow
+  applyForEvent,
+  withdrawApplication,
+  listMyApplications,
+  listApplicants,
+  listAccepted,
+  acceptApplicant,
+  rejectApplicant,
+} from "../controllers/eventsController";
 /**
  * @swagger
  * tags:
@@ -220,7 +232,8 @@ import { createEventGeofencesRoutes } from "./geofenceRoutes";
 export function createEventsRouter(deps: {
   geofencesController: GeofencesController;
   // ...other controllers for events domain
-}) {
+}) 
+{
   const r = Router();
 
   // Public: list all events (optionally filter to "mine" via ?mine=1)
@@ -241,11 +254,7 @@ export function createEventsRouter(deps: {
     },
     listEvents
   );
-  //Auth-only : create event 
-  // r.post("/", requireAuth, (req, res, next) => {
-  //   console.log("Route reached");
-  //   next();
-  // },validateRequest({ body: schemas.CreateEventSchema }), createEvent);   
+   
   r.post(
     "/",
     requireAuth(),
@@ -256,9 +265,9 @@ export function createEventsRouter(deps: {
   );
 
 
-  // Public: list all events (optionally filter to "mine" via ?mine=1)
-  //r.get("/", listEvents);    
+  // Public: list all events (optionally filter to "mine" via ?mine=1) 
   // validate query first, then only auth if ?mine=1
+  //GET /v1/events
   r.get(
     "/",
     //validateRequest({ query: schemas.ListEventsQuery }),
@@ -271,11 +280,8 @@ export function createEventsRouter(deps: {
     },
     listEvents
   );
-  //Auth-only : create event 
-  // r.post("/", requireAuth, (req, res, next) => {
-  //   console.log("Route reached");
-  //   next();
-  // },validateRequest({ body: schemas.CreateEventSchema }), createEvent);   
+  
+  //POST /v1/events
   r.post(
     "/",
     requireAuth(),
@@ -285,27 +291,68 @@ export function createEventsRouter(deps: {
     createEvent
   );
 
-  r.post(
-    "/register",
-    requireAuth(),
-    registerUserForEvent
-  );
 
-  // your existing event routes here...
-  // r.get("/:eventId", ...);
-  // r.post("/", ...);
+  /* -------------------------------------------------------------------
+                      VOLUNTEER – application flow
+  ----------------------------------------------------------------------*/
+ //POST /v1/events/apply
+ r.post(
+    "/apply",
+    requireAuth(),
+    // validateRequest({ body: schemas.EventApplySchema }), // if you generate it
+    applyForEvent
+  );
 
   // geofences under /events
   r.use(createEventGeofencesRoutes(deps.geofencesController));
 
+  //DELETE /v1/events/withdraw
   r.delete(
-    "/deregister",
+    "/withdraw",
     requireAuth(),
-    deregisterUserForEvent
+    // validateRequest({ body: schemas.EventWithdrawSchema }), // if you generate it
+    withdrawApplication
   );
 
-  //r.post("/",createEvent);                           // POST /v1/events      -> create
+  //GET /v1/myapllications
+  r.get("/me/applications", 
+    requireAuth(), 
+    listMyApplications
+  );
 
+  /*-----------------------------------------------------------------------
+                            Organizer flow
+  Organizers gets applicants, accepted applicants, accept/reject applications 
+  -------------------------------------------------------------------------*/
+
+  // View my applications with status (applied/accepted/rejected/withdrawn)
+
+  // GET /v1/events/:eventId/applicants
+  r.get("/:eventId/applicants", 
+    requireAuth(), 
+    listApplicants
+  );
+  
+  // GET /v1/events/:eventId/accepted
+  r.get("/:eventId/accepted",
+    requireAuth(),
+    listAccepted
+  );
+
+  r.patch(
+    "/:eventId/applicants/:userId/accept",
+    requireAuth(),
+    acceptApplicant
+  );
+
+  r.patch(
+    "/:eventId/applicants/:userId/reject",
+    requireAuth(),
+    rejectApplicant
+  );
+
+  
   return r;
 }
+// export default r;
 

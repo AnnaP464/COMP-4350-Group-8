@@ -1,5 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import "./css/HomepageOrganizer.css"; // re-use your existing styles
+import EventCard from "./components/EventCard";
+
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Clock, MapPin, Calendar } from "lucide-react";
@@ -242,19 +244,19 @@ const HomepageOrganizer: React.FC = () => {
               Profile
             </button>
 
-            <button className="option-btn" type="button" onClick={handleLogout}>
+            <button className="cancel-btn" type="button" onClick={handleLogout}>
                 Log-out
             </button>
 
           </div>
         </header>
-        
+
         {/* Content area: Feed */}
-        <div className="content-box"
+        <div className="myreg-container"
           style={{gridTemplateColumns: showProfile ? "1fr 320px" : "1fr"}}
         >
           {/* Feed */}
-          <main className="feed-box">
+          <main className="myreg-glass">
             <h3 style={{ marginTop: 0 }}>{user.username}'s job postings</h3>
             
             {/* display the list of events created by me */}
@@ -264,36 +266,13 @@ const HomepageOrganizer: React.FC = () => {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {events.map((ev) => (
-                <article className="event-info-box"
-                  key={ev.id}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-4px)";
-                    e.currentTarget.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.12)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "none";
-                    e.currentTarget.style.boxShadow = "0 4px 10px rgba(10, 10, 10, 0.08)";
-                  }}
-                >
-                  <header className="event-header">
-                    <h3 style={{ margin: 0, color: "#2c3e50", wordBreak:"break-word"}}>{ev.jobName}</h3>
-                    <small style={{ color: "#888" }}>
-                      {ev.createdAtDate} {ev.createdAtTime}
-                    </small>
-                  </header>
-
-                  <p style={{ margin: "8px 0 12px", color: "#444", lineHeight: 1.4, wordBreak:"break-word", whiteSpace:"pre-wrap", textAlign:"left"}}>
-                    {ev.description}
-                  </p>
-
-                  <div className="job-start-end-times">
-                    <div> <Clock size={16}/>  <strong>Starts at:</strong> {ev.startDate}  {ev.startTime} </div>
-                    <div> <Clock size={16}/>  <strong>Ends at:</strong> {ev.endDate}  {ev.endTime} </div>
-                    <div> <MapPin size={16}/> <strong style={{wordBreak:"break-word"}}>Location:</strong> {ev.location} </div>
-                  </div>
-                </article>
-              ))}
+            {events.map((ev) => (
+              <EventCard
+                key={ev.id}
+                ev={ev}
+                onClick={() => navigate(`/Events/${ev.id}/manage`, { state: { role } })}
+              />
+            ))}
               </div>
             )}
           </main>

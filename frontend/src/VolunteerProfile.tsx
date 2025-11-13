@@ -4,11 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   Clock,
   CheckCircle2,
-  Award,
-  Calendar,
-  MapPin,
   TrendingUp,
-  User,
 } from "lucide-react";
 import "./css/VolunteerProfile.css";
 import ProfilePreviewDialog from "./components/ProfilePreview.tsx";
