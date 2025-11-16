@@ -41,7 +41,7 @@ const LoginUser: React.FC = () => {
 
       //login failed
       if (!response.ok) {
-        const err = await response.text();
+        await response.text();
         let msg = "Invalid email or password"
         //alert(`Login failed: ${err}`);
         setErrorMsg(msg);

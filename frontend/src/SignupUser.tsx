@@ -64,13 +64,13 @@ const SignupUser: React.FC = () => {
           else if(errorData.message)
             setErrorMsg(errorData.message);
         }
-        catch (error) {
+        catch {
           setErrorMsg("Unexpected error from server");
         }
         return;
       }
 
-      const data = await response.json();
+      await response.json();
       navigate("/User-login", { state: { role } });
 
     } catch (error) {

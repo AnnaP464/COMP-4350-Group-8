@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { execSync } from 'child_process';
 
 const email = "test3@test.com"
 const password = "testtest"
@@ -46,8 +45,6 @@ test("Tests that the registration and login features work for a new user", async
 
     await expect(page.getByRole("button", { name: "Sign-up" })).toBeVisible();
     await page.getByRole("button", {name: "Sign-up"}).click();
-
-    console.log(page.content());
 
     await expect(page.getByRole("button", { name: "Log-in" })).toBeVisible();
     await page.getByPlaceholder("Email *").fill(email);

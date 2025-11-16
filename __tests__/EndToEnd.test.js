@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { execSync } from 'child_process';
 
 const email1 = "test0@test.com"
 const email2 = "test1@test.com"

@@ -62,7 +62,7 @@ const MyRegistrations: React.FC = () => {
 
       if (response.status !== 201) {
         try {
-          const data = await response.json();
+          await response.json();
         } catch (error) {
           console.error("Unexpected JSON package", error);
         }

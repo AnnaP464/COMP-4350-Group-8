@@ -4,7 +4,7 @@ import "./css/Dashboard.css";
 import "./css/HomepageOrganizer.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cleanEvents } from "./helpers/EventHelper";
-import { Clock, MapPin, Calendar } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import * as RoleHelper from "./helpers/RoleHelper";
 
 const API_URL = "http://localhost:4000";
@@ -95,7 +95,7 @@ const Dashboard: React.FC = () => {
 
       if (response.status !== 204) {
         try {
-          const data = await response.json();
+          await response.json();
         } catch (error) {
           console.error("Unexpected JSON package", error);
         }
@@ -152,7 +152,7 @@ const Dashboard: React.FC = () => {
 
       if (response.status !== 204) {
         try {
-          const data = await response.json();
+          await response.json();
         } catch (error) {
           console.error("Unexpected JSON package", error);
         }

@@ -1,8 +1,8 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./css/HomepageOrganizer.css"; // re-use your existing styles
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { Clock, MapPin, Calendar } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
 import * as RoleHelper from "./helpers/RoleHelper";
 
@@ -28,7 +28,7 @@ const HomepageOrganizer: React.FC = () => {
 
   const [user, setUser] = React.useState<PublicUser | null>(null);
 
-  const [posts, setPosts] = useState<EventHelper.CleanEvent[]>([]);
+  //const [posts, setPosts] = useState<EventHelper.CleanEvent[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [refreshKey, setRefreshKey] = useState(0);
@@ -71,7 +71,7 @@ const HomepageOrganizer: React.FC = () => {
         
         const cleanData = EventHelper.cleanEvents(rows, false);
         setEvents(cleanData);
-      } catch (error) {
+      } catch {
         console.log("The GET event call failed");
       } 
       finally {
@@ -151,10 +151,8 @@ const HomepageOrganizer: React.FC = () => {
         return;
       }
       
-      
-      let created: any = null;
       try {
-        created = await response.json();
+        await response.json();
       } catch (error) {
         alert("Unexpected Error: " +  error);
       }
@@ -199,7 +197,7 @@ const HomepageOrganizer: React.FC = () => {
 
       if(response.status !== 204){
         try{
-          const data = await response.json();
+          await response.json();
         } catch (error){
           console.error("Unexpected JSON package", error);
         }

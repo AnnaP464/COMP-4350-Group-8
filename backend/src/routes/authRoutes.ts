@@ -1,5 +1,4 @@
 import { Router } from "express";
-const router = Router();
 import { AuthController } from "../contracts/authController.contracts";
 import { schemas}  from "../spec/zod";
 import { validateRequest } from "../middleware/validateRequest";

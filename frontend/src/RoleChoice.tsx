@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {Link} from "react-router-dom";
 import "./css/AuthChoice.css";
 import type { UserRole } from "./helpers/RoleHelper";

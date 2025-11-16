@@ -2,8 +2,11 @@
 import * as tokens from "./tokenService";
 import type {
   AuthService,
-  RegisterInput, LoginInput, RefreshInput,
-  LoginResult, RegisterResult, RefreshResult,
+  LoginInput, 
+  RefreshInput,
+  LoginResult, 
+  RegisterResult, 
+  RefreshResult,
 } from "../contracts/auth.contracts";
 
 
