@@ -113,7 +113,9 @@ jobs:
       - name: Start Backend
         run: |
           cd backend
-          npm run dev
+          npm run dev &
+          npx wait-on -t 120000 "http://localhost:4000"
+          
 
       - name: Start Frontend
         run: |
