@@ -7,20 +7,20 @@ export default defineConfig({
   fullyParallel: false,
   use: {
     baseURL: 'http://localhost:5173',
-    screenshot: 'only-on-failure',   // 📸 capture screenshot on failure
-    video: 'retain-on-failure',      // 🎥 keep video only if test fails
-    trace: 'retain-on-failure'      // 🧭 record trace (network, console, DOM)
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    trace: 'retain-on-failure'
   
   },
   webServer: [
     {
-      // API server
+      // backend server
       command: 'npm run dev:backend',
       url: 'http://localhost:4000/health',
       reuseExistingServer: true
     },
     {
-      // Front-end dev server
+      // Frontend dev server
       command: 'npm run dev:web',
       url: 'http://localhost:5173',
       reuseExistingServer: true
