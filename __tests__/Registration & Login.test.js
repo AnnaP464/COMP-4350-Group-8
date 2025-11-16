@@ -7,13 +7,13 @@ const orgName = "testInc"
 
 test.describe.configure({ mode: "serial" });
 
-test.beforeAll(async () => {
-  deleteUserData(email);
-});
+// test.beforeAll(async () => {
+//   deleteUserData(email);
+// });
 
-test.afterAll(async () => {
-  deleteUserData(email);
-});
+// test.afterAll(async () => {
+//   deleteUserData(email);
+// });
 
 test("Tests that the registration and login features work for a new user", async ({ page }) => {
     //goes to the default role selection page
@@ -98,19 +98,19 @@ test("Checks for user persistance on page reload to show user is not stored in b
     deleteUserData(email);
 });
 
-function deleteUserData(email){
-    try {
-        execSync(
-        `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,
-        {
-            stdio: 'inherit',
-            env: {
-            ...process.env,
-            PGPASSWORD: 'verysafe',
-            },
-        }
-        );
-    } catch (err) {
-        console.error('Cleanup failed:', err);
-    }
-}
+// function deleteUserData(email){
+//     try {
+//         execSync(
+//         `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,
+//         {
+//             stdio: 'inherit',
+//             env: {
+//             ...process.env,
+//             PGPASSWORD: 'verysafe',
+//             },
+//         }
+//         );
+//     } catch (err) {
+//         console.error('Cleanup failed:', err);
+//     }
+// }

@@ -8,17 +8,19 @@ const password = "testtest"
 const orgName = "testInc"
 const userName = "testGuy"
 
-test.beforeAll(async () => {
-    //deletes user to make sure test will go well
-    deleteUserData(email1);
-    deleteUserData(email2);
-});
+test.describe.configure({ mode: "serial" });
 
-test.afterAll(async () => {
-    //deletes user to make sure database is unaffected will go well
-    deleteUserData(email1);
-    deleteUserData(email2);
-});
+// test.beforeAll(async () => {
+//     //deletes user to make sure test will go well
+//     deleteUserData(email1);
+//     deleteUserData(email2);
+// });
+
+// test.afterAll(async () => {
+//     //deletes user to make sure database is unaffected
+//     deleteUserData(email1);
+//     deleteUserData(email2);
+// });
 
 test("New organizer registration, login make an event and check profile", async ({ page }) => {
     //goes to the default role selection page
@@ -142,20 +144,20 @@ test("New volunteer registration, login, try to sign up for an event and log out
     ).toBeVisible();
 });
 
-//deletes the user with the email address from the database
-function deleteUserData(email){
-    try {
-        execSync(
-        `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,
-        {
-            stdio: 'inherit',
-            env: {
-            ...process.env,
-            PGPASSWORD: 'verysafe',
-            },
-        }
-        );
-    } catch (err) {
-        console.error('Cleanup failed:', err);
-    }
-}
+// //deletes the user with the email address from the database
+// function deleteUserData(email){
+//     try {
+//         execSync(
+//         `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,
+//         {
+//             stdio: 'inherit',
+//             env: {
+//             ...process.env,
+//             PGPASSWORD: 'verysafe',
+//             },
+//         }
+//         );
+//     } catch (err) {
+//         console.error('Cleanup failed:', err);
+//     }
+// }
