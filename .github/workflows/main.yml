@@ -102,7 +102,7 @@ jobs:
         run: npm ci
 
       - name: Run Database Migrations
-        run: 
+        run: |
           echo "Running Database Migrations:"
           cd backend/migrations
           psql -U postgres -d hivehand -f 001_init.sql
@@ -111,12 +111,12 @@ jobs:
           psql -U postgres -d hivehand -f 004_Event_attendance.sql
 
       - name: Start Backend
-        run: 
+        run: |
           cd backend
           npm run dev
 
       - name: Start Frontend
-        run: 
+        run: |
           cd frontend
           npm run dev
 
