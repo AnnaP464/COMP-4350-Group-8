@@ -7,17 +7,7 @@ const orgName = "testInc"
 
 test.describe.configure({ mode: "serial" });
 
-// test.beforeAll(async () => {
-//   deleteUserData(email);
-// });
-
-// test.afterAll(async () => {
-//   deleteUserData(email);
-// });
-
 test("Tests that the registration and login features work for a new user", async ({ page }) => {
-    //goes to the default role selection page
-    //deleteUserData(email);
     //goes to the default role selection page
     await page.goto("/"); 
 
@@ -57,6 +47,8 @@ test("Tests that the registration and login features work for a new user", async
     await expect(page.getByRole("button", { name: "Sign-up" })).toBeVisible();
     await page.getByRole("button", {name: "Sign-up"}).click();
 
+    console.log(page.content());
+    
     await expect(page.getByRole("button", { name: "Log-in" })).toBeVisible();
     await page.getByPlaceholder("Email *").fill(email);
     await page.getByPlaceholder("Password *").fill(password);
@@ -94,23 +86,4 @@ test("Checks for user persistance on page reload to show user is not stored in b
     await page.getByRole("button", {name: "Profile"}).click();
     await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();
     await page.getByRole("button", {name: "Log-out"}).click();
-
-    //deleteUserData(email);
 });
-
-// function deleteUserData(email){
-//     try {
-//         execSync(
-//         `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,
-//         {
-//             stdio: 'inherit',
-//             env: {
-//             ...process.env,
-//             PGPASSWORD: 'verysafe',
-//             },
-//         }
-//         );
-//     } catch (err) {
-//         console.error('Cleanup failed:', err);
-//     }
-// }
