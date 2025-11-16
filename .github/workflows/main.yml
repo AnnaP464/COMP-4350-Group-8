@@ -105,10 +105,10 @@ jobs:
         run: |
           echo "Running Database Migrations:"
           cd backend/migrations
-          psql -U postgres -d hivehand -f 001_init.sql
-          psql -U postgres -d hivehand -f 002_Event_Registration.sql
-          psql -U postgres -d hivehand -f 003_Event_geofence.sql
-          psql -U postgres -d hivehand -f 004_Event_attendance.sql
+          psql -h localhost -p 5432 -U postgres -d hivehand -f 001_init.sql
+          psql -h localhost -p 5432 -U postgres -d hivehand -f 002_Event_Registration.sql
+          psql -h localhost -p 5432 -U postgres -d hivehand -f 003_Event_geofence.sql
+          psql -h localhost -p 5432 -U postgres -d hivehand -f 004_Event_attendance.sql
 
       - name: Start Backend
         run: |
