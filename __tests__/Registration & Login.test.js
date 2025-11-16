@@ -17,7 +17,7 @@ test.describe.configure({ mode: "serial" });
 
 test("Tests that the registration and login features work for a new user", async ({ page }) => {
     //goes to the default role selection page
-    deleteUserData(email);
+    //deleteUserData(email);
     //goes to the default role selection page
     await page.goto("/"); 
 
@@ -95,7 +95,7 @@ test("Checks for user persistance on page reload to show user is not stored in b
     await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();
     await page.getByRole("button", {name: "Log-out"}).click();
 
-    deleteUserData(email);
+    //deleteUserData(email);
 });
 
 // function deleteUserData(email){
