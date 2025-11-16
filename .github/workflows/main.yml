@@ -116,19 +116,11 @@ jobs:
           npm run dev &
           npx wait-on -t 120000 "http://localhost:4000/health"
 
-        # run: |
-        #   cd backend
-        #   npm run dev &
-        #   sleep 5
-        #   echo "Trying curl..."
-        #   curl -v http://localhost:4000/health || echo "curl failed"
-        #   npx wait-on -t 120000 "http://localhost:4000"
-          
-
       - name: Start Frontend
         run: |
           cd frontend
-          npm run dev
+          npm run dev &
+          npx wait-on -t 120000 "http://localhost:5173"
 
       - name: Wait for services to be ready
         run: |
