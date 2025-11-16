@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 
 const email = "test3@test.com"
 const password = "testtest"
-const orgName = "testInc"
+const orgName = "testInc2"
 
 test.describe.configure({ mode: "serial" });
 
@@ -48,7 +48,7 @@ test("Tests that the registration and login features work for a new user", async
     await page.getByRole("button", {name: "Sign-up"}).click();
 
     console.log(page.content());
-    
+
     await expect(page.getByRole("button", { name: "Log-in" })).toBeVisible();
     await page.getByPlaceholder("Email *").fill(email);
     await page.getByPlaceholder("Password *").fill(password);

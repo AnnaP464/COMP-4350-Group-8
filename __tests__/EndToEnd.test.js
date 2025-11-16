@@ -4,8 +4,8 @@ import { execSync } from 'child_process';
 const email1 = "test0@test.com"
 const email2 = "test1@test.com"
 const password = "testtest"
-const orgName = "testInc"
-const userName = "testGuy"
+const orgName = "testInc1"
+const userName = "testGuy1"
 
 test.describe.configure({ mode: "serial" });
 
