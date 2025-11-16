@@ -74,7 +74,7 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: hivehand
         ports:
           - 5432:5432
@@ -86,7 +86,7 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/hivehand
+      DATABASE_URL: "postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/hivehand"
 
     steps:
       - name: Checkout
@@ -106,12 +106,12 @@ jobs:
 
       - name: Run Database Migrations
         run: |
-          echo "Running Database Migrations:"
+          CONNECTION_STRING="postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/hivehand"
           cd backend/migrations
-          psql "postgres://postgres:postgres@localhost:5432/hivehand" -f 001_init.sql
-          psql "postgres://postgres:postgres@localhost:5432/hivehand" -f 002_Event_Registration.sql
-          psql "postgres://postgres:postgres@localhost:5432/hivehand" -f 003_Event_geofence.sql
-          psql "postgres://postgres:postgres@localhost:5432/hivehand" -f004_Event_attendance.sql
+          psql "$CONNECTION_STRING" -f 001_init.sql
+          psql "$CONNECTION_STRING" -f 002_Event_Registration.sql
+          psql "$CONNECTION_STRING" -f 003_Event_geofence.sql
+          psql "$CONNECTION_STRING" -f 004_Event_attendance.sql
 
       - name: Start Backend
         run: |
