@@ -108,12 +108,20 @@ jobs:
           psql "postgres://postgres:postgres@localhost:5432/hivehand" -f 001_init.sql
           psql "postgres://postgres:postgres@localhost:5432/hivehand" -f 002_Event_Registration.sql
           psql "postgres://postgres:postgres@localhost:5432/hivehand" -f 003_Event_geofence.sql
-          psql "postgres://postgres:postgres@localhost:5432/hivehand" -f 004_Event_attendance.sql
+          psql "postgres://postgres:postgres@localhost:5432/hivehand" -f004_Event_attendance.sql
 
       - name: Start Backend
+        # run: |
+        #   cd backend
+        #   npm run dev &
+        #   npx wait-on -t 120000 "http://localhost:4000"
+
         run: |
           cd backend
           npm run dev &
+          sleep 5
+          echo "Trying curl..."
+          curl -v http://localhost:4000/health || echo "curl failed"
           npx wait-on -t 120000 "http://localhost:4000"
           
 
