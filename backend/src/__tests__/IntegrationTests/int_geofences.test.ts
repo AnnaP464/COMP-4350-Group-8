@@ -16,10 +16,48 @@ const squareGeoJSON = JSON.stringify({
 });
 
 async function seedEvent(name = "Test Event"): Promise<string> {
-  const { rows } = await query<{ id: string }>(
-    `INSERT INTO events (id, name) VALUES (gen_random_uuid(), $1) RETURNING id`,
-    [name]
+  const unique = crypto.randomUUID();
+  // Create a dummy organizer
+    const user = await query<{ id: string }>(
+    `INSERT INTO users (
+        id, email, username, role, password_hash
+     )
+     VALUES (
+        gen_random_uuid(),
+        $1,
+        $2,
+        'user',
+        'hashed_pw'
+     )
+     RETURNING id`,
+    [
+      `user_${unique}@example.com`,
+      `user_${unique}`
+    ]
   );
+  const organizerId = user.rows[0].id;
+
+  const { rows } = await query<{ id: string }>(
+    `INSERT INTO events (
+       organizer_id,
+       job_name,
+       description,
+       start_time,
+       end_time,
+       location
+     )
+     VALUES (
+       $1,
+       $2,
+       'Test Description',
+       NOW(),
+       NOW() + INTERVAL '1 hour',
+       'Test Location'
+     )
+     RETURNING id`,
+    [organizerId, name]
+  );
+
   return rows[0].id;
 }
 

@@ -1,6 +1,4 @@
--- Enable gen_random_uuid()
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
+-- Initial migration for HiveHand application
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
