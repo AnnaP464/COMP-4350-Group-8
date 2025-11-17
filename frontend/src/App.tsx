@@ -21,7 +21,7 @@ function App() {
         <Route path="/Homepage-Organizer" element={<HomepageOrganizer />}/>
         <Route path="/Dashboard" element={<Dashboard/>}/>
         <Route path="/VolunteerProfile" element={<VolunteerProfile/>}/>
-        <Route path="/My-Registrations" element={<VolunteerRegisteredEvents/>}/>      
+        <Route path="/My-Registrations" element={<VolunteerRegisteredEvents/>}/>
       </Routes>
     </BrowserRouter>
   );
