@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper"
 import {Link} from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_URL = "http://localhost:4000";
+//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const SignupUser: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -63,13 +64,13 @@ const SignupUser: React.FC = () => {
           else if(errorData.message)
             setErrorMsg(errorData.message);
         }
-        catch (error) {
+        catch {
           setErrorMsg("Unexpected error from server");
         }
         return;
       }
 
-      const data = await response.json();
+      await response.json();
       navigate("/User-login", { state: { role } });
 
     } catch (error) {

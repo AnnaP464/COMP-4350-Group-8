@@ -1,24 +1,12 @@
 import { test, expect } from "@playwright/test";
-import { execSync } from 'child_process';
 
-//tests use diffirent useremails to prevent erasing eachother's data mid test
 const email1 = "test0@test.com"
 const email2 = "test1@test.com"
 const password = "testtest"
-const orgName = "testInc"
-const userName = "testGuy"
+const orgName = "testInc1"
+const userName = "testGuy1"
 
-test.beforeAll(async () => {
-    //deletes user to make sure test will go well
-    deleteUserData(email1);
-    deleteUserData(email2);
-});
-
-test.afterAll(async () => {
-    //deletes user to make sure database is unaffected will go well
-    deleteUserData(email1);
-    deleteUserData(email2);
-});
+test.describe.configure({ mode: "serial" });
 
 test("New organizer registration, login make an event and check profile", async ({ page }) => {
     //goes to the default role selection page
@@ -141,21 +129,3 @@ test("New volunteer registration, login, try to sign up for an event and log out
         page.getByRole("heading", { level: 2, name: /welcome to hivehand/i })
     ).toBeVisible();
 });
-
-//deletes the user with the email address from the database
-function deleteUserData(email){
-    try {
-        execSync(
-        `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,
-        {
-            stdio: 'inherit',
-            env: {
-            ...process.env,
-            PGPASSWORD: 'verysafe',
-            },
-        }
-        );
-    } catch (err) {
-        console.error('Cleanup failed:', err);
-    }
-}

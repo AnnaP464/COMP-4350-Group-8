@@ -28,10 +28,10 @@ Include exact commands or scripts for running each type of test and generating c
 By default our tests run with coverage for front-end and api, playwrite generates a coverage report which can be viewed
 Example:
 ```bash
-#For front-end in the /front-end folder run:
+#For front-end in the /frontend folder run:
 npm run test
 
-#For api in the api folder run:
+#For api in the backend folder run:
 npm run test
 
 #For acceptance tests in the root folder run:

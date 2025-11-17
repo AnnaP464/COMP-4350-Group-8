@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper";
 import {Link} from "react-router-dom";
 
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_URL = "http://localhost:4000";
+//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -41,7 +41,7 @@ const LoginUser: React.FC = () => {
 
       //login failed
       if (!response.ok) {
-        const err = await response.text();
+        await response.text();
         let msg = "Invalid email or password"
         //alert(`Login failed: ${err}`);
         setErrorMsg(msg);

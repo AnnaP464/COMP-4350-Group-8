@@ -5,9 +5,8 @@ import { Clock, MapPin } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
 import * as RoleHelper from "./helpers/RoleHelper";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
-
-console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
+const API_URL = "http://localhost:4000";
+//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 type EventPost = {
   id: string;
@@ -63,7 +62,7 @@ const MyRegistrations: React.FC = () => {
 
       if (response.status !== 201) {
         try {
-          const data = await response.json();
+          await response.json();
         } catch (error) {
           console.error("Unexpected JSON package", error);
         }

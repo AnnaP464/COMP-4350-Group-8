@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as eventService from "../services/eventsService";
 import * as events from "../db/events";
-import { listMyEventsService } from "../services/eventsService";
 
 // POST /v1/events (auth required)
 export async function createEvent(req: Request, res: Response, next: NextFunction) {
@@ -85,7 +84,7 @@ export async function registerUserForEvent(req: Request, res: Response, next: Ne
       const response = await eventService.registerUserForEventService(volunteerId, eventId);
       if(!response)//make sure the row is recieved back
         return res.status(409).json({message: "User is already registered for event"});
-    } catch (error){
+    } catch {
       return res.status(409).json({message:"User is already registered for an event at this time"});
     }
     return res.status(201).json({message: "Registered Successfully"});

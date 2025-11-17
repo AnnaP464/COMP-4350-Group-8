@@ -88,34 +88,7 @@ describe("LoginUser handleSubmit coverage", () => {
     );
     expect(mockNavigate).not.toHaveBeenCalled();
   });
-/*
-  test("role mismatch: cleans tokens, shows message, no navigate", async () => {
-    // User picked Organizer screen but backend says volunteer
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        access_token: "A",
-        refresh_token: "R",
-        user: { role: "Volunteer" },
-      }),
-    });
-
-    const ls = setupLocalStorageMock();
-    renderWithRole("Organizer");
-    await fillAndSubmit({ email: "o@x.com", password: "pw" });
-
-    await waitFor(() =>
-      expect(
-        screen.getByText(/User Role is Invalid/i)
-      ).toBeInTheDocument()
-    );
-    
-    expect(ls.removeItem).toHaveBeenCalledWith("access_token");
-    expect(ls.removeItem).toHaveBeenCalledWith("refresh_token");
-    expect(ls.removeItem).toHaveBeenCalledWith("user");
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
-*/
+  
   test("success: backend organizer → navigates /Homepage-Organizer", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,

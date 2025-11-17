@@ -1,23 +1,12 @@
 import { test, expect } from "@playwright/test";
-import { execSync } from 'child_process';
 
 const email = "test3@test.com"
 const password = "testtest"
-const orgName = "testInc"
+const orgName = "testInc2"
 
 test.describe.configure({ mode: "serial" });
 
-test.beforeAll(async () => {
-  deleteUserData(email);
-});
-
-test.afterAll(async () => {
-  deleteUserData(email);
-});
-
 test("Tests that the registration and login features work for a new user", async ({ page }) => {
-    //goes to the default role selection page
-    deleteUserData(email);
     //goes to the default role selection page
     await page.goto("/"); 
 
@@ -94,23 +83,4 @@ test("Checks for user persistance on page reload to show user is not stored in b
     await page.getByRole("button", {name: "Profile"}).click();
     await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();
     await page.getByRole("button", {name: "Log-out"}).click();
-
-    deleteUserData(email);
 });
-
-function deleteUserData(email){
-    try {
-        execSync(
-        `psql -U hivedev -d hivehand -c "DELETE FROM users WHERE email = '${email}'";`,
-        {
-            stdio: 'inherit',
-            env: {
-            ...process.env,
-            PGPASSWORD: 'verysafe',
-            },
-        }
-        );
-    } catch (err) {
-        console.error('Cleanup failed:', err);
-    }
-}

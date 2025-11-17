@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, waitForElementToBeRemoved } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import HomepageOrganizer from "../HomepageOrganizer.tsx";
 
@@ -90,44 +90,6 @@ describe("Homepage-Organizer", () => {
     expect(screen.getByText(/HiveHand - org1/i)).toBeInTheDocument();
   });
 
-  /*
-  test("normalizes snake_case fields and displays them", async () => {
-    setupLocalStorageMock({
-      access_token: "TKN",
-      user: JSON.stringify({ username: "org1", email: "o@example.com" }),
-    });
-
-    // Return one event in snake_case to hit the normalization mapping
-    global.fetch = jest.fn().mockResolvedValueOnce({
-      ok: true,
-      json: async () => [
-        {
-          id: "e1",
-          job_name: "Food Drive",
-          startTime: "2025-10-23T01:00",
-          endTime: "2025-10-24T02:00",
-          location: "Winnipeg",
-          description: "Help sort donations",
-          created_at: "2025-10-01T12:00",
-        },
-      ],
-    });
-
-    renderAt();
-
-    // card content shows normalized fields
-    await waitFor(() => {
-      expect(screen.getByText("Food Drive")).toBeInTheDocument();
-      expect(screen.getByText(/Starts at:/i)).toBeInTheDocument();
-      expect(screen.getByText(/Ends at':/i)).toBeInTheDocument();
-      expect(screen.getByText(/Location:/i)).toBeInTheDocument();
-      expect(screen.getByText(/Winnipeg/i)).toBeInTheDocument();
-      // createdAt is formatted by toLocaleString; just ensure something rendered
-      expect(screen.getByText(/2025|AM|PM|:/)).toBeInTheDocument();
-    });
-  });
-  */
-
   test("open/close Create Event modal", async () => {
     setupLocalStorageMock({
       access_token: "TKN",
@@ -148,99 +110,6 @@ describe("Homepage-Organizer", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
-
-/*
-  test("create event success (201 JSON): adds card and resets form", async () => {
-    setupLocalStorageMock({
-      access_token: "TKN",
-      user: JSON.stringify({ username: "org1", email: "o@example.com" }),
-    });
-
-    // initial GET (no events)
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      // POST create -> returns JSON of created event
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        json: async () => ({
-          id: "server-id-1",
-          jobName: "Beach Cleanup",
-          startTime: "2025-10-23T01:00:00.000Z",
-          endTime: "2025-10-24T02:00",
-          location: "St. Vital",
-          description: "Bring gloves",
-          createdAt: "2025-10-10T10:00:00.000Z",
-        }),
-      });
-
-    renderAt();
-
-    // open modal
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
-    // fill fields
-    fireEvent.change(screen.getByPlaceholderText(/Job name \* /i), { target: { value: "Beach Cleanup" } });
-    fireEvent.change(screen.getByPlaceholderText(/Start time \* /i), { target: { value: "2025-10-23T01:00" } });
-    fireEvent.change(screen.getByPlaceholderText(/End time \* /i), { target: { value: "2025-10-24T02:00" } });
-    fireEvent.change(screen.getByPlaceholderText(/Location \* /i), { target: { value: "St. Vital" } });
-    fireEvent.change(screen.getByPlaceholderText(/Job description \* /i), { target: { value: "Bring gloves" } });
-    // submit
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
-
-    // modal closes and card appears
-    await waitFor(() => {
-      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-      expect(screen.getByText("Beach Cleanup")).toBeInTheDocument();
-      expect(screen.getByText(/Start Time:/i)).toBeInTheDocument();
-      expect(screen.getByText(/2025-10-23T01:00/i)).toBeInTheDocument();
-    });
-
-    // POST called with bearer header
-    const postCall = global.fetch.mock.calls.find(c => c[0].includes("/v1/org_events") && c[1]?.method === "POST");
-    expect(postCall).toBeTruthy();
-    expect(postCall[1].headers.Authorization).toBe("Bearer TKN");
-  });
-
-  
-
-  test("create event 204/no-body fallback uses randomUUID and still adds card", async () => {
-    setupLocalStorageMock({
-      access_token: "TKN",
-      user: JSON.stringify({ username: "org1", email: "o@example.com" }),
-    });
-
-    // initial GET
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      // POST create -> ok, but no json body (simulate 204)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 204,
-        json: async () => {
-          // make json() throw to trigger fallback path
-          throw new Error("no body");
-        },
-      });
-
-    renderAt();
-
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
-    fireEvent.change(screen.getByPlaceholderText(/Job name \* /i), { target: { value: "Trees" } });
-    fireEvent.change(screen.getByPlaceholderText(/Start time \* /i), { target: { value: "2025-10-23T01:00" } });
-    fireEvent.change(screen.getByPlaceholderText(/End time \* /i), { target: { value: "2025-10-24T02:00" } });
-    fireEvent.change(screen.getByPlaceholderText(/Location \* /i), { target: { value: "UM Campus" } });
-    fireEvent.change(screen.getByPlaceholderText(/Job description \* /i), { target: { value: "Plant saplings" } });
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Trees")).toBeInTheDocument();
-      //expect(screen.getByText(/2 hrs/i)).toBeInTheDocument();
-      expect(global.crypto.randomUUID).toHaveBeenCalled();
-    });
-  });
-  */
 
   test("create event 401 triggers alert and redirect to /User-login", async () => {
     setupLocalStorageMock({

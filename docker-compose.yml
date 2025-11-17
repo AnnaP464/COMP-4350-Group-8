@@ -97,6 +97,8 @@ services:
       - ./backend:/backend:cached 
       - /backend/node_modules
       - zodgen:/backend/src/spec 
+      - ./backend:/backend
+      - /backend/node_modules
     depends_on:
       db:
         condition: service_healthy
