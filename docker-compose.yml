@@ -7,16 +7,74 @@ services:
       POSTGRESQL_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRESQL_POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRESQL_ENABLE_POSTGIS: "yes"
-    ports:
-      - "${PGPORT}:${PGPORT}"
     volumes:
       - dbdata:/bitnami/postgresql
-      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+      - ./backend/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      test: 
+        ["CMD-SHELL", "pg_isready -U $DATABASE_USER -d $DATABASE_NAME"]
       interval: 5s
       timeout: 3s
-      retries: 12
+      retries: 20
+
+  db-test:
+    profiles: ["test"]
+    image: bitnami/postgresql:latest
+    environment:
+      POSTGRESQL_DATABASE: hivehand_test
+      POSTGRESQL_USERNAME: hivedev
+      POSTGRESQL_PASSWORD: verysafe
+      POSTGRESQL_POSTGRES_PASSWORD: verysafe
+      POSTGRESQL_ENABLE_POSTGIS: "yes"
+    volumes:
+      - ./backend/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+       [
+        "CMD-SHELL",
+        "
+        pg_isready -U $DATABASE_USER -d $DATABASE_NAME
+        "
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # no host port needed; other containers reach it via service name `db_test`
+
+  migrate:
+    image: bitnami/postgresql:latest
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://hivedev:verysafe@db:5432/hivehand
+    volumes:
+      - ./backend/migrations:/migrations:ro
+    entrypoint: ["/bin/bash","-lc"]
+    command: >
+      'for f in /migrations/*.sql; do
+        echo "Applying $$f";
+        psql "$$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$$f";
+      done;
+      echo "Migrations applied."'
+
+  migrate-test:
+    image: bitnami/postgresql:latest
+    profiles: ["test"]
+    depends_on:
+      db-test:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://hivedev:verysafe@db-test:5432/hivehand_test
+    volumes:
+      - ./backend/migrations:/migrations:ro
+    entrypoint: ["/bin/bash","-lc"]
+    command: >
+      'for f in /migrations/*.sql; do
+        echo "Applying $$f";
+        psql "$$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$$f";
+      done;
+      echo "Test migrations applied."'
 
   backend:
     build:
@@ -36,13 +94,16 @@ services:
       PORT: ${BACKEND_PORT}
       NODE_ENV: ${NODE_ENV}
     volumes:
-      - ./backend:/backend:cached          # your code from host
+      - ./backend:/backend:cached 
+      - /backend/node_modules
       - zodgen:/backend/src/spec 
       - ./backend:/backend
       - /backend/node_modules
     depends_on:
       db:
         condition: service_healthy
+      migrate: 
+        condition: service_completed_successfully
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
 
@@ -61,6 +122,22 @@ services:
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     command: ["npm","run","dev","--","--host","0.0.0.0","--port","${FRONTEND_PORT}","--strictPort"]
+
+
+  test:
+    profiles: ["test"]                 # only runs when you ask for it
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: test
+      # IMPORTANT: point to the *container* DB host ("db"), not localhost
+      DATABASE_URL: postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@db-test:5432/hivehand_test
+    depends_on:
+      migrate-test:
+        condition: service_completed_successfully
+    # Run all tests; or change to "npm run test:integration" if you want only integration
+    command: ["npm","test","--","--runInBand"]
 
 volumes:
   dbdata:
