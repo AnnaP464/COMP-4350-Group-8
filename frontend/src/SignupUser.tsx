@@ -18,7 +18,6 @@ const SignupUser: React.FC = () => {
   const location = useLocation();
   const state = location.state;
   const role = state?.role;
-  const authChoice = state?.authChoice;
   const subtitle = RoleHelper.subtitle(role)
   const textFieldDesc = RoleHelper.textFieldDesc(role);
 
@@ -48,34 +47,31 @@ const SignupUser: React.FC = () => {
       });
 
       //sign up failed
-      if (!response.ok) 
-      {
-        let msg;
-        try{
+      if (!response.ok) {
+        try {
           const errorData = await response.json();
-          if(response.status === 409)
+          if(response.status === 409) {
             setErrorMsg(ErrorHelper.DUPLICATE_EMAIL_ERROR);
-          else if(Array.isArray(errorData.errors)){
-            msg = errorData.errors.map((e:any) => e.message).join("\n"); //chatgpt
-            if (msg?.includes("8"))
+          } else if(Array.isArray(errorData.errors)){
+            const msg = errorData.errors.map((e:any) => e.message).join("\n");
+            if (msg?.includes("8")) {
               setErrorMsg(ErrorHelper.PASSWORD_LENGTH_ERROR);
-            else if(msg?.includes("3") || msg?.includes("32"))
+            } else if(msg?.includes("3") || msg?.includes("32")) {
               setErrorMsg(ErrorHelper.NAME_LENGTH_ERROR);
+            }
           }
-          else if(errorData.message)
+          else if(errorData.message) {
             setErrorMsg(errorData.message);
+          }
         }
-        catch (error){
-          console.log("TESTTEST");
-          console.log(error);
-          console.log("TESTTEST");
-          setErrorMsg("Unexpected error from server");
+        catch (error) {
+          setErrorMsg(ErrorHelper.DUPLICATE_EMAIL_ERROR);
         }
         return;
       }
 
       await response.json();
-      navigate("/" + authChoice, { state: { role } });
+      navigate("/" + RoleHelper.LOG_IN, { state: { role } });
 
     } catch (error) {
       console.error("Sign-up error:", error);
@@ -97,7 +93,6 @@ const SignupUser: React.FC = () => {
             value={username}
             onChange={(e) => {setErrorMsg(""); 
               setUsername(e.target.value);}}
-            //required
           />
 
           <input
@@ -107,7 +102,6 @@ const SignupUser: React.FC = () => {
             value={email}
             onChange={(e) => {setErrorMsg("");
               setEmail(e.target.value)}}
-            //required
           />
 
           <input
@@ -117,7 +111,6 @@ const SignupUser: React.FC = () => {
             value={password}
             onChange={(e) => {setErrorMsg(""); 
               setPassword(e.target.value)}}
-            //required
           />
 
           <input
@@ -127,7 +120,6 @@ const SignupUser: React.FC = () => {
             value={confirmPassword}
             onChange={(e) => {setErrorMsg("");
               setConfirmPassword(e.target.value)}}
-            //required
           />
 
           <button className="option-btn" type="submit">

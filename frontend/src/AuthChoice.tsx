@@ -12,7 +12,9 @@ const Login: React.FC = () => {
           <Link 
             to={"/Role-Choice"} 
             className="option-btn"
-            state={{ authChoice: RoleHelper.SIGN_UP }}
+            state={{ 
+              authChoice: RoleHelper.SIGN_UP
+            }}
           >
             Sign-up
           </Link>
@@ -20,7 +22,9 @@ const Login: React.FC = () => {
           <Link 
             to={"/Role-Choice"} 
             className="option-btn"
-            state={{ authChoice: RoleHelper.LOG_IN }}
+            state={{ 
+              authChoice: RoleHelper.LOG_IN
+            }}
           >
             Log-in
           </Link>

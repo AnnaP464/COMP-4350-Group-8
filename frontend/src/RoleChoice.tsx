@@ -18,7 +18,8 @@ const Login: React.FC = () => {
             to={"/" + authChoice}
             className="option-btn"
             state={{ 
-              role: RoleHelper.ORG_ROLE
+              role: RoleHelper.ORG_ROLE,
+              authChoice: authChoice
             }}
           >
             Organizer
@@ -28,7 +29,8 @@ const Login: React.FC = () => {
             to={"/" + authChoice}
             className="option-btn"
             state={{ 
-              role: RoleHelper.VOL_ROLE
+              role: RoleHelper.VOL_ROLE,
+              authChoice: authChoice
             }}
           >
             Volunteer

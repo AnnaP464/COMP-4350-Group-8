@@ -19,6 +19,13 @@ import { JwtPayload } from "jsonwebtoken";
 
 const SALT_ROUNDS = 10;
 
+export class EmailRegisteredError extends Error {
+  constructor(message = "Email already registered") {
+    super(message);
+    this.name = "EmailRegisteredError";
+  }
+}
+
 function toPublicUser(u: { email: string; username: string; role: Role }): PublicUser {
   return { email: u.email, username: u.username, role: u.role };
 }
@@ -29,7 +36,7 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
   return {
     async register(input: { username:string; email:string; password:string; role:string }): Promise<RegisterResult> {
       const exists = await users.findByEmail(input.email);
-      if (exists) throw new Error("Email already registered");
+      if (exists) throw EmailRegisteredError;
 
       // use bcrypt.hash to hash password 
       const password_hash = await hash(input.password, SALT_ROUNDS);

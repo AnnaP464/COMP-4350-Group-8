@@ -4,6 +4,10 @@ export const NAME_LENGTH_ERROR = "Username must be between 3 to 32 characters.";
 
 export const EMAIL_ERROR = "Email is required.";
 export const DUPLICATE_EMAIL_ERROR = "Email is already taken.";
+// i know that were not supposed to give people a chance to try
+// out enumeration attacks but A) we arent a target, and B) i gotta 
+// give an error of some sort and itll mean the same thing with an extra 
+// step if we do obfuscate it with something vauge.
 
 export const PASSWORD_ERROR = "Password is required.";
 export const PASSWORD_LENGTH_ERROR = "Password must be atleast 8 characters.";

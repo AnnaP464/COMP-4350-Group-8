@@ -33,7 +33,7 @@ SQL
 
 export PGPASSWORD=$DB_PASSWORD
 psql -U $DB_USER -d $DB_NAME -f ./backend/migrations/001_init.sql
-psql -U $DB_USER -d $DB_NAME -f ./backend/migrations/002_init.sql
+psql -U $DB_USER -d $DB_NAME -f ./backend/migrations/002_Event_Registration.sql
 psql -U $DB_USER -d $DB_NAME -f ./backend/migrations/003_Event_geofence.sql
 psql -U $DB_USER -d $DB_NAME -f ./backend/migrations/004_Event_attendance.sql
 
