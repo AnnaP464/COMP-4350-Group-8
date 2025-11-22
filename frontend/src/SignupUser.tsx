@@ -75,8 +75,7 @@ const SignupUser: React.FC = () => {
 
     } catch (error) {
       console.error("Sign-up error:", error);
-      setErrorMsg(`${error}`);
-      alert("Network error — could not connect to server." + error);
+      setErrorMsg("Network Error — Please Try Again Later");
     }
   };
 

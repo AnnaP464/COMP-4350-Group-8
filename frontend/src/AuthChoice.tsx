@@ -2,31 +2,25 @@ import React from "react";
 import {Link} from "react-router-dom";
 import "./css/AuthChoice.css";
 import * as RoleHelper from "./helpers/RoleHelper";
-import { useLocation } from "react-router-dom";
 
 const Login: React.FC = () => {
-  const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
-  const role = state?.role;
-  const subtitle = RoleHelper.subtitle(role)
   return (
     <div className="login-container">
       <div className="login-box">
-        <h2 className="title">{role} Portal</h2>
-        <p className="subtitle">{subtitle}</p>
+        <h2 className="title">Welcome to HiveHand</h2>
         <div className="options">
           <Link 
-            to={"/User-signup"} 
+            to={"/Role-Choice"} 
             className="option-btn"
-            state={{ role : role }}
+            state={{ authChoice: RoleHelper.SIGN_UP }}
           >
             Sign-up
           </Link>
 
           <Link 
-            to={"/User-login"} 
+            to={"/Role-Choice"} 
             className="option-btn"
-            state={{ role : role }}
+            state={{ authChoice: RoleHelper.LOG_IN }}
           >
             Log-in
           </Link>

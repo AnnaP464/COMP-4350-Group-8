@@ -80,7 +80,7 @@ const LoginUser: React.FC = () => {
 
     } catch (error) {
       console.error("Login error:", error);
-      alert("Network error — could not connect to server.");
+      setErrorMsg("Network Error — Please Try Again Later");
     }
   };
 
