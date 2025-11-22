@@ -38,8 +38,8 @@ services:
       PUBLIC_BASE_URL: http://localhost:${BACKEND_PORT}
     volumes:
       - ./backend:/backend:cached          # your code from host
-      - zodgen:/backend/src/spec 
-      - ./backend:/backend
+      # - zodgen:/backend/src/spec 
+      # - ./backend:/backend
       - /backend/node_modules
       - uploads:/uploads # for pic upload
     depends_on:

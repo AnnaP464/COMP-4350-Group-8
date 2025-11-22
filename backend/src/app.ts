@@ -12,6 +12,7 @@ import path from "path"; //for picture uploads
 
 const app = express();
 
+
 app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
@@ -32,6 +33,18 @@ app.use(cors(corsOptions));
 app.use("/v1/events", eventsRouter);
 app.use("/v1/auth", authRouter);
 app.use(userProfileRouter);
+
+// When req.body parsing fails, route handler is never called
+// it handles it and throws a custom 400 Invalid JSON paylod error
+app.use((err: any, _req, res, _next) => {
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({ message: "Invalid JSON payload" });
+  }
+
+  //default
+  return res.status(500).json({ message: "Internal server error" });
+});
+
 
 //app.use(authRouter);
 

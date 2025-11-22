@@ -76,6 +76,17 @@ import {
  *         from: { type: string, format: date-time }
  *         to:   { type: string, format: date-time }
  *         mine: { type: string, enum: ["0","1"] }
+ * 
+ *     
+ *     EventApplySchema:
+ *       type: object
+ *       additionalProperties: false
+ *       required: [eventId]
+ *       properties:
+ *         eventId:
+ *           type: string
+ *           format: uuid
+ *           example: "5deccda0-3589-42f9-8820-dd02e99bca9f"
  */
 
 
@@ -229,6 +240,83 @@ import {
  *         description: Server error
  */
 
+/**
+ * @swagger
+ * /v1/events/apply:
+ *   post:
+ *     tags: [Events]
+ *     summary: Apply for an event
+ *     description: The authenticated volunteer applies for a specific event.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/EventApplySchema'
+ *     responses:
+ *       200:
+ *         description: Application created
+ *       400:
+ *         description: Invalid payload/request body (missing/invalid eventId)
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Event not found
+ *       409:
+ *         description: Already applied or already accepted
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /v1/events/withdraw:
+ *   delete:
+ *     tags: [Events]
+ *     summary: Withdraw an application
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - eventId
+ *             properties:
+ *               eventId:
+ *                 type: string
+ *                 example: "evt_123"
+ *     responses:
+ *       200:
+ *         description: Application withdrawn
+ *       400:
+ *         description: Invalid payload
+ *       401:
+ *         description: Unauthorized
+ */
+
+
+/**
+ * @swagger
+ * /v1/events/me/applications:
+ *   get:
+ *     tags: [Events]
+ *     summary: List my applications
+ *     description: Returns all applications for the authenticated user with their statuses.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of applications
+ *       401:
+ *         description: Unauthorized
+ */
+
+
 export function createEventsRouter(deps: {
   geofencesController: GeofencesController;
   // ...other controllers for events domain
@@ -255,31 +343,31 @@ export function createEventsRouter(deps: {
     listEvents
   );
    
-  r.post(
-    "/",
-    requireAuth(),
-    (req, _res, next) => { console.log("[router] after requireAuth"); next(); },
-    validateRequest({ body: schemas.CreateEventSchema }),
-    (req, _res, next) => { console.log("[router] after validateRequest"); next(); },
-    createEvent
-  );
+  // r.post(
+  //   "/",
+  //   requireAuth(),
+  //   (req, _res, next) => { console.log("[router] after requireAuth"); next(); },
+  //   validateRequest({ body: schemas.CreateEventSchema }),
+  //   (req, _res, next) => { console.log("[router] after validateRequest"); next(); },
+  //   createEvent
+  // );
 
 
   // Public: list all events (optionally filter to "mine" via ?mine=1) 
   // validate query first, then only auth if ?mine=1
   //GET /v1/events
-  r.get(
-    "/",
-    //validateRequest({ query: schemas.ListEventsQuery }),
-    (req, res, next) => {
-      const wantsMine = String(req.query.mine || "").toLowerCase() === "1";
-      if (!wantsMine) 
-        return next();
-      // run the real auth middleware when mine=1
-      return requireAuth()(req, res, next);
-    },
-    listEvents
-  );
+  // r.get(
+  //   "/",
+  //   //validateRequest({ query: schemas.ListEventsQuery }),
+  //   (req, res, next) => {
+  //     const wantsMine = String(req.query.mine || "").toLowerCase() === "1";
+  //     if (!wantsMine) 
+  //       return next();
+  //     // run the real auth middleware when mine=1
+  //     return requireAuth()(req, res, next);
+  //   },
+  //   listEvents
+  // );
   
   //POST /v1/events
   r.post(
@@ -299,7 +387,7 @@ export function createEventsRouter(deps: {
  r.post(
     "/apply",
     requireAuth(),
-    // validateRequest({ body: schemas.EventApplySchema }), // if you generate it
+    validateRequest({ body: schemas.EventApplySchema }), 
     applyForEvent
   );
 
@@ -310,7 +398,7 @@ export function createEventsRouter(deps: {
   r.delete(
     "/withdraw",
     requireAuth(),
-    // validateRequest({ body: schemas.EventWithdrawSchema }), // if you generate it
+    // validateRequest({ body: schemas.EventWithdrawSchema }),
     withdrawApplication
   );
 

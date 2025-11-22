@@ -115,7 +115,19 @@ export async function userHasAcceptedCollision(
 export async function registerUserForEvent(
   userId: string,
   eventId: string
-): Promise<{ outcome: 'inserted' | 'already_applied' | 'already_accepted' | 'rejected'; row: any | null }> {
+): Promise<{ outcome: 'inserted' | 'already_applied' | 'already_accepted' | 'rejected' | 'event_not_found'; row: any | null }> {
+  
+  //First check that the event exists
+  const eventResult = await query(
+    `SELECT id FROM events WHERE id = $1`,
+    [eventId]
+  );
+
+  if (eventResult.rowCount === 0) {
+    // No such event
+    return { outcome: "event_not_found", row: null };
+  }
+  
   // Single SQL that either inserts or returns an outcome describing why it didn't.
   const { rows } = await query(
     `

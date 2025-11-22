@@ -75,11 +75,18 @@ export async function applyForEvent(req: Request, res: Response, next: NextFunct
     const userId = req.user.id;        // from auth
     const { eventId } = req.body; 
 
+    // //ensure evenId != null AND is a string
+    // if (!eventId || typeof eventId !== "string") 
+    //   return res.status(400).json({ message: "eventId is required and must be a string" });
+
     const { outcome, row } = await eventService.applyForEventService(userId, eventId);
 
     switch (outcome) {
       case 'inserted':
         return res.status(201).json(row); // { userID, eventID, status, appliedAt }
+
+      case 'event_not_found':
+        return res.status(404).json({ message: 'Event not found' });
 
       case 'already_applied':
         return res.status(409).json({ message: 'You have already applied for this event' });
@@ -88,7 +95,7 @@ export async function applyForEvent(req: Request, res: Response, next: NextFunct
         return res.status(409).json({ message: 'You are already accepted for this event' });
 
       case 'rejected':
-        // choose 403 (forbidden to re-apply) or 409 (conflict) — your call
+        // choose 403 (forbidden to re-apply) or 409 (conflict) 
         return res.status(403).json({ message: 'Your application was rejected; you cannot re-apply to this event' });
 
       default:
