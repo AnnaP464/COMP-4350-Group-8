@@ -1,11 +1,12 @@
-// authService.ts
 import * as tokens from "./tokenService";
 import type {
   AuthService,
-  RegisterInput, LoginInput, RefreshInput,
-  LoginResult, RegisterResult, RefreshResult,
+  LoginInput, 
+  RefreshInput,
+  LoginResult, 
+  RegisterResult, 
+  RefreshResult,
 } from "../contracts/auth.contracts";
-
 
 import type { UserPublic as PublicUser } from "../contracts/domain.types";
 import type { Role } from "../contracts/domain.types";
@@ -18,6 +19,12 @@ import { JwtPayload } from "jsonwebtoken";
 
 const SALT_ROUNDS = 10;
 
+export class EmailRegisteredError extends Error {
+  constructor(message = "Email already registered") {
+    super(message);
+    this.name = "EmailRegisteredError";
+  }
+}
 
 function toPublicUser(u: { email: string; username: string; role: Role }): PublicUser {
   return { email: u.email, username: u.username, role: u.role };
@@ -27,11 +34,9 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
   const { users, sessions } = deps;
 
   return {
-
-    //async register(input: RegisterInput): Promise<RegisterResult> {
     async register(input: { username:string; email:string; password:string; role:string }): Promise<RegisterResult> {
       const exists = await users.findByEmail(input.email);
-      if (exists) throw new Error("Email already registered");
+      if (exists) throw EmailRegisteredError;
 
       // use bcrypt.hash to hash password 
       const password_hash = await hash(input.password, SALT_ROUNDS);
@@ -72,7 +77,6 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
       return { accessToken, refreshToken, user: toPublicUser(user) };
     },
 
-
     async refresh(input: RefreshInput): Promise<RefreshResult> {
       const { refreshToken: oldRefreshToken } = input;
       const decoded = tokens.verifyRefresh(oldRefreshToken) as JwtPayload || String; // throws if invalid/expired
@@ -84,7 +88,6 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
       const userId = decoded.sub;   // string
       const oldJti = decoded.jti;   // string
       //const exp    = decoded.exp;   // number | undefined
-
 
       const row = await sessions.findByJti(oldJti);
       if (!row || row.revoked_at) {
@@ -105,7 +108,6 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
       // Store the new refresh token’s jti (with its expiration timestamp)
       const newExp = new Date(Date.now() + 30*24*3600*1000);
       await sessions.create({ jti: newJti, userId: user.id, expiresAt: newExp });
-
 
       return {
         accessToken,

@@ -1,3 +1,4 @@
+
 -- Registered Users table
 CREATE TABLE IF NOT EXISTS registered_users(
   user_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

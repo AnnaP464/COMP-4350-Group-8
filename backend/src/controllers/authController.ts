@@ -20,7 +20,6 @@ type PublicUser = {
 
 //END OF STUBS
 
-
 // cookies options for refresh token
 const refreshCookieOptions = {
   httpOnly: true,
@@ -30,18 +29,14 @@ const refreshCookieOptions = {
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 };
 
-
 // GET /v1/auth/me 
 const me: RequestHandler = (_req, res) => {
   // TODO: if you have auth middleware attaching req.user, return it here
   return res.status(501).json({ message: "Not implemented" });
 };
 
-
-
 // Factory: take an AuthService, return Express handler.
 export function makeAuthController(auth: AuthService) : AuthController {
-
 
     /** POST /v1/auth/register */
     async function registerUser(req: Request, res: Response, next: NextFunction) {

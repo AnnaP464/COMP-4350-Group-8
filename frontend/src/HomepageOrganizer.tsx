@@ -4,12 +4,11 @@ import EventCard from "./components/EventCard";
 
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { Clock, MapPin, Calendar } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
-import * as RoleHelper from "./helpers/RoleHelper";
+import * as ErrorHelper from "./helpers/ErrorHelper";
 
 const API_URL = "http://localhost:4000";
-//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 type PublicUser = { 
   email: string; 
@@ -30,13 +29,13 @@ const HomepageOrganizer: React.FC = () => {
 
   const [user, setUser] = React.useState<PublicUser | null>(null);
 
-  const [posts, setPosts] = useState<EventHelper.CleanEvent[]>([]);
+  //const [posts, setPosts] = useState<EventHelper.CleanEvent[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [refreshKey, setRefreshKey] = useState(0);
 
   const locationState = useLocation();
-  const state = locationState.state as RoleHelper.AuthChoiceState;
+  const state = locationState.state;
   const role = state?.role;
 
   const navigate = useNavigate();
@@ -73,7 +72,7 @@ const HomepageOrganizer: React.FC = () => {
         
         const cleanData = EventHelper.cleanEvents(rows, false);
         setEvents(cleanData);
-      } catch (error) {
+      } catch {
         console.log("The GET event call failed");
       } 
       finally {
@@ -91,18 +90,18 @@ const HomepageOrganizer: React.FC = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     // basic client-side validation
-    if (!jobName.trim()) return alert("Job name is required");
-    if (!startTime.trim()) return alert("Start time is required");
-    if (!endTime.trim()) return alert("End time is required");
+    if (!jobName.trim()) return alert(ErrorHelper.JOB_NAME_ERROR);
+    if (!startTime.trim()) return alert(ErrorHelper.START_TIME_ERROR);
+    if (!endTime.trim()) return alert(ErrorHelper.END_TIME_ERROR);
     if (new Date(endTime) <= new Date(startTime)) 
-      return alert("End time must be after start time");
-    if (!location.trim()) return alert("Location is required");
-    if (!description.trim()) return alert("Description is required");
+      return alert(ErrorHelper.TIMING_ERROR);
+    if (!location.trim()) return alert(ErrorHelper.LOCATION_ERROR);
+    if (!description.trim()) return alert(ErrorHelper.DESCRIPTION_ERROR);
 
     try { 
       const token = localStorage.getItem("access_token");
       if(!token){
-        alert("Your session has expired. Please log in again.");
+        alert(ErrorHelper.SESSION_EXPIRE_ERROR);
         navigate("/User-login", { state: { role } });
         return;
       }
@@ -153,10 +152,8 @@ const HomepageOrganizer: React.FC = () => {
         return;
       }
       
-      
-      let created: any = null;
       try {
-        created = await response.json();
+        await response.json();
       } catch (error) {
         alert("Unexpected Error: " +  error);
       }
@@ -173,7 +170,7 @@ const HomepageOrganizer: React.FC = () => {
     } 
     catch (err) {
       console.error("Create job error:", err);
-      alert("Network error — could not reach the server.");
+      alert(ErrorHelper.SERVER_ERROR);
     }
   };
 
@@ -201,7 +198,7 @@ const HomepageOrganizer: React.FC = () => {
 
       if(response.status !== 204){
         try{
-          const data = await response.json();
+          await response.json();
         } catch (error){
           console.error("Unexpected JSON package", error);
         }
@@ -211,7 +208,7 @@ const HomepageOrganizer: React.FC = () => {
 
     } catch (error) {
       console.error("Log-out Error:", error);
-      alert("Network error — could not connect to server.");
+      alert(ErrorHelper.SERVER_ERROR);
     }
   };
 

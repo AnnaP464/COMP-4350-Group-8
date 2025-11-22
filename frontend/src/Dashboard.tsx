@@ -10,7 +10,6 @@ import EventCard from "./components/EventCard";
 
 
 const API_URL = "http://localhost:4000";
-//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 type EventPost = {
   id: string;
@@ -32,7 +31,7 @@ const Dashboard: React.FC = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
+  const state = location.state;
   const role = state?.role;
 
   const [username, setUsername] = useState<string | null>(null);

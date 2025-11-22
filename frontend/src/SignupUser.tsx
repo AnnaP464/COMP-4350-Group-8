@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import "./css/AuthChoice.css";  // Reuse same styling
+import "./css/AuthChoice.css";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper"
+import * as ErrorHelper from "./helpers/ErrorHelper";
 import {Link} from "react-router-dom";
 
 const API_URL = "http://localhost:4000";
-//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const SignupUser: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -16,7 +16,7 @@ const SignupUser: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState("");
 
   const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
+  const state = location.state;
   const role = state?.role;
   const subtitle = RoleHelper.subtitle(role)
   const textFieldDesc = RoleHelper.textFieldDesc(role);
@@ -28,10 +28,10 @@ const SignupUser: React.FC = () => {
 
     setErrorMsg("");
 
-    if (!username.trim()) return setErrorMsg("Name is required.");
-    if (!email.trim()) return setErrorMsg("Email is required.");
-    if (!password.trim()) return setErrorMsg("Password is required.");
-    if (password !== confirmPassword) return setErrorMsg("Passwords do not match.");
+    if (!username.trim()) return setErrorMsg(ErrorHelper.NAME_ERROR);
+    if (!email.trim()) return setErrorMsg(ErrorHelper.EMAIL_ERROR);
+    if (!password.trim()) return setErrorMsg(ErrorHelper.PASSWORD_ERROR);
+    if (password !== confirmPassword) return setErrorMsg(ErrorHelper.CONFIRM_PASSWORD_ERROR);
     try {
       const response = await fetch(`${API_URL}/v1/auth/register`, {
         method: "POST",
@@ -47,36 +47,35 @@ const SignupUser: React.FC = () => {
       });
 
       //sign up failed
-      if (!response.ok) 
-      {
-        let msg;
-        try{
+      if (!response.ok) {
+        try {
           const errorData = await response.json();
-          if(response.status === 409)
-            setErrorMsg("Email already exists. Try signing in");
-          else if(Array.isArray(errorData.errors)){
-            msg = errorData.errors.map((e:any) => e.message).join("\n"); //chatgpt
-            if (msg?.includes("8"))
-              setErrorMsg("Password must be atleast 8 characters");
-            else if(msg?.includes("3") || msg?.includes("32"))
-              setErrorMsg("Username must be between 3 to 32 characters");
+          if(response.status === 409) {
+            setErrorMsg(ErrorHelper.DUPLICATE_EMAIL_ERROR);
+          } else if(Array.isArray(errorData.errors)){
+            const msg = errorData.errors.map((e:any) => e.message).join("\n");
+            if (msg?.includes("8")) {
+              setErrorMsg(ErrorHelper.PASSWORD_LENGTH_ERROR);
+            } else if(msg?.includes("3") || msg?.includes("32")) {
+              setErrorMsg(ErrorHelper.NAME_LENGTH_ERROR);
+            }
           }
-          else if(errorData.message)
+          else if(errorData.message) {
             setErrorMsg(errorData.message);
+          }
         }
         catch (error) {
-          setErrorMsg("Unexpected error from server");
+          setErrorMsg(ErrorHelper.DUPLICATE_EMAIL_ERROR);
         }
         return;
       }
 
-      const data = await response.json();
+      await response.json();
       navigate("/User-login", { state: { role } });
 
     } catch (error) {
       console.error("Sign-up error:", error);
-      setErrorMsg(`${error}`);
-      alert("Network error — could not connect to server." + error);
+      setErrorMsg(ErrorHelper.SERVER_ERROR);
     }
   };
 
@@ -94,7 +93,6 @@ const SignupUser: React.FC = () => {
             value={username}
             onChange={(e) => {setErrorMsg(""); 
               setUsername(e.target.value);}}
-            //required
           />
 
           <input
@@ -104,7 +102,6 @@ const SignupUser: React.FC = () => {
             value={email}
             onChange={(e) => {setErrorMsg("");
               setEmail(e.target.value)}}
-            //required
           />
 
           <input
@@ -114,7 +111,6 @@ const SignupUser: React.FC = () => {
             value={password}
             onChange={(e) => {setErrorMsg(""); 
               setPassword(e.target.value)}}
-            //required
           />
 
           <input
@@ -124,7 +120,6 @@ const SignupUser: React.FC = () => {
             value={confirmPassword}
             onChange={(e) => {setErrorMsg("");
               setConfirmPassword(e.target.value)}}
-            //required
           />
 
           <button className="option-btn" type="submit">

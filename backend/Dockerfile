@@ -1,6 +1,8 @@
 FROM node:20
-COPY / /backend
 WORKDIR /backend
-RUN npm install --include=dev
+COPY package*.json ./
+
+RUN npm install --include =dev --verbose
+COPY . .
 CMD ["npm", "run", "dev"]
 EXPOSE 3000

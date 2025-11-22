@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import "@testing-library/jest-dom";
 import SignupUser from "../SignupUser";
+import * as ErrorHelper from "../helpers/ErrorHelper";
 
 // mock navigate
 const mockNavigate = jest.fn();
@@ -107,7 +108,7 @@ describe("SignupUser", () => {
     fireEvent.click(screen.getByRole("button", { name: /Sign-up/i }));
 
     await waitFor(() =>
-      expect(screen.queryByText("Unexpected error from server")).toBeInTheDocument()
+      expect(screen.queryByText(ErrorHelper.DUPLICATE_EMAIL_ERROR)).toBeInTheDocument()
     );
     expect(mockNavigate).not.toHaveBeenCalled();
   });
@@ -154,7 +155,7 @@ describe("SignupUser", () => {
     fireEvent.click(screen.getByRole("button", { name: /Sign-up/i }));
 
     await waitFor(() =>
-      expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining("Network error — could not connect to server."))
+      expect(screen.getByText(ErrorHelper.SERVER_ERROR)).toBeInTheDocument()
     );
   });
 });

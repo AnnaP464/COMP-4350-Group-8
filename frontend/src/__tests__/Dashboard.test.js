@@ -247,9 +247,11 @@ test("logout: non-OK response triggers alert and returns (covers !response.ok)",
   // ensure initial fetch finishes
   await waitFor(() => expect(screen.getByText(/Welcome to your Dashboard/i)).toBeInTheDocument());
 
+  fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
+
   // submit the form directly to guarantee onSubmit runs
-  const form = container.querySelector("form");
-  fireEvent.submit(form);
+  //const form = container.querySelector("form");
+  //fireEvent.submit(form);
 
   await waitFor(() => {
     expect(window.alert).toHaveBeenCalledWith("Log-out failed: Bad request");
@@ -277,9 +279,11 @@ test("logout: OK but non-204 parses JSON then navigates (covers response.status 
 
   await waitFor(() => expect(screen.getByText(/Welcome to your Dashboard/i)).toBeInTheDocument());
 
+  fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
+
   // submit the form (triggers handleLogout)
-  const form = container.querySelector("form");
-  fireEvent.submit(form);
+  //const form = container.querySelector("form");
+  //fireEvent.submit(form);
 
   await waitFor(() => {
     // no error alert

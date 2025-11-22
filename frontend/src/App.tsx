@@ -28,7 +28,7 @@ function App() {
         {/* Organizer */}
         <Route path="/Homepage-Organizer"         element={<HomepageOrganizer />}/>
         <Route path="/Homepage-Organizer/profile" element={<OrganizerProfile />} />   
-        <Route path="/Events/:eventId/manage"      element={<ManageEvent />}      />
+        <Route path="/Events/:eventId/manage"     element={<ManageEvent />}      />
 
         {/* Volunteer */}
         <Route path="/Dashboard"          element={<Dashboard/>}/>

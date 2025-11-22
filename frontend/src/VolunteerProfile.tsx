@@ -15,8 +15,10 @@ import ProfileBadges from "./components/ProfileBadges";
 import ProfileRecentActivity from "./components/ProfileRecentActivity";
 
 
-type Me = { id: string; username: string; email?: string; role: string, createdAt: string};
+const API_URL = "http://localhost:4000";
+//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
+type Me = { id: string; username: string; email?: string; role: string, createdAt: string};
 const VolunteerProfile: React.FC = () => {
   const navigate = useNavigate();
 
@@ -28,7 +30,7 @@ const VolunteerProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
+  const state = location.state;
   const role = state?.role;
 
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -50,7 +52,7 @@ const VolunteerProfile: React.FC = () => {
 
     (async () => {
       try {
-        const res = await fetch("http://localhost:4000/v1/auth/me", {
+        const res = await fetch(`${API_URL}/v1/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.status === 401) {

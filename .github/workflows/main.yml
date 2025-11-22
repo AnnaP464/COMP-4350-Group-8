@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: npm run lint
 
-  front-end-tests:
+  frontend-tests:
     runs-on: windows-latest
     
     steps:
@@ -35,16 +35,34 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        working-directory: front-end
+        working-directory: frontend
 
       - name: Run Jest tests
         run: npm test -- --ci --runInBand
-        working-directory: front-end
+        working-directory: frontend
         env:
           CI: true
 
-  api-tests:
-    runs-on: windows-latest
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: hivehand
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d hivehand"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: "postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/hivehand"
 
     steps:
       - name: Checkout code
@@ -55,52 +73,45 @@ jobs:
         with:
           node-version: 22.12.0
 
+      - name: Run Database Migrations
+        run: |
+          CONNECTION_STRING="postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/hivehand"
+          cd backend/migrations
+          psql "$CONNECTION_STRING" -f 001_init.sql
+          psql "$CONNECTION_STRING" -f 002_Event_Registration.sql
+          psql "$CONNECTION_STRING" -f 003_Event_geofence.sql
+          psql "$CONNECTION_STRING" -f 004_Event_attendance.sql
+
       - name: Install dependencies
         run: npm ci
-        working-directory: api
+        working-directory: backend
 
       - name: Run Jest tests
         run: npm test -- --ci --runInBand
-        working-directory: api
+        working-directory: backend
         env:
           CI: true
 
-  e2e:
+  playwright-tests:
     runs-on: ubuntu-latest
 
-    # PostgreSQL service for the API
     services:
       postgres:
-        image: postgres:16
+        image: postgis/postgis:16-3.4
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: hivehand
         ports:
           - 5432:5432
-        # Make sure Postgres is ready before migrations
         options: >-
           --health-cmd="pg_isready -U postgres -d hivehand"
           --health-interval=5s
           --health-timeout=5s
-          --health-retries=20
+          --health-retries=5
 
     env:
-      # Common env for both servers & tests
-      NODE_ENV: test
-      # DB seen by the API
-      DATABASE_HOST: localhost
-      DATABASE_PORT: "5432"
-      DATABASE_NAME: hivehand
-      DATABASE_USER: hivedev
-      DATABASE_PASSWORD: verysafe
-      # API + FE URLs
-      API_PORT: "4000"
-      VITE_API_URL: http://localhost:4000
-      # (Optional) health URL your Playwright webServer uses
-      API_HEALTH_URL: http://localhost:4000/health
-      # Base URL for Playwright tests (front-end)
-      PLAYWRIGHT_BASE_URL: http://localhost:5173
+      DATABASE_URL: "postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/hivehand"
 
     steps:
       - name: Checkout
@@ -110,89 +121,36 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
 
-      # Install deps (root, api, front-end)
-      - name: Install root deps
+      - name: Install Dependencies
         run: npm ci
 
-      - name: Install API deps
-        run: npm ci --workspace api   # 👈 add this
-
-      - name: Install front-end deps
-        run: npm ci
-        working-directory: front-end
-
-      - name: Cache Playwright
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-
-      # Install Playwright browsers & Linux deps
       - name: Install Playwright
         run: npx playwright install --with-deps chromium
 
-      # Prepare DB schema (create app user and run migrations)
-      - name: Prepare database
-        env:
-          PGPASSWORD: postgres
+      - name: Run Database Migrations
         run: |
-          # create role if it doesn't exist
-          psql -h localhost -U postgres -d hivehand -c "DO \$\$ BEGIN CREATE ROLE hivedev LOGIN PASSWORD 'verysafe'; EXCEPTION WHEN duplicate_object THEN NULL; END \$\$;"
-          # grant db to that role
-          psql -h localhost -U postgres -d hivehand -c "GRANT ALL PRIVILEGES ON DATABASE hivehand TO hivedev;"
-          # give it the schema
-          psql -h localhost -U postgres -d hivehand -c "ALTER SCHEMA public OWNER TO hivedev;"
-          # run your migration
-          psql -h localhost -U postgres -d hivehand -f ./api/migrations/001_init.sql
-      # Start API & FE; let Playwright's webServer (or wait-on) handle readiness
-      - name: Install API dev deps
-        run: npm install --workspace api --include=dev
+          CONNECTION_STRING="postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/hivehand"
+          cd backend/migrations
+          psql "$CONNECTION_STRING" -f 001_init.sql
+          psql "$CONNECTION_STRING" -f 002_Event_Registration.sql
+          psql "$CONNECTION_STRING" -f 003_Event_geofence.sql
+          psql "$CONNECTION_STRING" -f 004_Event_attendance.sql
 
-      - name: Start API
+      - name: Start Backend
         run: |
-          npm --workspace api run dev:ci > /tmp/api.log 2>&1 &
-          sleep 5
-          echo "=== API LOG ==="
-          cat /tmp/api.log || true
+          cd backend
+          npm run dev &
+          npx wait-on -t 120000 "http://localhost:4000/health"
 
-      - name: Start Front-end
+      - name: Start Frontend
         run: |
-          npm run dev:web > /tmp/front.log 2>&1 &
-          sleep 5
-          echo "=== FRONT LOG ==="
-          cat /tmp/front.log || true
-
-      - name: Wait for servers
-        run: npx wait-on -t 120000 "http://localhost:4000" "http://localhost:5173"
+          cd frontend
+          npm run dev &
+          npx wait-on -t 120000 "http://localhost:5173"
         
       - name: Run Playwright tests
         env:
           BASE_URL: "http://localhost:5173"
-        run: npx playwright test --workers=1 --reporter=list,html
-
-      # Always upload HTML report, traces, screenshots on failure
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report
-          retention-days: 7
-
-      - name: Upload Playwright traces
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-traces
-          path: test-results/**/*
-          retention-days: 7
-
-      - name: Print server logs (on failure)
-        if: failure()
-        run: |
-          echo "===== API LOG ====="
-          tail -n 500 /tmp/api.log || true
-          echo "===== FRONT LOG ====="
-          tail -n 500 /tmp/front.log || true
+        run: npx playwright test --workers=1 --reporter=list

@@ -6,7 +6,6 @@ import * as EventHelper from "./helpers/EventHelper";
 import * as RoleHelper from "./helpers/RoleHelper";
 
 const API_URL = "http://localhost:4000";
-//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 type EventPost = {
   id: string;
@@ -28,7 +27,7 @@ const MyRegistrations: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
+  const state = location.state;
   const role = state?.role;
 
   const handleDeregistration = async (eventId: string) => {
@@ -62,7 +61,7 @@ const MyRegistrations: React.FC = () => {
 
       if (response.status !== 201) {
         try {
-          const data = await response.json();
+          await response.json();
         } catch (error) {
           console.error("Unexpected JSON package", error);
         }

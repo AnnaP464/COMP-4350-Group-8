@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import "./css/AuthChoice.css";  // Reuse same styling
+import "./css/AuthChoice.css";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper";
+import * as ErrorHelper from "./helpers/ErrorHelper";
 import {Link} from "react-router-dom";
 
 const API_URL = "http://localhost:4000";
-//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
-const msg = "Invalid email or password"
 
 const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -15,7 +14,7 @@ const LoginUser: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState("");
 
   const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
+  const state = location.state;
   const role = state?.role;
   const subtitle = RoleHelper.subtitle(role)
 
@@ -24,8 +23,8 @@ const LoginUser: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
-    if (!email.trim()) return alert("Email is required.");
-    if (!password.trim()) return alert("Password is required.");
+    if (!email.trim()) return setErrorMsg(ErrorHelper.EMAIL_ERROR);
+    if (!password.trim()) return setErrorMsg(ErrorHelper.PASSWORD_ERROR);
 
     try {
       const response = await fetch(`${API_URL}/v1/auth/login`, {
@@ -42,10 +41,8 @@ const LoginUser: React.FC = () => {
 
       //login failed
       if (!response.ok) {
-        const err = await response.text();
-        //alert(`Login failed: ${err}`);
-        setErrorMsg(msg);
-        return;
+        await response.text();
+        return setErrorMsg(ErrorHelper.LOG_IN_ERROR);
       }
 
       const data = await response.json();
@@ -58,29 +55,29 @@ const LoginUser: React.FC = () => {
       //check if role of user while login matches with the backend role
       //prevents users to login from volunteer screen with organizer credentials
       //and vice versa
-      const desiredRole = (role ?? "").toLowerCase();
-      const backendRole = (data?.user?.role ?? "").toLowerCase();
+      const desiredRole = (role ?? "")
+      const backendRole = (data?.user?.role ?? "")
       if(desiredRole && backendRole && desiredRole !== backendRole){
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         localStorage.removeItem("user");
-        setErrorMsg(errorMsg);
+        setErrorMsg(ErrorHelper.LOG_IN_ERROR);
         return;
       }
 
       // Route strictly by backend role
-      if (backendRole === "organizer") {
+      if (backendRole === RoleHelper.ORG_ROLE) {
         navigate("/Homepage-Organizer", { state: { role } });
-      } else if (backendRole === "volunteer") {
+      } else if (backendRole === RoleHelper.VOL_ROLE) {
         navigate("/Dashboard", { state: { role } });
       } else {
         // Unknown role: send them back or show a safe default
-        setErrorMsg(errorMsg);
+        setErrorMsg(ErrorHelper.LOG_IN_ERROR);
       }
 
     } catch (error) {
       console.error("Login error:", error);
-      alert("Network error — could not connect to server.");
+      setErrorMsg(ErrorHelper.SERVER_ERROR);
     }
   };
 

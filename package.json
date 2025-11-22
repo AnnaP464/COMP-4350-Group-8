@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "lint": "eslint . --ext .js,.ts,.tsx",
-    "dev:api": "npm --workspace backend run dev",
+    "dev:backend": "npm --workspace backend run dev",
     "dev:web": "npm --workspace frontend run dev",
     "build": "npm -w api run build && npm -w frontend run build",
     "test": "playwright test --reporter=list",

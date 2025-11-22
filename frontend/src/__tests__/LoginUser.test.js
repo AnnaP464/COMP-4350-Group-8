@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import LoginUser from "../LoginUser";
 import "@testing-library/jest-dom";
+import * as ErrorHelper from "../helpers/ErrorHelper";
 
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => {
@@ -64,14 +65,14 @@ describe("LoginUser handleSubmit coverage", () => {
   test("early return: alerts when email is missing", async () => {
     renderWithRole("Organizer");
     await fillAndSubmit({ password: "secret" });
-    expect(alertSpy).toHaveBeenCalledWith("Email is required.");
+    expect(screen.getByText(ErrorHelper.EMAIL_ERROR)).toBeInTheDocument()
     expect(global.fetch).toBeUndefined(); // no network call
   });
 
   test("early return: alerts when password is missing", async () => {
     renderWithRole("Organizer");
     await fillAndSubmit({ email: "a@b.com" });
-    expect(alertSpy).toHaveBeenCalledWith("Password is required.");
+    expect(screen.getByText(ErrorHelper.PASSWORD_ERROR)).toBeInTheDocument()
   });
 
   test("non-OK response shows errorMsg 'Invalid email or password'", async () => {
@@ -88,34 +89,7 @@ describe("LoginUser handleSubmit coverage", () => {
     );
     expect(mockNavigate).not.toHaveBeenCalled();
   });
-/*
-  test("role mismatch: cleans tokens, shows message, no navigate", async () => {
-    // User picked Organizer screen but backend says volunteer
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        access_token: "A",
-        refresh_token: "R",
-        user: { role: "Volunteer" },
-      }),
-    });
-
-    const ls = setupLocalStorageMock();
-    renderWithRole("Organizer");
-    await fillAndSubmit({ email: "o@x.com", password: "pw" });
-
-    await waitFor(() =>
-      expect(
-        screen.getByText(/User Role is Invalid/i)
-      ).toBeInTheDocument()
-    );
-    
-    expect(ls.removeItem).toHaveBeenCalledWith("access_token");
-    expect(ls.removeItem).toHaveBeenCalledWith("refresh_token");
-    expect(ls.removeItem).toHaveBeenCalledWith("user");
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
-*/
+  
   test("success: backend organizer → navigates /Homepage-Organizer", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -157,7 +131,7 @@ describe("LoginUser handleSubmit coverage", () => {
     renderWithRole("Organizer");
     await fillAndSubmit({ email: "a@b.com", password: "pw" });
     await waitFor(() =>
-      expect(alertSpy).toHaveBeenCalledWith("Network error — could not connect to server.")
+      expect(screen.getByText(ErrorHelper.SERVER_ERROR)).toBeInTheDocument()
     );
   });
 });

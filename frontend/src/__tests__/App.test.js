@@ -13,11 +13,11 @@ test("renders login page by default", () => {
 test("navigates to organizer auth selection page", async () => {
   render(<App />);
 
-  const organizerButton = screen.getByRole("link", { name: "Organizer"});
+  const organizerButton = screen.getByRole("link", { name: "Log-in"});
   await userEvent.click(organizerButton);
-  expect(screen.getByText("Organizer Portal")).toBeInTheDocument();
+  expect(screen.getByText("Log-in")).toBeInTheDocument();
 
-  const logInButton = screen.getByRole("link", { name: "Log-in"});
+  const logInButton = screen.getByRole("link", { name: "Organizer"});
   await userEvent.click(logInButton);
   expect(screen.getByText("Organizer Log-in")).toBeInTheDocument();
 
@@ -30,11 +30,11 @@ test("navigates to organizer auth selection page", async () => {
 test("navigates to volunteer auth selection page", async () => {
   render(<App />);
 
-  const organizerButton = screen.getByRole("link", { name: "Volunteer"});
+  const organizerButton = screen.getByRole("link", { name: "Log-in"});
   await userEvent.click(organizerButton);
-  expect(screen.getByText("Volunteer Portal")).toBeInTheDocument();
+  expect(screen.getByText("Log-in")).toBeInTheDocument();
 
-  const logInButton = screen.getByRole("link", { name: "Log-in"});
+  const logInButton = screen.getByRole("link", { name: "Volunteer"});
   await userEvent.click(logInButton);
   expect(screen.getByText("Volunteer Log-in")).toBeInTheDocument();
 

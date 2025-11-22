@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as eventService from "../services/eventsService";
 import * as events from "../db/events";
-import { listMyEventsService } from "../services/eventsService";
 
 // POST /v1/events (auth required)
 export async function createEvent(req: Request, res: Response, next: NextFunction) {

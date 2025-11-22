@@ -1,8 +1,6 @@
--- migrations/010_postgis.sql
-CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- Geofence per event (polygon or circle)
-CREATE TABLE event_geofences (
+CREATE TABLE IF NOT EXISTS event_geofences (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id      uuid NOT NULL REFERENCES events(id) ON DELETE CASCADE,
   name          text NOT NULL,
