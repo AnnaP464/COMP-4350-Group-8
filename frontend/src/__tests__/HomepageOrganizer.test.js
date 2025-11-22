@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import HomepageOrganizer from "../HomepageOrganizer.tsx";
+import * as ErrorHelper from "../helpers/ErrorHelper";
 
 // ---- helpers ----
 const setupLocalStorageMock = (seed = {}) => {
@@ -414,7 +415,7 @@ describe("Homepage-Organizer — extra branches", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Log-out$/i }));
 
     await waitFor(() =>
-      expect(window.alert).toHaveBeenCalledWith("Network error — could not connect to server.")
+      expect(window.alert).toHaveBeenCalledWith(ErrorHelper.SERVER_ERROR)
     );
   });
 });

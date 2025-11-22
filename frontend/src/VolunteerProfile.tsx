@@ -13,7 +13,8 @@ import "./css/VolunteerProfile.css";
 import {getAvatarInitials, formatMonthYear} from "./helpers/UserInfoHelper.tsx";
 import * as RoleHelper from "./helpers/RoleHelper";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_URL = "http://localhost:4000";
+//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 type Me = { id: string; username: string; email?: string; role: string, createdAt: string};
 const VolunteerProfile: React.FC = () => {
