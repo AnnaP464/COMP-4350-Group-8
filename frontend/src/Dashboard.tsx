@@ -27,7 +27,7 @@ const Dashboard: React.FC = () => {
   const [username, setUsername] = useState<string | null>(null);
 
   const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
+  const state = location.state;
   const role = state?.role;
 
   // Start with dummy placeholder events
@@ -115,7 +115,7 @@ const Dashboard: React.FC = () => {
       const token = localStorage.getItem("access_token");
       if (!token) {
         alert("Your session has expired. Please log in again.");
-        navigate("/User-login", { state: { role } });
+        navigate("/" + RoleHelper.LOG_IN, { state: { role } });
         return;
       }
 
@@ -136,7 +136,7 @@ const Dashboard: React.FC = () => {
       if(response.status == 401){
         //login expired 
         alert("Your session has expired. Please log in again.");
-        navigate("/User-login", { state: { role } });
+        navigate("/" + RoleHelper.LOG_IN, { state: { role } });
         return;
       } 
       else if (response.status == 409){

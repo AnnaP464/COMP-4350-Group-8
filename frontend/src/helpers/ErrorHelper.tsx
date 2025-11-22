@@ -15,3 +15,13 @@ export const CONFIRM_PASSWORD_ERROR = "Passwords do not match.";
 
 export const LOG_IN_ERROR = "Invalid email or password.";
 export const SERVER_ERROR = "Network Error — Please Try Again Later.";
+
+
+export const JOB_NAME_ERROR = "Job name is required";
+export const START_TIME_ERROR = "Start time is required";
+export const END_TIME_ERROR = "End time is required";
+export const TIMING_ERROR = "End time must be after start time";
+export const LOCATION_ERROR = "Location is required";
+export const DESCRIPTION_ERROR = "Description is required";
+
+export const SESSION_EXPIRE_ERROR = "Your session has expired. Please log in again.";

@@ -27,14 +27,14 @@ const VolunteerProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
+  const state = location.state;
   const role = state?.role;
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
       alert("Please sign in first.");
-      navigate("/User-login", { replace: true, state: { role } });
+      navigate("/" + RoleHelper.LOG_IN, { replace: true, state: { role } });
       return;
     }
 
@@ -52,7 +52,7 @@ const VolunteerProfile: React.FC = () => {
         });
         if (res.status === 401) {
           alert("Session expired. Please log in again.");
-          navigate("/User-login", { replace: true, state: { role } });
+          navigate("/" + RoleHelper.LOG_IN, { replace: true, state: { role } });
           return;
         }
         const data = await res.json();

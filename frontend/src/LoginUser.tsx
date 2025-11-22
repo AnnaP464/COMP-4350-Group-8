@@ -14,7 +14,7 @@ const LoginUser: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState("");
 
   const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
+  const state = location.state;
   const role = state?.role;
   const subtitle = RoleHelper.subtitle(role)
 

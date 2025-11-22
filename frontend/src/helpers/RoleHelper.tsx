@@ -6,8 +6,6 @@ export const LOG_IN_PAGE = "";
 
 export type UserRole = typeof ORG_ROLE | typeof VOL_ROLE | "";
 
-export type AuthChoiceState = {role : UserRole}
-
 export function subtitle(role: UserRole){
   let subtitle = "User Role is Invalid";
   if(role === ORG_ROLE){

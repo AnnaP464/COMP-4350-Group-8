@@ -27,7 +27,7 @@ const MyRegistrations: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
+  const state = location.state;
   const role = state?.role;
 
   const handleDeregistration = async (eventId: string) => {
@@ -35,7 +35,7 @@ const MyRegistrations: React.FC = () => {
       const token = localStorage.getItem("access_token");
       if (!token) {
         alert("Your session has expired. Please log in again.");
-        navigate("/User-login", { state: { role } });
+        navigate("/" + RoleHelper.LOG_IN, { state: { role } });
         return;
       }
 
@@ -81,7 +81,7 @@ const MyRegistrations: React.FC = () => {
     const token = localStorage.getItem("access_token");
     if (!token) {
       alert("Please log in to view your events.");
-      navigate("/User-login", { replace: true, state : { role } });
+      navigate("/" + RoleHelper.LOG_IN, { replace: true, state : { role } });
       return;
     }
 
@@ -97,7 +97,7 @@ const MyRegistrations: React.FC = () => {
 
         if (res.status === 401) {
           alert("Session expired. Please log in again.");
-          navigate("/User-login", { replace: true, state : { role } });
+          navigate("/" + RoleHelper.LOG_IN, { replace: true, state : { role } });
           return;
         }
         if (!res.ok) {

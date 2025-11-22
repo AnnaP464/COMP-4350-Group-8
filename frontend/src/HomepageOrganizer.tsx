@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import { Clock, MapPin } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
 import * as RoleHelper from "./helpers/RoleHelper";
+import * as ErrorHelper from "./helpers/ErrorHelper";
 
 const API_URL = "http://localhost:4000";
 
@@ -33,7 +34,7 @@ const HomepageOrganizer: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const locationState = useLocation();
-  const state = locationState.state as RoleHelper.AuthChoiceState;
+  const state = locationState.state;
   const role = state?.role;
 
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ const HomepageOrganizer: React.FC = () => {
     const token = localStorage.getItem("access_token");
     //send user to organizer login
     if(!token){
-      navigate("/User-login", { state: { role } });
+      navigate("/" + RoleHelper.LOG_IN, { state: { role } });
       return;
     }
 
@@ -88,19 +89,19 @@ const HomepageOrganizer: React.FC = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     // basic client-side validation
-    if (!jobName.trim()) return alert("Job name is required");
-    if (!startTime.trim()) return alert("Start time is required");
-    if (!endTime.trim()) return alert("End time is required");
+    if (!jobName.trim()) return alert(ErrorHelper.JOB_NAME_ERROR);
+    if (!startTime.trim()) return alert(ErrorHelper.START_TIME_ERROR);
+    if (!endTime.trim()) return alert(ErrorHelper.END_TIME_ERROR);
     if (new Date(endTime) <= new Date(startTime)) 
-      return alert("End time must be after start time");
-    if (!location.trim()) return alert("Location is required");
-    if (!description.trim()) return alert("Description is required");
+      return alert(ErrorHelper.TIMING_ERROR);
+    if (!location.trim()) return alert(ErrorHelper.LOCATION_ERROR);
+    if (!description.trim()) return alert(ErrorHelper.DESCRIPTION_ERROR);
 
     try { 
       const token = localStorage.getItem("access_token");
       if(!token){
-        alert("Your session has expired. Please log in again.");
-        navigate("/User-login", { state: { role } });
+        alert(ErrorHelper.SESSION_EXPIRE_ERROR);
+        navigate("/" + RoleHelper.LOG_IN, { state: { role } });
         return;
       }
 
@@ -140,7 +141,7 @@ const HomepageOrganizer: React.FC = () => {
       if (response.status === 401) { //auto-redirect if timed-out
         alert("Your session has expired. Please log in again.");
         console.log("401");
-        navigate("/User-login", { state: { role } }); 
+        navigate("/" + RoleHelper.LOG_IN, { state: { role } }); 
         return;
       }
       
