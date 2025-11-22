@@ -46,6 +46,24 @@ jobs:
   backend-tests:
     runs-on: windows-latest
 
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: hivehand
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d hivehand"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: "postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/hivehand"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
