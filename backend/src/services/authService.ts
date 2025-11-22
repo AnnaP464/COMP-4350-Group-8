@@ -27,7 +27,6 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
   const { users, sessions } = deps;
 
   return {
-    //async register(input: RegisterInput): Promise<RegisterResult> {
     async register(input: { username:string; email:string; password:string; role:string }): Promise<RegisterResult> {
       const exists = await users.findByEmail(input.email);
       if (exists) throw new Error("Email already registered");

@@ -38,7 +38,6 @@ const me: RequestHandler = (_req, res) => {
 // Factory: take an AuthService, return Express handler.
 export function makeAuthController(auth: AuthService) : AuthController {
 
-
     /** POST /v1/auth/register */
     async function registerUser(req: Request, res: Response, next: NextFunction) {
       try {
