@@ -35,7 +35,7 @@ const MyRegistrations: React.FC = () => {
       const token = localStorage.getItem("access_token");
       if (!token) {
         alert("Your session has expired. Please log in again.");
-        navigate("/" + RoleHelper.LOG_IN, { state: { role } });
+        navigate("/User-login", { state: { role } });
         return;
       }
 
@@ -81,7 +81,7 @@ const MyRegistrations: React.FC = () => {
     const token = localStorage.getItem("access_token");
     if (!token) {
       alert("Please log in to view your events.");
-      navigate("/" + RoleHelper.LOG_IN, { replace: true, state : { role } });
+      navigate("/User-login", { replace: true, state : { role } });
       return;
     }
 
@@ -97,7 +97,7 @@ const MyRegistrations: React.FC = () => {
 
         if (res.status === 401) {
           alert("Session expired. Please log in again.");
-          navigate("/" + RoleHelper.LOG_IN, { replace: true, state : { role } });
+          navigate("/User-login", { replace: true, state : { role } });
           return;
         }
         if (!res.ok) {

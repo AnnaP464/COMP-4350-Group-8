@@ -7,7 +7,8 @@ import { useLocation } from "react-router-dom";
 const Login: React.FC = () => {
   const location = useLocation();
   const state = location.state
-  const authChoice = state?.authChoice;
+  const authChoice = RoleHelper.getAuthPath(state?.authChoice);
+
   return (
     <div className="login-container">
       <div className="login-box">
@@ -15,7 +16,7 @@ const Login: React.FC = () => {
         <p className="subtitle">{authChoice}</p>
         <div className="options">
           <Link 
-            to={"/" + authChoice}
+            to={authChoice}
             className="option-btn"
             state={{ 
               role: RoleHelper.ORG_ROLE,
@@ -26,7 +27,7 @@ const Login: React.FC = () => {
           </Link>
 
           <Link 
-            to={"/" + authChoice}
+            to={authChoice}
             className="option-btn"
             state={{ 
               role: RoleHelper.VOL_ROLE,

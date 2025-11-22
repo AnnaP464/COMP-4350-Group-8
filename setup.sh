@@ -4,19 +4,7 @@
 echo "Installing root dependencies..."
 npm install
 
-# Step 2: Install API dependencies
-echo "Installing backend dependencies..."
-cd backend
-npm install
-cd ..
-
-# Step 3: Install frontend dependencies
-echo "Installing frontend dependencies..."
-cd frontend
-npm install
-cd ..
-
-# Step 4: Setup PostgreSQL database
+# Step 2: Setup PostgreSQL database
 # Make sure psql is installed and the DB is accessible
 
 DB_NAME="hivehand"

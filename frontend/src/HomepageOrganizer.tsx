@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Clock, MapPin } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
-import * as RoleHelper from "./helpers/RoleHelper";
 import * as ErrorHelper from "./helpers/ErrorHelper";
 
 const API_URL = "http://localhost:4000";
@@ -47,7 +46,7 @@ const HomepageOrganizer: React.FC = () => {
     const token = localStorage.getItem("access_token");
     //send user to organizer login
     if(!token){
-      navigate("/" + RoleHelper.LOG_IN, { state: { role } });
+      navigate("/User-login", { state: { role } });
       return;
     }
 
@@ -101,7 +100,7 @@ const HomepageOrganizer: React.FC = () => {
       const token = localStorage.getItem("access_token");
       if(!token){
         alert(ErrorHelper.SESSION_EXPIRE_ERROR);
-        navigate("/" + RoleHelper.LOG_IN, { state: { role } });
+        navigate("/User-login", { state: { role } });
         return;
       }
 
@@ -141,7 +140,7 @@ const HomepageOrganizer: React.FC = () => {
       if (response.status === 401) { //auto-redirect if timed-out
         alert("Your session has expired. Please log in again.");
         console.log("401");
-        navigate("/" + RoleHelper.LOG_IN, { state: { role } }); 
+        navigate("/User-login", { state: { role } }); 
         return;
       }
       
@@ -169,7 +168,7 @@ const HomepageOrganizer: React.FC = () => {
     } 
     catch (err) {
       console.error("Create job error:", err);
-      alert("Network error — could not reach the server.");
+      alert(ErrorHelper.SERVER_ERROR);
     }
   };
 
@@ -207,7 +206,7 @@ const HomepageOrganizer: React.FC = () => {
 
     } catch (error) {
       console.error("Log-out Error:", error);
-      alert("Network error — could not connect to server.");
+      alert(ErrorHelper.SERVER_ERROR);
     }
   };
 

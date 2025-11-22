@@ -34,7 +34,7 @@ const VolunteerProfile: React.FC = () => {
     const token = localStorage.getItem("access_token");
     if (!token) {
       alert("Please sign in first.");
-      navigate("/" + RoleHelper.LOG_IN, { replace: true, state: { role } });
+      navigate("/User-login", { replace: true, state: { role } });
       return;
     }
 
@@ -52,7 +52,7 @@ const VolunteerProfile: React.FC = () => {
         });
         if (res.status === 401) {
           alert("Session expired. Please log in again.");
-          navigate("/" + RoleHelper.LOG_IN, { replace: true, state: { role } });
+          navigate("/User-login", { replace: true, state: { role } });
           return;
         }
         const data = await res.json();

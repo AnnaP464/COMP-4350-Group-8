@@ -8,10 +8,6 @@ import HomepageOrganizer from "./HomepageOrganizer.tsx";
 import Dashboard from "./Dashboard.tsx";
 import VolunteerProfile from "./VolunteerProfile.tsx";
 import VolunteerRegisteredEvents from "./VolunteerRegisteredEvents.tsx";
-import * as RoleHelper from "./helpers/RoleHelper";
-
-const signUpPath = "/" + RoleHelper.SIGN_UP;
-const logInPath = "/" + RoleHelper.LOG_IN;
 
 function App() {
   return(
@@ -20,8 +16,8 @@ function App() {
       <Routes>
         <Route path="/" element={<AuthChoice />} />
         <Route path="/Role-Choice" element={<RoleChoice />} />
-        <Route path={signUpPath} element={<SignupUser />} />
-        <Route path={logInPath} element={<LoginUser />} />
+        <Route path="/User-signup" element={<SignupUser />} />
+        <Route path="/User-login" element={<LoginUser />} />
         <Route path="/Homepage-Organizer" element={<HomepageOrganizer />}/>
         <Route path="/Dashboard" element={<Dashboard/>}/>
         <Route path="/VolunteerProfile" element={<VolunteerProfile/>}/>

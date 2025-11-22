@@ -16,6 +16,16 @@ export function subtitle(role: UserRole){
   return subtitle;
 }
 
+export function getAuthPath(authChoice: string){
+  let authChoicePage = "/";
+  if(authChoice === LOG_IN){
+    authChoicePage = "/User-login";
+  } else if (authChoice === SIGN_UP){
+    authChoicePage = "/User-signup";
+  }
+  return authChoicePage;
+}
+
 export function textFieldDesc(role: UserRole){
   let textFieldDesc = "User Role is Invalid"
   if(role === ORG_ROLE){

@@ -5,7 +5,6 @@ import "./css/HomepageOrganizer.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cleanEvents } from "./helpers/EventHelper";
 import { Clock, MapPin } from "lucide-react";
-import * as RoleHelper from "./helpers/RoleHelper";
 
 const API_URL = "http://localhost:4000";
 
@@ -115,7 +114,7 @@ const Dashboard: React.FC = () => {
       const token = localStorage.getItem("access_token");
       if (!token) {
         alert("Your session has expired. Please log in again.");
-        navigate("/" + RoleHelper.LOG_IN, { state: { role } });
+        navigate("/User-login", { state: { role } });
         return;
       }
 
@@ -136,7 +135,7 @@ const Dashboard: React.FC = () => {
       if(response.status == 401){
         //login expired 
         alert("Your session has expired. Please log in again.");
-        navigate("/" + RoleHelper.LOG_IN, { state: { role } });
+        navigate("/User-login", { state: { role } });
         return;
       } 
       else if (response.status == 409){

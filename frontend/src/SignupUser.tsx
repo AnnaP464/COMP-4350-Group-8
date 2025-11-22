@@ -71,7 +71,7 @@ const SignupUser: React.FC = () => {
       }
 
       await response.json();
-      navigate("/" + RoleHelper.LOG_IN, { state: { role } });
+      navigate("/User-login", { state: { role } });
 
     } catch (error) {
       console.error("Sign-up error:", error);
