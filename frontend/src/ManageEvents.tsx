@@ -6,7 +6,7 @@ import * as RoleHelper from "./helpers/RoleHelper";
 import * as EventHelper from "./helpers/EventHelper";
 import "./css/HomepageOrganizer.css";
 import "./css/MyRegistrations.css";
-import "./css/ManageEvents.css"
+import "./css/ManageEvents.css";
 import EventCard from "./components/EventCard";
 
 
