@@ -19,6 +19,10 @@ function App() {
     //when url matches the path, react router renders the element component
     <BrowserRouter>
       <Routes>
+
+        {/* Entry point of the app */}
+        <Route path="/Role-Choice" element={<RoleChoice />} />
+        
         {/* Sing in/up page */}
         <Route path="/"            element={<RoleChoice />} />
         <Route path="Auth-Choice"  element={<AuthChoice />} />

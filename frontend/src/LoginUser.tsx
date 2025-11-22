@@ -20,12 +20,18 @@ const LoginUser: React.FC = () => {
 
   const navigate = useNavigate();
 
+  /*-----------------------------------------------------
+                  Log in button/logic
+  -------------------------------------------------------*/
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
+    
+    //email or password not entered
     if (!email.trim()) return setErrorMsg(ErrorHelper.EMAIL_ERROR);
     if (!password.trim()) return setErrorMsg(ErrorHelper.PASSWORD_ERROR);
 
+    //api call to auth/login
     try {
       const response = await fetch(`${API_URL}/v1/auth/login`, {
         method: "POST",
@@ -35,7 +41,7 @@ const LoginUser: React.FC = () => {
         body: JSON.stringify({
           email,
           password,
-          role, // send role too if your backend expects it
+          role,
         }),
       });
 
@@ -47,9 +53,8 @@ const LoginUser: React.FC = () => {
 
       const data = await response.json();
 
-      //save user to local storage
+      //save user and access_token to local storage
       localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       //check if role of user while login matches with the backend role
@@ -59,7 +64,6 @@ const LoginUser: React.FC = () => {
       const backendRole = (data?.user?.role ?? "")
       if(desiredRole && backendRole && desiredRole !== backendRole){
         localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
         localStorage.removeItem("user");
         setErrorMsg(ErrorHelper.LOG_IN_ERROR);
         return;
@@ -79,7 +83,8 @@ const LoginUser: React.FC = () => {
       console.error("Login error:", error);
       setErrorMsg(ErrorHelper.SERVER_ERROR);
     }
-  };
+  }; //log in logic ends
+
 
   return (
     <div className="login-container">
