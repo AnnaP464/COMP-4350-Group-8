@@ -23,8 +23,8 @@ const LoginUser: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
-    if (!email.trim()) return alert("Email is required.");
-    if (!password.trim()) return alert("Password is required.");
+    if (!email.trim()) return setErrorMsg("Email is required.");
+    if (!password.trim()) return setErrorMsg("Password is required.");
 
     try {
       const response = await fetch(`${API_URL}/v1/auth/login`, {
@@ -42,10 +42,7 @@ const LoginUser: React.FC = () => {
       //login failed
       if (!response.ok) {
         await response.text();
-        let msg = "Invalid email or password"
-        //alert(`Login failed: ${err}`);
-        setErrorMsg(msg);
-        return;
+        return setErrorMsg("Invalid email or password.");
       }
 
       const data = await response.json();

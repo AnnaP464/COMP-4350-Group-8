@@ -16,8 +16,9 @@ const SignupUser: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState("");
 
   const location = useLocation();
-  const state = location.state as RoleHelper.AuthChoiceState;
+  const state = location.state;
   const role = state?.role;
+  const authChoice = state?.authChoice;
   const subtitle = RoleHelper.subtitle(role)
   const textFieldDesc = RoleHelper.textFieldDesc(role);
 
@@ -71,7 +72,7 @@ const SignupUser: React.FC = () => {
       }
 
       await response.json();
-      navigate("/User-login", { state: { role } });
+      navigate("/" + authChoice, { state: { role } });
 
     } catch (error) {
       console.error("Sign-up error:", error);
