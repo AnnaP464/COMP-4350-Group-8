@@ -16,12 +16,12 @@ test("New organizer registration, login make an event and check profile", async 
         page.getByRole("heading", { level: 2, name: /welcome to hivehand/i })
     ).toBeVisible();
 
-    await expect(page.getByRole("link", { name: "Organizer" })).toBeVisible();
-    await page.getByRole("link", {name: "Organizer"}).click();
-    await expect(page.getByText("Organizer Portal")).toBeVisible();
-
     await expect(page.getByRole("link", { name: "Log-in" })).toBeVisible();
     await page.getByRole("link", {name: "Log-in"}).click();
+    await expect(page.getByText("Organizer")).toBeVisible();
+
+    await expect(page.getByRole("link", { name: "Organizer" })).toBeVisible();
+    await page.getByRole("link", {name: "Organizer"}).click();
 
     await expect(page.getByRole("button", { name: "Log-in" })).toBeVisible();
     await page.getByPlaceholder("Email *").fill(email1);
@@ -32,12 +32,12 @@ test("New organizer registration, login make an event and check profile", async 
     await expect(page.getByRole("link", { name: "Back to Role Selection" })).toBeVisible();
     await page.getByRole("link", {name: "Back to Role Selection"}).click();
 
-    await expect(page.getByRole("link", { name: "Organizer" })).toBeVisible();
-    await page.getByRole("link", {name: "Organizer"}).click();
-    await expect(page.getByText("Organizer Portal")).toBeVisible();
-
     await expect(page.getByRole("link", { name: "Sign-up" })).toBeVisible();
     await page.getByRole("link", {name: "Sign-up"}).click();
+    await expect(page.getByText("Organizer")).toBeVisible();
+
+    await expect(page.getByRole("link", { name: "Organizer" })).toBeVisible();
+    await page.getByRole("link", {name: "Organizer"}).click();
     await expect(page.getByText("Organizer Sign-up")).toBeVisible();
 
     await page.getByPlaceholder("Organization name *").fill(orgName);
@@ -68,8 +68,12 @@ test("New organizer registration, login make an event and check profile", async 
 
     await expect(page.getByRole("button", { name: "Profile" })).toBeVisible();
     await page.getByRole("button", {name: "Profile"}).click();
-    await expect(page.getByRole("button", { name: "Profile" })).toBeVisible();
-    await page.getByRole("button", {name: "Profile"}).click();
+    await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();
+    await page.getByRole("button", {name: "Log-out"}).click();
+
+    await expect(
+      page.getByRole("heading", { level: 2, name: /welcome to hivehand/i })
+    ).toBeVisible();
 });
 
 test("New volunteer registration, login, try to sign up for an event and log out", async ({ page }) => {
@@ -80,12 +84,12 @@ test("New volunteer registration, login, try to sign up for an event and log out
         page.getByRole("heading", { level: 2, name: /welcome to hivehand/i })
     ).toBeVisible();
 
-    await expect(page.getByRole("link", { name: "Volunteer" })).toBeVisible();
-    await page.getByRole("link", {name: "Volunteer"}).click();
-    await expect(page.getByText("Volunteer Portal")).toBeVisible();
-
     await expect(page.getByRole("link", { name: "Log-in" })).toBeVisible();
     await page.getByRole("link", {name: "Log-in"}).click();
+    await expect(page.getByText("Volunteer")).toBeVisible();
+
+    await expect(page.getByRole("link", { name: "Volunteer" })).toBeVisible();
+    await page.getByRole("link", {name: "Volunteer"}).click();
 
     await expect(page.getByRole("button", { name: "Log-in" })).toBeVisible();
     await page.getByPlaceholder("Email *").fill(email2);
@@ -96,12 +100,12 @@ test("New volunteer registration, login, try to sign up for an event and log out
     await expect(page.getByRole("link", { name: "Back to Role Selection" })).toBeVisible();
     await page.getByRole("link", {name: "Back to Role Selection"}).click();
 
-    await expect(page.getByRole("link", { name: "Volunteer" })).toBeVisible();
-    await page.getByRole("link", {name: "Volunteer"}).click();
-    await expect(page.getByText("Volunteer Portal")).toBeVisible();
-
     await expect(page.getByRole("link", { name: "Sign-up" })).toBeVisible();
     await page.getByRole("link", {name: "Sign-up"}).click();
+    await expect(page.getByText("Volunteer")).toBeVisible();
+
+    await expect(page.getByRole("link", { name: "Volunteer" })).toBeVisible();
+    await page.getByRole("link", {name: "Volunteer"}).click();
     await expect(page.getByText("Volunteer Sign-up")).toBeVisible();
 
     await page.getByPlaceholder("Your username *").fill(userName);
