@@ -44,14 +44,15 @@ const LoginUser: React.FC = () => {
           role,
         }),
       });
+      
+      const data = await response.json();
 
       //login failed
+      //get err msg from backend and display it
       if (!response.ok) {
-        await response.text();
-        return setErrorMsg(ErrorHelper.LOG_IN_ERROR);
+        return setErrorMsg(data?.message);
       }
 
-      const data = await response.json();
 
       //save user and access_token to local storage
       localStorage.setItem("access_token", data.access_token);
@@ -70,12 +71,14 @@ const LoginUser: React.FC = () => {
       }
 
       // Route strictly by backend role
+      // send the role to the next page with state
       if (backendRole === RoleHelper.ORG_ROLE) {
         navigate("/Homepage-Organizer", { state: { role } });
-      } else if (backendRole === RoleHelper.VOL_ROLE) {
+      } 
+      else if (backendRole === RoleHelper.VOL_ROLE) {
         navigate("/Dashboard", { state: { role } });
-      } else {
-        // Unknown role: send them back or show a safe default
+      } 
+      else {  // Unknown role: send them back or show a safe default
         setErrorMsg(ErrorHelper.LOG_IN_ERROR);
       }
 

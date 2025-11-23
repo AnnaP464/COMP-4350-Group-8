@@ -24,8 +24,8 @@ function App() {
         <Route path="/Role-Choice" element={<RoleChoice />} />
         
         {/* Sing in/up page */}
-        <Route path="/"            element={<RoleChoice />} />
-        <Route path="Auth-Choice"  element={<AuthChoice />} />
+        <Route path="/"            element={<AuthChoice />} />
+        {/* <Route path="Auth-Choice"  element={<AuthChoice />} /> */}
         <Route path="/User-signup" element={<SignupUser />} />
         <Route path="/User-login"  element={<LoginUser />}  />
 
