@@ -156,6 +156,8 @@ const HomepageOrganizer: React.FC = () => {
         alert("Unexpected Error: " +  error);
       }
 
+      alert("Success, Event created!");
+
       setRefreshKey(k => k + 1);
       setShowCreate(false);
 

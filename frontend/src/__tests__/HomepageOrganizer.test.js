@@ -189,8 +189,6 @@ describe("Homepage-Organizer", () => {
   });
 });
 
-
-
 describe("Homepage-Organizer — extra branches", () => {
   test("initial GET !res.ok returns early (empty-state still renders)", async () => {
     setupLocalStorageMock({
@@ -349,6 +347,48 @@ describe("Homepage-Organizer — extra branches", () => {
 
     await waitFor(() =>
       expect(window.alert).toHaveBeenCalledWith("Failed to create job: bad payload")
+    );
+  });
+
+  test("Create Event", async () => {
+    setupLocalStorageMock({
+      access_token: "TKN",
+      user: JSON.stringify({ username: "org1", email: "o@example.com" }),
+    });
+
+    // initial GET ok (no events), POST returns !ok with text
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => "Event Created Successfully",
+      });
+
+    const now = new Date();
+    now.setDate(now.getDate() + 1)
+
+    // Format as YYYY-MM-DDTHH:mm
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+  
+    const startTime = `${year}-${month}-${day}T02:00`;
+    const endTime = `${year}-${month}-${day}T03:00`;
+
+    renderAt();
+    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+
+    fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Bad" } });
+    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
+    fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Somewhere" } });
+    fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Oops" } });
+    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+
+    await waitFor(() =>
+      expect(window.alert).toHaveBeenCalledWith("Success, Event created!")
     );
   });
 
