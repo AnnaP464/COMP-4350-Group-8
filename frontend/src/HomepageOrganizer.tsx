@@ -93,6 +93,7 @@ const HomepageOrganizer: React.FC = () => {
     if (!endTime.trim()) return alert(ErrorHelper.END_TIME_ERROR);
     if (new Date(endTime) <= new Date(startTime)) 
       return alert(ErrorHelper.TIMING_ERROR);
+    if (new Date() > new Date(startTime)) return alert(ErrorHelper.CAUSALITY_ERROR);
     if (!location.trim()) return alert(ErrorHelper.LOCATION_ERROR);
     if (!description.trim()) return alert(ErrorHelper.DESCRIPTION_ERROR);
 
