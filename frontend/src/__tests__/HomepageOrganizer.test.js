@@ -528,9 +528,6 @@ describe("Homepage-Organizer — extra branches", () => {
     const now = new Date();
     now.setDate(now.getDate() - 1)
 
-    console.log("IUAHWIDUHAWIUDHAIWUDH")
-    console.log(now.toString())
-
     // Format as YYYY-MM-DDTHH:mm
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
