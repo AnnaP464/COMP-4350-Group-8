@@ -74,7 +74,7 @@ export function makeAuthController(auth: AuthService) : AuthController {
           user,
         });
       } catch (err) {
-        return next(err);
+        return next(err); //let global error handler send the error code + msg
       }
     }
 

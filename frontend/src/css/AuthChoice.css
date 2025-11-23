@@ -60,8 +60,13 @@ html, body, #root {
 }
 
 .option-btn {
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #111;
   background-color: green;
-  color: white;
+  color: #eee;
+  cursor: pointer;
 }
 
 .option-btn:hover {
@@ -77,6 +82,7 @@ html, body, #root {
   background-color: white;
 }
 
+
 .text-input{
   background-color: white;
   color: black
@@ -89,4 +95,19 @@ html, body, #root {
 .errorMsg{
   color: #d00; margin-bottom: 8px;
 }
+
+.cancel-btn {
+  background-color: #e14138;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.cancel-btn:hover {
+  background-color: rgb(222, 38, 38);
+}
+
+.cancel-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
 

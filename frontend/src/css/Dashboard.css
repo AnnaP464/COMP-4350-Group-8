@@ -20,8 +20,42 @@
   background-color: black;
 }
 
-/* Optional: add a hover effect to make it feel a bit interactive */
+/* hover effect to make it feel a bit interactive */
 .event-box:hover {
   background-color: #242424;
   transition: background-color 0.2s ease-in-out;
+}
+
+/* Shared style for all status/apply buttons */
+.apply-button {
+  margin-top: 12px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  color: white;
+}
+
+/* Status variants */
+.apply-button.apply {
+  background-color: #2ecc71; /* green */
+}
+
+.apply-buttton.applied {
+  background-color: #f39c12; /* orange */
+}
+
+.apply-button.accepted {
+  background-color: #3498db; /* blue */
+}
+
+.apply-button.rejected {
+  background-color: #e74c3c; /* red */
+}
+
+.apply-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }

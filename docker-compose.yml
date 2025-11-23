@@ -11,7 +11,7 @@ services:
       - dbdata:/bitnami/postgresql
       - ./backend/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: 
+      test:
         ["CMD-SHELL", "pg_isready -U $DATABASE_USER -d $DATABASE_NAME"]
       interval: 5s
       timeout: 3s
@@ -76,6 +76,22 @@ services:
       done;
       echo "Test migrations applied."'
 
+  # migrate:
+  #   image: bitnami/postgresql:latest
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   environment:
+  #     DATABASE_URL: postgres://hivedev:verysafe@db:5432/hivehand
+  #   volumes:
+  #     - ./backend/migrations:/migrations:ro
+  #       entrypoint: ["/bin/bash","-lc"]
+  #       command: >'for f in /migrations/*.sql; do
+  #       echo "Applying $$f";
+  #       psql "$$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$$f";
+  #       done;
+  #       echo "Migrations applied."'
+
   backend:
     build:
       context: ./backend
@@ -93,12 +109,14 @@ services:
       PGPASSWORD: ${DATABASE_PASSWORD}
       PORT: ${BACKEND_PORT}
       NODE_ENV: ${NODE_ENV}
+      PUBLIC_BASE_URL: http://localhost:${BACKEND_PORT}
     volumes:
       - ./backend:/backend:cached 
       - /backend/node_modules
-      - zodgen:/backend/src/spec 
-      - ./backend:/backend
+      - zodgen:/backend/src/spec # comment out for rerunning openapi file
+      - ./backend:/backend       # ^ same
       - /backend/node_modules
+      - uploads:/uploads # for pic upload
     depends_on:
       db:
         condition: service_healthy
@@ -142,3 +160,4 @@ services:
 volumes:
   dbdata:
   zodgen:
+  uploads: #pic uploads

@@ -15,7 +15,7 @@ import type { SessionsModel as Sessions } from "../contracts/db.contracts";
 
 import { compare, hash } from "bcryptjs";
 import { JwtPayload } from "jsonwebtoken";
-// import own typed errors instead of Error
+import { AuthError } from "../errors";
 
 const SALT_ROUNDS = 10;
 
@@ -63,12 +63,12 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
     async login(input: LoginInput): Promise<LoginResult> {
       const user = await users.findByEmail(input.email);
 
-      if (!user) throw new Error("Invalid credentials");
+      if (!user) throw new AuthError("Invalid credentials"); //override default AuthError msg
 
       // user.password_hash is from DB, input.password is plaintext
       // use bcrypt.compare to compare
       const ok = await compare(input.password, user.password_hash);
-      if (!ok) throw new Error("Invalid credentials");
+      if (!ok) throw new AuthError("Invalid credentials");  //override default authError msg
 
       const accessToken = tokens.issueAccessToken({id: user.id, role: user.role});
       const { token: refreshToken, jti } = tokens.issueRefreshToken({id: user.id, role: user.role});

@@ -1,17 +1,19 @@
+//src/VolunteerProfile.tsx
 import React, {useEffect, useState} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Clock,
   CheckCircle2,
-  Award,
-  Calendar,
-  MapPin,
   TrendingUp,
-  User,
 } from "lucide-react";
 import "./css/VolunteerProfile.css";
+import ProfilePreviewDialog from "./components/ProfilePreview.tsx";
 import {getAvatarInitials, formatMonthYear} from "./helpers/UserInfoHelper.tsx";
 import * as RoleHelper from "./helpers/RoleHelper";
+import ProfileTopBar from "./components/ProfileTopBar";
+import ProfileBadges from "./components/ProfileBadges";
+import ProfileRecentActivity from "./components/ProfileRecentActivity";
+
 
 const API_URL = "http://localhost:4000";
 //const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -30,6 +32,8 @@ const VolunteerProfile: React.FC = () => {
   const location = useLocation();
   const state = location.state;
   const role = state?.role;
+
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -59,7 +63,8 @@ const VolunteerProfile: React.FC = () => {
         const data = await res.json();
         setMe(data);
       } catch (e) {
-        console.error("Failed to load profile", e);
+        alert("Failed to load profile.");
+        navigate("/Dashboard", { replace: true, state: { role } });
       } finally {
         setLoading(false);
       }
@@ -109,38 +114,29 @@ if (!me) return <main className="vp-container">Could not load profile.</main>;
   return (
     <main className="vp-container">
       {/* Header / Identity */}
-      <section className="vp-hero card">
-        <div className="vp-hero-left">
-          <div className="vp-avatar" aria-hidden>
-            {user.avatarInitials}
-          </div>
-          <div className="vp-id">
-            <h1 className="vp-name">
-              <User size={18} aria-hidden /> {me.username}
-            </h1>
-            <p className="vp-meta">
-              {user.role} | <MapPin size={14} aria-hidden /> {user.city} | {" "}
-              <Calendar size={14} aria-hidden /> Member since {user.memberSince}
-            </p>
-          </div>
-        </div>
-        <div className="vp-hero-actions">
-          <button
-            className="vp-btn secondary"
-            type="button"
-            onClick={() => navigate("/Dashboard", { state: { role } })}
-          >
-            Back to Dashboard
-          </button>
-          <button
-            className="vp-btn primary"
-            type="button"
-            //onClick={() => navigate("  ")}
-          >
-            Edit Profile
-          </button>
-        </div>
-      </section>
+      
+        
+        <ProfileTopBar
+          name={me.username}
+          role={user.role}
+          city={user.city}
+          memberSince={user.memberSince}
+          avatarInitials={user.avatarInitials}
+          buttons={[
+            { label: "Back to dashboard", variant: "secondary", onClick: () => navigate("/Dashboard", { state: { role } }) },
+            { label: "Edit Profile", onClick: () => setShowEditDialog(true) },
+          ]}
+        />
+        
+
+      {showEditDialog && (
+        <ProfilePreviewDialog
+          open={showEditDialog}
+          onClose={() => setShowEditDialog(false)}
+          user={me}
+          // onSave={null}
+        />
+      )}
 
       {/* Quick Stats */}
       <section className="vp-grid">
@@ -234,86 +230,59 @@ if (!me) return <main className="vp-container">Could not load profile.</main>;
             onClick={(e) => e.stopPropagation()}
             >
             <h3 style={{ marginTop: 0, marginBottom: 8 }}>{hoursGoal ? "Change Hours Goal" : "Set Hours Goal"}</h3>
-            <form
-                onSubmit={(e) => {
-                e.preventDefault();
-                const n = Number(goalInput);
-                if (!Number.isFinite(n) || n <= 0) {
-                    alert("Please enter a positive number of hours.");
-                    return;
-                }
-                setHoursGoal(n);
-                localStorage.setItem("hoursGoal", String(n));
-                setShowGoalDialog(false);
-                }}
-                style={{ display: "grid", gap: 10 }}
-            >
-                <input
-                className="text-input"
-                type="number"
-                min={1}
-                step={1}
-                placeholder="e.g., 100"
-                value={goalInput}
-                onChange={(e) => setGoalInput(e.target.value)}
-                autoFocus
-                />
-                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                <button
-                    type="button"
-                    className="guest-btn"
-                    onClick={() => setShowGoalDialog(false)}
-                >
-                    Cancel
-                </button>
-                <button type="submit" className="option-btn">
-                    Save Goal
-                </button>
-                </div>
-            </form>
+              <form
+                  onSubmit={(e) => {
+                  e.preventDefault();
+                  const n = Number(goalInput);
+                  if (!Number.isFinite(n) || n <= 0) {
+                      alert("Please enter a positive number of hours.");
+                      return;
+                  }
+                  setHoursGoal(n);
+                  localStorage.setItem("hoursGoal", String(n));
+                  setShowGoalDialog(false);
+                  }}
+                  style={{ display: "grid", gap: 10 }}
+              >
+                  <input
+                    className="text-input"
+                    type="number"
+                    min={1}
+                    step={1}
+                    placeholder="e.g., 100"
+                    value={goalInput}
+                    onChange={(e) => setGoalInput(e.target.value)}
+                    autoFocus
+                  />
+                  <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                  <button
+                      type="button"
+                      className="guest-btn"
+                      onClick={() => setShowGoalDialog(false)}
+                  >
+                      Cancel
+                  </button>
+                  <button type="submit" className="option-btn">
+                      Save Goal
+                  </button>
+                  </div>
+              </form>
             </div>
         </div>
         )}
 
       <div className="vp-columns">
-        {/* Badges */}
-        <section className="card">
-          <header className="section-head">
-            <h2>
-              <Award size={18} aria-hidden /> Badges
-            </h2>
-          </header>
-          <ul className="badge-list">
-            {badges.map((b) => (
-              <li key={b.id} className="badge chip" title={b.desc}>
-                {b.label}
-              </li>
-            ))}
-          </ul>
-        </section>
+
+        {/* Badges
+        Call ProfileBadges component to display the badges */}
+        <ProfileBadges badges={badges} title = "Your badges"/>
+
 
         {/* Recent Activity */}
-        <section className="card">
-          <header className="section-head">
-            <h2>Recent Activity</h2>
-          </header>
-          <ol className="timeline">
-            {recentActivity.map((a) => (
-              <li key={a.id} className="timeline-item">
-                <div className="timeline-dot" aria-hidden />
-                <div className="timeline-content">
-                  <h3 className="timeline-title">{a.title}</h3>
-                  <p className="timeline-meta">
-                    <Calendar size={14} aria-hidden /> {a.date} •{" "}
-                    <Clock size={14} aria-hidden /> {a.hours} h •{" "}
-                    <MapPin size={14} aria-hidden /> {a.where}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
+        <ProfileRecentActivity activities={recentActivity} />
+
       </div>
+      
     </main>
   );
 };
