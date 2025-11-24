@@ -1,12 +1,13 @@
 import React, { useMemo, useState, useEffect } from "react";
-import "./css/HomepageOrganizer.css"; // re-use your existing styles
-import EventCard from "./components/EventCard";
-
+import "./css/Homepage.css"; // re-use your existing styles
+import "./css/AuthChoice.css";
+import "./css/EventList.css";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { Clock, MapPin } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
 import * as ErrorHelper from "./helpers/ErrorHelper";
+import HomepageHeader from "./components/HomepageHeader";
+import EventList from "./components/EventList";
 
 const API_URL = "http://localhost:4000";
 
@@ -213,69 +214,52 @@ const HomepageOrganizer: React.FC = () => {
   };
 
   return (
-    <div className="navigation-container" style={{ alignItems: "stretch" }}>
+    <div className="dashboard-container" style={{ alignItems: "stretch" }}>
       {/* Top bar */}
-      <div className="navigation-box">
-        <header className="navigation-header">
-          <div>
-            <h2 className="title" style={{ margin: 0 }}>
-              HiveHand - {user.username}
-            </h2>
-            <p className="subtitle" style={{ marginTop: 4 }}>
-              Homepage
-            </p>
-          </div>
-          <div className="button-box" style={{ display: "flex", gap: 8 }}>
-            <button
-              className="option-btn"
-              onClick={() => setShowCreate(true)}
-              title="Create a job post"
-            >
-              Create Event
-            </button>
-            <button
-              className="option-btn"
-              onClick={() => navigate("/Homepage-Organizer/profile", { state: { role } })}
-              title="Profile & settings"
-            >
-              Profile
-            </button>
+        <HomepageHeader
+          title={`HiveHand - ${user.username}`}
+          subtitle="Homepage"
+          actions={
+            <>
+              <button
+                className="option-btn"
+                onClick={() => setShowCreate(true)}
+                title="Create a job post"
+              >
+                Create Event
+              </button>
+              <button
+                className="option-btn"
+                onClick={() =>
+                  navigate("/Homepage-Organizer/profile", { state: { role } })
+                }
+                title="Profile & settings"
+              >
+                Profile
+              </button>
 
-            <button className="cancel-btn" type="button" onClick={handleLogout}>
+              <button className="cancel-btn" type="button" onClick={handleLogout}>
                 Log-out
-            </button>
-
-          </div>
-        </header>
+              </button>
+            </>
+          }
+        />
 
         {/* Content area: Feed */}
-        <div className="myreg-container"
+        {/* <div className="myreg-container"
           style={{gridTemplateColumns: showProfile ? "1fr 320px" : "1fr"}}
-        >
+        > */}
           {/* Feed */}
-          <main className="myreg-glass">
-            <h3 style={{ marginTop: 0 }}>{user.username}'s job postings</h3>
-            
-            {/* display the list of events created by me */}
-            {events.length === 0 ? (
-              <div className="empty-postings-box">
-                No job postings posted yet.
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {events.map((ev) => (
-              <EventCard
-                key={ev.id}
-                ev={ev}
-                onClick={() => navigate(`/Events/${ev.id}/manage`, { state: { role } })}
-              />
-            ))}
-              </div>
-            )}
-          </main>
-  
-        </div>
-      </div>
+        <EventList
+          title={`${user.username}'s job postings`}
+          events={events}
+          emptyMessage="No job postings posted yet."
+          onCardClick={(ev) => navigate(`/ManageEvents/${ev.id}`, { state: { role } })}
+        />
+
+        {/* </div> */}
+
+
       {/* Create Event model */}
       {showCreate && (
         <div className="create-event-screen"

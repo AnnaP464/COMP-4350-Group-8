@@ -1,7 +1,21 @@
+/*--------------------------------------------------------------------
+Volunteer's Events Lists
+
+Receives list of events and prints them with status of application
+
+Called by:
+    1. MyApplications.tsx
+          - MyApplications.tsx passes the applied/rejected list
+
+    2. MyRegisterEvents.tsx
+          - MyRegistered.tsx passes the accepted list
+          
+-------------------------------------------------------------------*/
+
 import React, { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Clock, MapPin } from "lucide-react";
-import "../css/MyRegistrations.css";
+import "../css/EventList.css";
 import * as RoleHelper from "../helpers/RoleHelper";
 
 const API_URL = "http://localhost:4000";
@@ -114,14 +128,6 @@ const MyEventList: React.FC<MyEventListProps> = ({
                 <article
                     key={e.id}
                     className="myreg-card"
-                    onMouseEnter={(el) => {
-                    el.currentTarget.style.transform = "translateY(-3px)";
-                    el.currentTarget.style.boxShadow = "0 8px 16px rgba(0,0,0,0.12)";
-                    }}
-                    onMouseLeave={(el) => {
-                    el.currentTarget.style.transform = "none";
-                    el.currentTarget.style.boxShadow = "0 4px 10px rgba(0,0,0,0.08)";
-                    }}
                 >
                     <header className="myreg-card-head">
                     <h3 className="myreg-card-title">{e.jobName}</h3>

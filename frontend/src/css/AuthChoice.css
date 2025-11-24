@@ -1,11 +1,13 @@
+/*--------------------------------------------------
+Global background image for the whole app
+----------------------------------------------------*/
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+
   background: url("./helping-hands.jpg") no-repeat center center fixed;
   background-size: cover;
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
 }
 
 .login-container {
@@ -22,27 +24,38 @@ html, body, #root {
 }
 
 .login-box {
-  background: rgba(255,255,255,0.8);
-  border-radius: 15px;
-  padding: 40px 60px;
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+  /* Glassmorphism background */
+  background: rgba(253, 227, 228, 0.51); 
+  border-radius: 18px;
+  padding: 32px 40px;
+  width: 340px;
+
+  /* stronger “floating” shadow */
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+
+  /* glass blur */
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%); /* Safari */
+
+  /* subtle border so it feels like frosted glass */
+  border: 1px solid rgba(255, 255, 255, 0.6);
+
   text-align: center;
-  width: 320px;
-  backdrop-filter: blue(8px);
 }
 
 .title {
   font-size: 1.6em;
   margin-bottom: 20px;
   color: #0a0a0a;
+  letter-spacing: 0.03em;
 }
 
 .subtitle {
-  color: #0a0a0a;
+  color: #043101;
   margin-bottom: 20px;
-  font-size: 0.95em;
+  font-size: 0.95rem;
+  opacity: 0.85;
 }
-
 .options {
   display: flex;
   flex-direction: column;
@@ -64,32 +77,49 @@ html, body, #root {
   border-radius: 8px;
   border: 1px solid #444;
   background: #111;
-  background-color: green;
+  background-color: rgb(3, 150, 94);
   color: #eee;
   cursor: pointer;
 }
 
+/*move button slighly up when hovered*/
 .option-btn:hover {
-  background-color: #014232;
+  background-color: #016055;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
 }
 
 .guest-btn {
-  background-color: white;
+  background-color: rgba(223, 242, 239, 0.68);
   color: #333;
 }
 
 .guest-btn:hover {
-  background-color: white;
+  background-color: rgba(190, 233, 228, 0.68);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
 }
 
-
-.text-input{
-  background-color: white;
-  color: black
+/* bigger text box */
+.text-input {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #111;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 0.6rem 0.8rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
+.text-input:focus {
+  border-color: #2d8a5f;
+  box-shadow: 0 0 0 1px rgba(45, 138, 95, 0.4);
+  background-color: rgba(255, 255, 255, 0.98);
+}
+
+/* subtle placeholder */
 ::placeholder{
-  color: black;
+  color: rgba(0, 0, 0, 0.5);;
 }
 
 .errorMsg{
@@ -108,6 +138,6 @@ html, body, #root {
   background-color: rgb(222, 38, 38);
 }
 
-.cancel-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-
+.cancel-btn:disabled { 
+  opacity: 0.6; cursor: not-allowed;
+}

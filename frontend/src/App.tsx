@@ -21,18 +21,19 @@ function App() {
       <Routes>
 
         {/* Entry point of the app */}
+        <Route path="/"            element={<AuthChoice />} />
+
+        {/* Choose role page */}
         <Route path="/Role-Choice" element={<RoleChoice />} />
         
         {/* Sing in/up page */}
-        <Route path="/"            element={<AuthChoice />} />
-        {/* <Route path="Auth-Choice"  element={<AuthChoice />} /> */}
         <Route path="/User-signup" element={<SignupUser />} />
         <Route path="/User-login"  element={<LoginUser />}  />
 
         {/* Organizer */}
         <Route path="/Homepage-Organizer"         element={<HomepageOrganizer />}/>
         <Route path="/Homepage-Organizer/profile" element={<OrganizerProfile />} />   
-        <Route path="/Events/:eventId/manage"     element={<ManageEvent />}      />
+        <Route path="/ManageEvents/:eventId"      element={<ManageEvent />}      />
 
         {/* Volunteer */}
         <Route path="/Dashboard"          element={<Dashboard/>}/>

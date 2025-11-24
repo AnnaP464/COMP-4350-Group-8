@@ -4,8 +4,8 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Clock, MapPin } from "lucide-react";
 import * as RoleHelper from "./helpers/RoleHelper";
 import * as EventHelper from "./helpers/EventHelper";
-import "./css/HomepageOrganizer.css";
-import "./css/MyRegistrations.css";
+import "./css/Homepage.css";
+import "./css/EventList.css";
 import "./css/ManageEvents.css";
 import EventCard from "./components/EventCard";
 
@@ -121,81 +121,81 @@ const ManageEvent: React.FC = () => {
     return (
     <main className="myreg-container">
         <div className="myreg-glass">
-        <header className="myreg-header">
-            <h2 className="myreg-title">Manage Event</h2>
-            <div className="myreg-actions">
-            <button className="option-btn" onClick={() => navigate(-1)}>
-                Back
-            </button>
-            </div>
-        </header>
+          <header className="myreg-header">
+              <h2 className="myreg-title">Manage Event</h2>
+              <div className="myreg-actions">
+              <button className="option-btn" onClick={() => navigate(-1)}>
+                  Back
+              </button>
+              </div>
+          </header>
 
-        {info && <EventCard ev={info} />}
+          {info && <EventCard ev={info} />}
 
-        <section className="applicants-section">
-            {/* Applicants box */}
-            <div className="myreg-glass applicants-box">
-            <h3 className="section-subtitle">
-                Applicants ({applicants.length})
-            </h3>
+          <section className="applicants-section">
+              {/* Applicants box */}
+              <div className="myreg-glass applicants-box">
+                <h3 className="section-subtitle">
+                    Applicants ({applicants.length})
+                </h3>
 
-            {applicants.length === 0 ? (
-                <p className="empty-text">No applicants yet.</p>
-            ) : (
-                applicants.map((a) => (
-                <div key={a.id} className="myreg-card applicant-card">
-                    <div className="user-line">
-                    <strong>{a.username}</strong>
-                    <span className="applicant-email">{a.email}</span>
+                {applicants.length === 0 ? (
+                    <p className="empty-text">No applicants yet.</p>
+                ) : (
+                    applicants.map((a) => (
+                    <div key={a.id} className="myreg-card applicant-card">
+                        <div className="user-line">
+                        <strong>{a.username}</strong>
+                        <span className="applicant-email">{a.email}</span>
+                        </div>
+                        <small>
+                        Applied at: {new Date(a.applied_at).toLocaleString()}
+                        </small>
+                        <div className="applicant-actions">
+                        <button
+                            className="option-btn"
+                            onClick={() => accept(a.id)}
+                        >
+                            Accept
+                        </button>
+                        <button
+                            className="cancel-btn"
+                            onClick={() => reject(a.id)}
+                        >
+                            Reject
+                        </button>
+                        </div>
                     </div>
-                    <small>
-                    Applied at: {new Date(a.applied_at).toLocaleString()}
-                    </small>
-                    <div className="applicant-actions">
-                    <button
-                        className="option-btn"
-                        onClick={() => accept(a.id)}
-                    >
-                        Accept
-                    </button>
-                    <button
-                        className="cancel-btn"
-                        onClick={() => reject(a.id)}
-                    >
-                        Reject
-                    </button>
-                    </div>
-                </div>
-                ))
-            )}
-            </div>
+                    ))
+                )}
+              </div>
 
-            {/* Accepted box */}
-            <div className="myreg-glass accepted-box">
-            <h3 className="section-subtitle">
-                Accepted ({accepted.length})
-            </h3>
+              {/* Accepted box */}
+              <div className="myreg-glass accepted-box">
+                <h3 className="section-subtitle">
+                    Accepted ({accepted.length})
+                </h3>
 
-            {accepted.length === 0 ? (
-                <p className="empty-text">No accepted volunteers yet.</p>
-            ) : (
-                accepted.map((a) => (
-                <div key={a.id} className="myreg-card applicant-card">
-                    <div className="user-line">
-                    <strong>{a.username}</strong>
-                    <span className="applicant-email">{a.email}</span>
+                {accepted.length === 0 ? (
+                    <p className="empty-text">No accepted volunteers yet.</p>
+                ) : (
+                    accepted.map((a) => (
+                    <div key={a.id} className="myreg-card applicant-card">
+                        <div className="user-line">
+                        <strong>{a.username}</strong>
+                        <span className="applicant-email">{a.email}</span>
+                        </div>
+                        <small>
+                        Accepted at:{" "}
+                        {a.decided_at
+                            ? new Date(a.decided_at).toLocaleString()
+                            : "-"}
+                        </small>
                     </div>
-                    <small>
-                    Accepted at:{" "}
-                    {a.decided_at
-                        ? new Date(a.decided_at).toLocaleString()
-                        : "-"}
-                    </small>
-                </div>
-                ))
-            )}
-            </div>
-        </section>
+                    ))
+                )}
+              </div>
+          </section>
         </div>
     </main>
     );

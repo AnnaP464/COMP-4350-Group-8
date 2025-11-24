@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useMemo } from "react";
-import "./css/Dashboard.css";
-import "./css/HomepageOrganizer.css";
+// import "./css/Dashboard.css";
+import "./css/Homepage.css";
 import "./css/AuthChoice.css";
+import "./css/EventList.css";
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { cleanEvents } from "./helpers/EventHelper";
-import { Clock, MapPin } from "lucide-react";
-import * as RoleHelper from "./helpers/RoleHelper";
-import EventCard from "./components/EventCard";
-
+import HomepageHeader from "./components/HomepageHeader";
+import EventList from "./components/EventList";
 
 const API_URL = "http://localhost:4000";
 
@@ -112,15 +112,12 @@ const Dashboard: React.FC = () => {
           },
         });
 
-        // if (!res.ok) 
-        //   return; // ignore
-
         if (res.status === 401) {
           // token invalid/expired: surface it, don't silently ignore
           const err = await res.json().catch(() => ({}));
           alert(err?.message || "Session expired. Please log in again.");
           // optionally navigate to login:
-          // navigate("/User-login", { state: { role } });
+          navigate("/User-login", { state: { role } });
           setApplications({});
           return;
         }
@@ -161,7 +158,6 @@ const Dashboard: React.FC = () => {
 
     //clear local state
     localStorage.removeItem("user");
-    localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
 
     try {
@@ -295,70 +291,59 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <div className="navigation-container" style={{ alignItems: "stretch" }}>
-        <div className="navigation-box">
-          <header className="navigation-header">
-            <div>
-              <h2 className="title" style={{ margin: 0 }}>
-                Welcome to your Dashboard - {username}
-              </h2>
-              <p className="subtitle" style={{ marginTop: 4, left: 0}}>
-                Homepage
-              </p>
-            </div>
-            <div className="button-box" style={{ display: "flex", gap: 8 }}>
-              
-              {/* My accepted Events page */}
-              <button
-                className="option-btn"
-                title="Your registered events"
-                onClick={() => navigate("/MyRegisteredEvents", { state: { role, items: acceptedList } })}
-              >
-                My events
-              </button>
 
-              {/* My Applied/Rejected Events page */}
-              <button
-                className="option-btn"
-                title="My applications"
-                onClick={() => navigate("/MyApplications", { state: { role , items: appliedOrRejectedList } })}
-              >
-                My applications
-              </button>
+      {/* call components/HomepageHeader to display the header bar */}
+      <HomepageHeader
+        title={`HiveHand - ${username ?? ""}`}
+        subtitle="Dashboard"
+        actions={
+          <>
+            <button
+              className="option-btn"
+              title="Your registered events"
+              onClick={() =>
+                navigate("/MyRegisteredEvents", { state: { role, items: acceptedList } })
+              }
+            >
+              My events
+            </button>
 
-              <button
-                className="option-btn"
-                title="Profile & settings"
-                onClick={() => navigate("/VolunteerProfile", { state: { role } })}
-              >
-                Profile
-              </button>
+            <button
+              className="option-btn"
+              title="My applications"
+              onClick={() =>
+                navigate("/MyApplications", { state: { role, items: appliedOrRejectedList } })
+              }
+            >
+              My applications
+            </button>
 
-              <button 
-                className="cancel-btn"
-                title="Log-out"
-                onClick={handleLogout}
-              >
-                Log-out
-              </button>
+            <button
+              className="option-btn"
+              title="Profile & settings"
+              onClick={() => navigate("/VolunteerProfile", { state: { role } })}
+            >
+              Profile
+            </button>
 
+            <button
+              className="cancel-btn"
+              title="Log-out"
+              onClick={handleLogout}
+            >
+              Log-out
+            </button>
+          </>
+        }
+      />
 
-            </div>
-          </header>
-        </div>
-      </div>
-
-      <h2 className="section-title">Available Events</h2>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {events.map((event) => (
-      <div key={event.id}>
-        <EventCard ev={event} />
-        {renderApplyButton(event.id)}
-      </div>
-      ))}
-
-      </div>
+      
+      <EventList
+        title="Volunteer events"
+        events={events}
+        emptyMessage="No events available."
+        renderActions={(ev) => renderApplyButton(ev.id)}
+      />
     </div>
   );
 };

@@ -7,7 +7,7 @@ const MyApplications: React.FC = () => {
    return (
     <MyEventList
       title="My Applications"
-      mode="applications"
+      mode="applications" //applied and rejected events only
       // items will be read from location.state.items    
     />
   );

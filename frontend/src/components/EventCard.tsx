@@ -1,6 +1,6 @@
 import React from "react";
 import { Clock, MapPin } from "lucide-react";
-import "../css/HomepageOrganizer.css"; // reuse existing styles
+import "../css/Homepage.css";
 
 interface EventPost {
   id: string;
@@ -25,18 +25,10 @@ const EventCard: React.FC<EventCardProps> = ({ ev, onClick }) => {
     <article
       className="event-info-box"
       key={ev.id}
-      role="button"
-      tabIndex={0}
+      role={onClick ? "button" : "article"}
+      tabIndex={onClick ? 0 : -1}
       onClick={onClick}
-      style={{ cursor: "pointer", position: "relative" }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-4px)";
-        e.currentTarget.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.12)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "none";
-        e.currentTarget.style.boxShadow = "0 4px 10px rgba(10, 10, 10, 0.08)";
-      }}
+      style={{ position: "relative" }}
     >
       <header className="event-header">
         <h3

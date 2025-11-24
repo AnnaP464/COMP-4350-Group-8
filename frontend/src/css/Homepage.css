@@ -1,0 +1,203 @@
+/*------------------------------------------------------
+CSS for Volunteer Dashboard & Organizer-Homepage 
+---------------------------------------------------------*/
+
+.navigation-container {
+  padding: 0rem 4rem;
+  display: flex;
+  /* flex-direction: column; */
+  justify-content: center;
+  align-items: center;
+  /* min-height: 100vh; */
+  /* background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  background: url("./helping-hands.jpg") no-repeat center center fixed;
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: "Segoe UI", sans-serif; */
+}
+
+
+/* Centered column with max width */
+.navigation-box {
+  width: 100%;
+}
+
+
+.navigation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 12px;
+  border-bottom: 1px solid #e5e5e5;
+  
+  background: rgba(135, 154, 136, 0.878);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+/* .content-box {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.feed-box {
+  background: rgb(18, 17, 17);
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 260px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+} */
+
+.empty-postings-box {
+  border: 1px dashed #cfcfcf;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: #777;
+}
+
+.event-info-box {
+  background: linear-gradient(180deg, #f1f6f4, #ccf0db); /* green */
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-info-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  cursor: pointer;
+}
+
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.job-start-end-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  color: #555;
+  font-size: 0.95rem
+}
+
+.profile-box {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  height: fit-content;
+}
+
+.create-event-screen {
+  position: fixed;
+  inset: 0px;
+  background: rgba(0,0,0,0.3);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 50px;
+}
+
+.create-event-box {
+  width: 100%;
+  max-width: 560px;
+  background: #819a91ff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.create-event-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dashboard-container {
+  padding: 0rem 2rem;
+}
+
+/* .section-title {
+  margin-top: 2rem;
+}
+
+.events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.event-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: black;
+}
+
+/* hover effect to make it feel interactive */
+/* .event-box:hover {
+  background-color: #242424;
+  transition: background-color 0.2s ease-in-out;
+} */
+
+/* Shared style for all status/apply buttons */
+.apply-button {
+  margin-top: 12px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    filter 0.15s ease,
+    background-color 0.2s ease;
+  /* background: linear-gradient(135deg, #134628, #27ae60); */
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.apply-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  filter: brightness(1.03);
+}
+.apply-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* Status variants */
+.apply-button.apply {
+  background: linear-gradient(135deg, #04622b, #27ae60); /* green */
+}
+
+.apply-button.applied {
+  background: linear-gradient(135deg, #865302, #d68910); /* orange */
+}
+
+.apply-button.accepted {
+  background: linear-gradient(135deg, #02436e, #2e86c1); /* blue */
+}
+
+.apply-button.rejected {
+  background: linear-gradient(135deg, #620a00, #c0392b); /* red */
+}
+
+.apply-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
