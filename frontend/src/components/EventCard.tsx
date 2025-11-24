@@ -1,6 +1,9 @@
 import React from "react";
 import { Clock, MapPin } from "lucide-react";
-import "../css/Homepage.css";
+// import "../css/Homepage.css"; 
+// import "../css/EventList.css";  // for .myreg-* styles
+import "../css/EventCard.css";
+
 
 interface EventPost {
   id: string;
@@ -18,47 +21,86 @@ interface EventPost {
 interface EventCardProps {
   ev: EventPost;
   onClick?: () => void; // optional click handler (e.g. navigate)
+
+  /** 
+   * Visual style of the card:
+   * - "feed"     → green gradient card used on Dashboard/Homepage
+   * - "myEvents" → dark glass card matching MyEventList
+   */
+  variant?: "feed" | "myEvents";
+
+  /**
+   * Optional footer area (e.g., status + Withdraw button).
+   * For "myEvents" we’ll wrap this in .status-row so your existing
+   * EventList.css styles apply.
+   */
+  footer?: React.ReactNode;
 }
 
-const EventCard: React.FC<EventCardProps> = ({ ev, onClick }) => {
+const EventCard: React.FC<EventCardProps> = ({
+  ev,
+  onClick,
+  variant = "feed",
+  footer,
+}) => {
+  const isMyEvents = variant === "myEvents";
+
+  const rootClass = isMyEvents ? "myreg-card" : "event-info-box";
+  const headerClass = isMyEvents ? "myreg-card-head" : "event-header";
+  const timesClass = isMyEvents ? "job-time-location" : "job-start-end-times";
+
   return (
     <article
-      className="event-info-box"
-      key={ev.id}
+      className={rootClass}
       role={onClick ? "button" : "article"}
       tabIndex={onClick ? 0 : -1}
       onClick={onClick}
-      style={{ position: "relative" }}
+      // for feed cards we keep the original relative positioning; for
+      // myEvents we let the CSS from EventList.css handle visuals
+      style={isMyEvents ? undefined : { position: "relative" }}
     >
-      <header className="event-header">
+      <header className={headerClass}>
         <h3
-          style={{
-            margin: 0,
-            color: "#2c3e50",
-            wordBreak: "break-word",
-          }}
+          className={isMyEvents ? "myreg-card-title" : undefined}
+          style={
+            isMyEvents
+              ? undefined
+              : {
+                  margin: 0,
+                  color: "#2c3e50",
+                  wordBreak: "break-word",
+                }
+          }
         >
           {ev.jobName}
         </h3>
-        <small style={{ color: "#888" }}>
+        <small
+          className={isMyEvents ? "myreg-created" : undefined}
+          style={isMyEvents ? undefined : { color: "#888" }}
+        >
           {ev.createdAtDate} {ev.createdAtTime}
         </small>
       </header>
 
       <p
-        style={{
-          margin: "8px 0 12px",
-          color: "#444",
-          lineHeight: 1.4,
-          wordBreak: "break-word",
-          whiteSpace: "pre-wrap",
-          textAlign: "left",
-        }}
+        className={isMyEvents ? "myreg-desc" : undefined}
+        style={
+          isMyEvents
+            ? undefined
+            : {
+                margin: "8px 0 12px",
+                color: "#444",
+                lineHeight: 1.4,
+                wordBreak: "break-word",
+                whiteSpace: "pre-wrap",
+                textAlign: "left",
+              }
+        }
       >
         {ev.description}
       </p>
 
-      <div className="job-start-end-times">
+      <div className={timesClass}>
         <div>
           <Clock size={16} /> <strong>Starts at:</strong> {ev.startDate}{" "}
           {ev.startTime}
@@ -73,6 +115,10 @@ const EventCard: React.FC<EventCardProps> = ({ ev, onClick }) => {
           {ev.location}
         </div>
       </div>
+
+      {footer && (
+        <div className={isMyEvents ? "status-row" : undefined}>{footer}</div>
+      )}
     </article>
   );
 };

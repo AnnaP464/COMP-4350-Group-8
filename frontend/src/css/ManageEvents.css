@@ -1,4 +1,7 @@
-/* --- Layout for applicants & accepted boxes --- */
+/* -------------------------------------------------
+Used by ManageEvents.tsx 
+Layout for applicants & accepted boxes 
+----------------------------------------------------- */
 .applicants-section {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr)); /* <- key change */

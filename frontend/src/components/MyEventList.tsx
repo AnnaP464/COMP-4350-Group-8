@@ -7,16 +7,16 @@ Called by:
     1. MyApplications.tsx
           - MyApplications.tsx passes the applied/rejected list
 
-    2. MyRegisterEvents.tsx
+    2. MyRegisteredEvents.tsx
           - MyRegistered.tsx passes the accepted list
-          
+
 -------------------------------------------------------------------*/
 
 import React, { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Clock, MapPin } from "lucide-react";
 import "../css/EventList.css";
 import * as RoleHelper from "../helpers/RoleHelper";
+import EventCard from "./EventCard";
 
 const API_URL = "http://localhost:4000";
 
@@ -124,44 +124,33 @@ const MyEventList: React.FC<MyEventListProps> = ({
           </p>
         ) : (
             <div className="myreg-list"> {list.map((e) => (
-            
-                <article
-                    key={e.id}
-                    className="myreg-card"
-                >
-                    <header className="myreg-card-head">
-                    <h3 className="myreg-card-title">{e.jobName}</h3>
-                    <small className="myreg-created">
-                        {e.createdAtDate} {e.createdAtTime}
-                    </small>
-                    </header>
+              
+                // display the event using EventCard.
+                // pass status and widthdraw button as footer 
+                // for EventCard to display them inside the card as footer.
+                //choose variant "myEvents" to signal use of footer in EventCard
+                <EventCard
+                key={e.id}
+                ev={e}
+                variant="myEvents"
+                footer={
+                  <>
+                    <span className="status-line">
+                      Status: <strong>{e.status}</strong>
+                    </span>
 
-                    <p className="myreg-desc">{e.description}</p>
-
-                    <div className="job-time-location">
-                        <div> <span className="icon"><Clock  /></span> <strong>Starts at:</strong> {e.startDate} {e.startTime}   </div>
-                        <div> <span className="icon"><Clock  /></span> <strong>Ends at:</strong> {e.endDate}  {e.endTime}      </div>
-                        <div> <span className="icon"><MapPin /></span> <strong style={{ wordBreak: "break-word" }}>Location:</strong> {e.location} </div>
-                    </div>
-
-                    {/* status badge */}
-                    <div className="status-row">
-                        <span className="status-line">
-                            Status: <strong>{e.status}</strong>
-                        </span>
-
-                        {e.status !== "rejected" && (
-                        <button
-                            onClick={() => handleWithdraw(e.id)}
-                            className="cancel-btn"
-                            type="button"
-                        >
-                            Withdraw
-                        </button>
+                    {e.status !== "rejected" && (
+                      <button
+                        onClick={() => handleWithdraw(e.id)}
+                        className="cancel-btn"
+                        type="button"
+                      >
+                        Withdraw
+                      </button>
                     )}
-                    </div>
-                    
-                </article>
+                  </>
+                }
+              />
                 
             ))}
             </div>

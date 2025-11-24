@@ -1,12 +1,13 @@
 // src/ManageEvent.tsx
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Clock, MapPin } from "lucide-react";
 import * as RoleHelper from "./helpers/RoleHelper";
 import * as EventHelper from "./helpers/EventHelper";
 import "./css/Homepage.css";
 import "./css/EventList.css";
 import "./css/ManageEvents.css";
+import "./css/EventCard.css";
+
 import EventCard from "./components/EventCard";
 
 

@@ -60,15 +60,15 @@ CSS for Volunteer Dashboard & Organizer-Homepage
   color: #777;
 }
 
-.event-info-box {
-  background: linear-gradient(180deg, #f1f6f4, #ccf0db); /* green */
+/* .event-info-box {
+  background: linear-gradient(180deg, #f1f6f4, #ccf0db);
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+} */
 
-.event-info-box:hover {
+/* .event-info-box:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
   cursor: pointer;
@@ -87,7 +87,7 @@ CSS for Volunteer Dashboard & Organizer-Homepage
   gap: 12px 20px;
   color: #555;
   font-size: 0.95rem
-}
+} */
 
 .profile-box {
   background: white;
