@@ -57,14 +57,29 @@ test("New organizer registration, login make an event and check profile", async 
 
     await expect(page.getByRole("button", { name: "Create Event" })).toBeVisible();
     await page.getByRole("button", {name: "Create Event"}).click();
+
+    const now = new Date();
+    now.setDate(now.getDate() + 1)
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+  
+    const startTime = `${year}-${month}-${day}T02:00`;
+    const endTime = `${year}-${month}-${day}T03:00`;
+
     await expect(page.getByText("Create a job post")).toBeVisible();
     await page.getByPlaceholder("Job name *").fill("jobjobjob");
-    await page.getByPlaceholder("Start time *").fill("2025-10-23T01:00");
-    await page.getByPlaceholder("End time *").fill("2025-10-23T02:00");
+    await page.getByPlaceholder("Start time *").fill(startTime);
+    await page.getByPlaceholder("End time *").fill(endTime);
     await page.getByPlaceholder("Location *").fill("atlanta");
     await page.getByPlaceholder("Job description *").fill("not good pay not fun, but you get experience");
     await expect(page.getByRole("button", { name: "Post Job" })).toBeVisible();
     await page.getByRole("button", {name: "Post Job"}).click();
+
+    page.once('dialog', async dialog => {
+      await dialog.accept();
+    });
 
     await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();
     await page.getByRole("button", {name: "Log-out"}).click();
