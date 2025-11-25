@@ -13,13 +13,13 @@ import path from "path"; //for picture uploads
 
 const app = express();
 
-
 app.use(express.json());
-app.use(cors());
+// app.use(cors());
+
 app.use(cookieParser());
 app.use("/uploads", express.static(path.resolve("/uploads")));
 
-//CORS: allow Vite dev server to call the backend
+//CORS: allow frontend server to call the backend server with cookies/refresh token
 const CORS_ORIGIN = "http://localhost:5173";
 const corsOptions = {
   origin: CORS_ORIGIN,
