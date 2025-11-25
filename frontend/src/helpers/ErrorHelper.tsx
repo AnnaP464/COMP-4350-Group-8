@@ -20,7 +20,7 @@ export const JOB_NAME_ERROR = "Job name is required";
 export const START_TIME_ERROR = "Start time is required";
 export const END_TIME_ERROR = "End time is required";
 export const TIMING_ERROR = "End time must be after start time";
-export const CAUSALITY_ERROR = "";
+export const CAUSALITY_ERROR = "Start time cannot be in the past";
 export const LOCATION_ERROR = "Location is required";
 export const DESCRIPTION_ERROR = "Description is required";
 
