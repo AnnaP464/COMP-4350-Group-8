@@ -27,7 +27,7 @@ test("New organizer registration, login make an event and check profile", async 
     await page.getByPlaceholder("Email *").fill(email1);
     await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
-    await expect(page.getByText("Invalid email or password")).toBeVisible();
+    await expect(page.getByText("Invalid credentials")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Back to Role Selection" })).toBeVisible();
     await page.getByRole("link", {name: "Back to Role Selection"}).click();
@@ -66,8 +66,6 @@ test("New organizer registration, login make an event and check profile", async 
     await expect(page.getByRole("button", { name: "Post Job" })).toBeVisible();
     await page.getByRole("button", {name: "Post Job"}).click();
 
-    await expect(page.getByRole("button", { name: "Profile" })).toBeVisible();
-    await page.getByRole("button", {name: "Profile"}).click();
     await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();
     await page.getByRole("button", {name: "Log-out"}).click();
 
@@ -95,7 +93,7 @@ test("New volunteer registration, login, try to sign up for an event and log out
     await page.getByPlaceholder("Email *").fill(email2);
     await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
-    await expect(page.getByText("Invalid email or password")).toBeVisible();
+    await expect(page.getByText("Invalid credentials")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Back to Role Selection" })).toBeVisible();
     await page.getByRole("link", {name: "Back to Role Selection"}).click();
@@ -121,9 +119,9 @@ test("New volunteer registration, login, try to sign up for an event and log out
     await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
     
-    await expect(page.getByText("Welcome to your Dashboard")).toBeVisible();
+    await expect(page.getByText("Dashboard")).toBeVisible();
 
-    const buttons = page.getByRole('button', { name: "Sign-up" });
+    const buttons = page.getByRole('button', { name: "Apply" });
     await expect(buttons.first()).toBeVisible();
 
     await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();

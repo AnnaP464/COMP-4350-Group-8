@@ -25,7 +25,7 @@ test("Tests that the registration and login features work for a new user", async
     await page.getByPlaceholder("Email *").fill(email);
     await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
-    await expect(page.getByText("Invalid email or password")).toBeVisible();
+    await expect(page.getByText("Invalid credentials")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Back to Role Selection" })).toBeVisible();
     await page.getByRole("link", {name: "Back to Role Selection"}).click();
@@ -51,7 +51,7 @@ test("Tests that the registration and login features work for a new user", async
     await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
     
-    await expect(page.getByText("Welcome to your Dashboard")).toBeVisible();
+    await expect(page.getByText("Dashboard")).toBeVisible();
 });
 
 test("Checks for user persistance on page reload to show user is not stored in browser", async ({ page }) => {
@@ -76,7 +76,7 @@ test("Checks for user persistance on page reload to show user is not stored in b
     await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
 
-    await expect(page.getByText("Welcome to your Dashboard")).toBeVisible();
+    await expect(page.getByText("Dashboard")).toBeVisible();
 
     await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();
     await page.getByRole("button", {name: "Log-out"}).click();
