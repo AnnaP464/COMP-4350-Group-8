@@ -16,7 +16,6 @@ export const CONFIRM_PASSWORD_ERROR = "Passwords do not match.";
 export const LOG_IN_ERROR = "Invalid email or password.";
 export const SERVER_ERROR = "Network Error — Please Try Again Later.";
 
-
 export const JOB_NAME_ERROR = "Job name is required";
 export const START_TIME_ERROR = "Start time is required";
 export const END_TIME_ERROR = "End time is required";

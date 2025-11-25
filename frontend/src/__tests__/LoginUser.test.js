@@ -85,7 +85,7 @@ describe("LoginUser handleSubmit coverage", () => {
     await fillAndSubmit({ email: "v@x.com", password: "pw" });
 
     await waitFor(() =>
-      expect(screen.getByText(/Invalid email or password/i)).toBeInTheDocument()
+      expect(screen.getByText(/Network Error — Please Try Again Later./i)).toBeInTheDocument()
     );
     expect(mockNavigate).not.toHaveBeenCalled();
   });

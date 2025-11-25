@@ -57,9 +57,7 @@ const Dashboard: React.FC = () => {
         .map(e => ({ ...e, status: applications[e.id] as "applied" | "rejected" })),
     [events, applications]
   );
-
-
-   
+ 
   /* ---------------------------------------------------------------------------
   Fetch real events + my application statuses non-blockingly
   ------------------------------------------------------------------------------*/

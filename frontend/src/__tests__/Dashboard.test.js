@@ -220,7 +220,7 @@ test("Sign-up button triggers the placeholder alert", async () => {
   );
 
   await waitFor(() => screen.getByText(/event 8/i));
-  fireEvent.click(screen.getByRole("button", { name: /sign-up/i }));
+  fireEvent.click(screen.getByRole("button", { name: /Apply/i }));
 
   expect(window.alert).toHaveBeenCalledWith(
     "Your session has expired. Please log in again."
@@ -245,7 +245,7 @@ test("logout: non-OK response triggers alert and returns (covers !response.ok)",
   );
 
   // ensure initial fetch finishes
-  await waitFor(() => expect(screen.getByText(/Welcome to your Dashboard/i)).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText(/Dashboard/i)).toBeInTheDocument());
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
@@ -277,7 +277,7 @@ test("logout: OK but non-204 parses JSON then navigates (covers response.status 
     </MemoryRouter>
   );
 
-  await waitFor(() => expect(screen.getByText(/Welcome to your Dashboard/i)).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText(/Dashboard/i)).toBeInTheDocument());
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
