@@ -131,16 +131,26 @@ describe("Homepage-Organizer", () => {
         text: async () => "unauthorized",
       });
 
-    renderAt();
-
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
-    fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Foo" } });
-    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: "2025-10-23T01:00" } });
-    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: "2025-10-24T02:00" } });
-    fireEvent.change(screen.getByPlaceholderText(/Location \*/i), { target: { value: "Here" } });
-    fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Bar" } });
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
-
+      const now = new Date();
+      now.setDate(now.getDate() + 1)  
+  
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+    
+      const startTime = `${year}-${month}-${day}T02:00`;
+      const endTime = `${year}-${month}-${day}T03:00`;
+  
+      renderAt();
+      fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+  
+      fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Foo" } });
+      fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+      fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
+      fireEvent.change(screen.getByPlaceholderText(/Location \*/i), { target: { value: "Here" } });
+      fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Bar" } });
+      fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+  
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith("Your session has expired. Please log in again.");
       expect(screen.getByText("LOGIN PAGE")).toBeInTheDocument();
@@ -206,12 +216,22 @@ describe("Homepage-Organizer — extra branches", () => {
     });
     global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
 
+    const now = new Date();
+    now.setDate(now.getDate() + 1)
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+  
+    const startTime = `${year}-${month}-${day}T02:00`;
+    const endTime = `${year}-${month}-${day}T03:00`;
+
     renderAt();
     fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
 
     // leave jobName blank
-    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: "2025-10-23T01:00" } });
-    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: "2025-10-24T02:00" } });
+    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Here" } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Details" } });
 
@@ -226,11 +246,20 @@ describe("Homepage-Organizer — extra branches", () => {
     });
     global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
 
+    const now = new Date();
+    now.setDate(now.getDate() + 1)
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    
+    const endTime = `${year}-${month}-${day}T03:00`;
+
     renderAt();
     fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "A" } });
-    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: "2025-10-24T02:00" } });
+    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Here" } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Details" } });
 
@@ -245,11 +274,20 @@ describe("Homepage-Organizer — extra branches", () => {
     });
     global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
 
+    const now = new Date();
+    now.setDate(now.getDate() + 1)
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+  
+    const startTime = `${year}-${month}-${day}T02:00`;
+
     renderAt();
     fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "A" } });
-    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: "2025-10-23T01:00" } });
+    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Here" } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Details" } });
 
@@ -264,13 +302,22 @@ describe("Homepage-Organizer — extra branches", () => {
     });
     global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
 
+    const now = new Date();
+    now.setDate(now.getDate() + 1)
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+  
+    const startTime = `${year}-${month}-${day}T02:00`;
+    const endTime = `${year}-${month}-${day}T03:00`;
+
     renderAt();
     fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "A" } });
-    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: "2025-10-23T01:00" } });
-    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: "2025-10-24T02:00" } });
-    // missing location
+    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Details" } });
 
     fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
@@ -284,14 +331,23 @@ describe("Homepage-Organizer — extra branches", () => {
     });
     global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
 
+    const now = new Date();
+    now.setDate(now.getDate() + 1)
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+  
+    const startTime = `${year}-${month}-${day}T02:00`;
+    const endTime = `${year}-${month}-${day}T03:00`;
+
     renderAt();
     fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "A" } });
-    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: "2025-10-23T01:00" } });
-    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: "2025-10-24T02:00" } });
+    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Here" } });
-    // missing description
 
     fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
     expect(window.alert).toHaveBeenCalledWith("Description is required");
@@ -313,18 +369,151 @@ describe("Homepage-Organizer — extra branches", () => {
         text: async () => "bad payload",
       });
 
+      const now = new Date();
+      now.setDate(now.getDate() + 1)
+  
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+    
+      const startTime = `${year}-${month}-${day}T02:00`;
+      const endTime = `${year}-${month}-${day}T03:00`;
+  
+      renderAt();
+      fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+  
+      fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Bad" } });
+      fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+      fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
+      fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Somewhere" } });
+      fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Oops" } });
+      fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+  
+    await waitFor(() =>
+      expect(window.alert).toHaveBeenCalledWith("Failed to create job: bad payload")
+    );
+  });
+
+  test("Create Event Success", async () => {
+    setupLocalStorageMock({
+      access_token: "TKN",
+      user: JSON.stringify({ username: "org1", email: "o@example.com" }),
+    });
+
+    // initial GET ok (no events), POST returns !ok with text
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => "Event Created Successfully",
+      });
+
+    const now = new Date();
+    now.setDate(now.getDate() + 1)
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+  
+    const startTime = `${year}-${month}-${day}T02:00`;
+    const endTime = `${year}-${month}-${day}T03:00`;
+
     renderAt();
     fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Bad" } });
-    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: "2025-10-23T01:00" } });
-    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: "2025-10-24T02:00" } });
+    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Somewhere" } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Oops" } });
     fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
 
     await waitFor(() =>
-      expect(window.alert).toHaveBeenCalledWith("Failed to create job: bad payload")
+      expect(window.alert).toHaveBeenCalledWith("Success, Event created!")
+    );
+  });
+
+  test("Fail to Create Event with the end time after start time", async () => {
+    setupLocalStorageMock({
+      access_token: "TKN",
+      user: JSON.stringify({ username: "org1", email: "o@example.com" }),
+    });
+
+    // initial GET ok (no events), POST returns !ok with text
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => "Event Created Successfully",
+      });
+
+    const now = new Date();
+    now.setDate(now.getDate() + 1)
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+  
+    const endTime = `${year}-${month}-${day}T02:00`;
+    const startTime = `${year}-${month}-${day}T03:00`;
+
+    renderAt();
+    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+
+    fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Bad" } });
+    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
+    fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Somewhere" } });
+    fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Oops" } });
+    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+
+    await waitFor(() =>
+      expect(window.alert).toHaveBeenCalledWith("End time must be after start time")
+    );
+  });
+
+  test("Fail to Create Event with start time in the past", async () => {
+    setupLocalStorageMock({
+      access_token: "TKN",
+      user: JSON.stringify({ username: "org1", email: "o@example.com" }),
+    });
+
+    // initial GET ok (no events), POST returns !ok with text
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => "Event Created Successfully",
+      });
+
+    const now = new Date();
+    now.setDate(now.getDate() - 1)
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+  
+    const startTime = `${year}-${month}-${day}T02:00`;
+    const endTime = `${year}-${month}-${day}T03:00`;
+
+    renderAt();
+    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+
+    fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Bad" } });
+    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
+    fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Somewhere" } });
+    fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Oops" } });
+    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+
+    await waitFor(() =>
+      expect(window.alert).toHaveBeenCalledWith(ErrorHelper.CAUSALITY_ERROR)
     );
   });
 
