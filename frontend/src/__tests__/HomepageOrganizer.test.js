@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import HomepageOrganizer from "../HomepageOrganizer.tsx";
+import OrganizerProfile from "../OrganizerProfile.tsx";
 import * as ErrorHelper from "../helpers/ErrorHelper";
 
 // ---- helpers ----
@@ -24,6 +25,7 @@ const renderAt = (initial = "/Homepage-Organizer") =>
         <Route path="/Homepage-Organizer" element={<HomepageOrganizer />} />
         <Route path="/User-login" element={<div>LOGIN PAGE</div>} />
         <Route path="/" element={<div>HOME</div>} />
+        <Route path="/Homepage-Organizer/profile" element={<OrganizerProfile />} />
       </Routes>
     </MemoryRouter>
   );
@@ -145,7 +147,7 @@ describe("Homepage-Organizer", () => {
     });
   });
 
-  test("profile panel toggles and shows organizer info; logout clears tokens and POSTs /auth/logout", async () => {
+  test("profile panel toggles and shows Loading...", async () => {
     const ls = setupLocalStorageMock({
       access_token: "TKN",
       refresh_token: "RTK",
@@ -156,40 +158,14 @@ describe("Homepage-Organizer", () => {
       .fn()
       // initial GET
       .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      // logout POST
-      .mockResolvedValueOnce({ ok: true, status: 204, text: async () => "" });
 
     renderAt();
 
     // open profile
     fireEvent.click(screen.getByRole("button", { name: /Profile/i }));
-    expect(screen.getByText(/Organizer/i)).toBeInTheDocument();
-    expect(screen.getByText("org1")).toBeInTheDocument();
-    expect(screen.getByText("o@example.com")).toBeInTheDocument();
-    // events count (0)
-    expect(screen.getByText("0")).toBeInTheDocument();
-
-    // click Log-out (inside aside)
-    fireEvent.click(screen.getByRole("button", { name: /^Log-out$/i }));
-
-    await waitFor(() => {
-      // navigated home
-      expect(screen.getByText("HOME")).toBeInTheDocument();
-    });
-
-    // localStorage cleared
-    expect(ls.removeItem).toHaveBeenCalledWith("user");
-    expect(ls.removeItem).toHaveBeenCalledWith("access_token");
-    expect(ls.removeItem).toHaveBeenCalledWith("refresh_token");
-
-    // logout POST called
-    const post = global.fetch.mock.calls.find(c => c[0] === "http://localhost:4000/v1/auth/logout");
-    expect(post).toBeTruthy();
-    expect(post[1].method).toBe("POST");
+    expect(screen.getByText(/Loading…/i)).toBeInTheDocument();
   });
 });
-
-
 
 describe("Homepage-Organizer — extra branches", () => {
   test("initial GET !res.ok returns early (empty-state still renders)", async () => {
@@ -389,7 +365,6 @@ describe("Homepage-Organizer — extra branches", () => {
     renderAt();
 
     // open profile to reveal its logout button, then click it
-    fireEvent.click(screen.getByRole("button", { name: /Profile/i }));
     fireEvent.click(screen.getByRole("button", { name: /^Log-out$/i }));
 
     await waitFor(() =>
@@ -411,7 +386,6 @@ describe("Homepage-Organizer — extra branches", () => {
 
     renderAt();
 
-    fireEvent.click(screen.getByRole("button", { name: /Profile/i }));
     fireEvent.click(screen.getByRole("button", { name: /^Log-out$/i }));
 
     await waitFor(() =>

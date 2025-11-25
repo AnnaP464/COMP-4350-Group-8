@@ -58,7 +58,7 @@ test("Tries to sign up for an event", async () => {
     );
 
     //Tries to bring up the menu of the sign up but its empty
-    const buttons = screen.getAllByRole("button", { name: "Sign-up" });
+    const buttons = screen.getAllByRole("button", { name: "Apply" });
     await userEvent.click(buttons[0]);
     expect(screen.queryByText("Welcome to your Dashboard 🎉"));
 });
