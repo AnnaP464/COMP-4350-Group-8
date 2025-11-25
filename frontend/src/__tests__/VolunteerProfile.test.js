@@ -127,10 +127,5 @@ describe("VolunteerProfile", () => {
         expect(alertSpy).toHaveBeenCalledWith("Failed to load profile.");
         expect(mockNavigate).toHaveBeenCalledWith("/Dashboard", {replace: true, state: {role: "Volunteer"} });
     });
-    
-    
   });
-
-
-
 });
