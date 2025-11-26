@@ -8,6 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { cleanEvents } from "./helpers/EventHelper";
 import HomepageHeader from "./components/HomepageHeader";
 import EventList from "./components/EventList";
+import useAuthGuard from "./hooks/useAuthGuard";
 
 const API_URL = "http://localhost:4000";
 
@@ -26,6 +27,10 @@ type EventPost = {
 
 type AppStatus = "applied" | "accepted" | "rejected";
 type AppMap = Record<string, AppStatus>;
+const loginStatusChecking = "checking"
+const loginStatusUnauthorized = "unauthorized"
+const loginStatusAuthorized = "authorized"
+
 
 const Dashboard: React.FC = () => {
 
@@ -151,9 +156,14 @@ const Dashboard: React.FC = () => {
 
     fetchEvents();
     fetchMyApplications(); 
-  }, []);
+  }, []); //imporvemtn [navigate, role] ???
 
+  //protected route: user needs to log in with valid access token to access this path
+  const authStatus = useAuthGuard(role);
 
+  if (authStatus === "checking" || authStatus === "unauthorized") {
+    return null;
+  }
   
 
   const handleLogout = async (e: React.FormEvent) => {

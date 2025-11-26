@@ -13,11 +13,9 @@ const RegisteredEvents: React.FC = () => {
 
   const authStatus = useAuthGuard(role);
 
-  if (authStatus === "checking") {
+  //protected route: user needs to log in with valid access token to access this path
+  if (authStatus === "checking" || authStatus === "unauthorized") {
     return null; 
-  }
-  if (authStatus === "unauthorized") {
-    return null;
   }
   
   return (

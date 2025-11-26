@@ -263,27 +263,13 @@ export function makeAuthRouter(ctrl: AuthController) {
     );
 
     // “me” endpoint
+    //uses requireAuth()
     r.get(
         "/me", 
-        requireAuth(), async (req, res) => {
-        // req.user is set by requireAuth()
-        const u = await users.findById(req.user!.id);
-        if (!u) return res.status(404).json({ message: "User not found" });
-
-        res.json({
-            id: u.id,
-            username: u.username, 
-            email: u.email,
-            role: u.role,
-            createdAt: u.created_at,
-        });
-    });
-    // r.get(
-    //     "/v1/auth/me",
-    //     //authenticate, // authenticate format of request
-    //     ctrl.me,
-    // );
-
+        requireAuth(),
+        ctrl.me,
+    );
+ 
 
     // Logout (authenticate to identify user)
     r.post(

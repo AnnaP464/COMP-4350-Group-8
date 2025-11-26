@@ -29,11 +29,6 @@ const refreshCookieOptions = {
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 };
 
-// GET /v1/auth/me 
-const me: RequestHandler = (_req, res) => {
-  // TODO: if you have auth middleware attaching req.user, return it here
-  return res.status(501).json({ message: "Not implemented" });
-};
 
 // Factory: take an AuthService, return Express handler.
 export function makeAuthController(auth: AuthService) : AuthController {
@@ -125,6 +120,35 @@ export function makeAuthController(auth: AuthService) : AuthController {
       }
       // 204 No Content is typical for logout
       return res.status(204).send();
+    }
+
+     /** GET /v1/auth/me */
+    async function me(req: Request, res: Response, next: NextFunction) {
+      try {
+        // requireAuth() should already have set req.user
+        const userId = (req as any).user?.id as string | undefined;
+
+        if (!userId) {
+          // means requireAuth wasn't used or something went wrong
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const user = await auth.me({userId});
+
+        return res.status(200).json({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          createdAt: user.createdAt,
+        });
+      } catch (err) {
+        // If auth.me threw "User not found", you can translate it here if you want
+        if (err instanceof Error && err.message === "User not found") {
+          return res.status(404).json({ message: "User not found" });
+        }
+        return next(err);
+      }
     }
 
     return {

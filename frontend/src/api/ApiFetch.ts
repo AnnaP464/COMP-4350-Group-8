@@ -15,8 +15,6 @@ async function refreshAccessToken() {
 // Wrapper for all authenticated requests
 export async function apiFetch(url: string, options: RequestInit = {}) {
   let token = localStorage.getItem("access_token");
-  console.log("inside api fetch\n")
-  console.log(token)
   const headers = {
     ...(options.headers || {}),
     "Authorization": token ? `Bearer ${token}` : "",

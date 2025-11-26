@@ -3,9 +3,11 @@ import type {
   AuthService,
   LoginInput, 
   RefreshInput,
+  MeInput,
   LoginResult, 
   RegisterResult, 
   RefreshResult,
+  MeResult,
 } from "../contracts/auth.contracts";
 
 import type { UserPublic as PublicUser } from "../contracts/domain.types";
@@ -30,10 +32,15 @@ function toPublicUser(u: { email: string; username: string; role: Role }): Publi
   return { email: u.email, username: u.username, role: u.role };
 }
 
+/*-----------------------------------------------------------------------------------------
+  returns {register, login , refresh, me}
+-------------------------------------------------------------------------------------------*/
 export function makeAuthService(deps: { users: User; sessions: Sessions }): AuthService {
   const { users, sessions } = deps;
 
   return {
+
+    //REGISTER - used by: v1/auth/register
     async register(input: { username:string; email:string; password:string; role:string }): Promise<RegisterResult> {
       const exists = await users.findByEmail(input.email);
       if (exists) throw EmailRegisteredError;
@@ -60,6 +67,7 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
       return { accessToken, refreshToken, user: toPublicUser(user) };
     },
 
+    //LOGIN - used by: v1/auth/login
     async login(input: LoginInput): Promise<LoginResult> {
       const user = await users.findByEmail(input.email);
 
@@ -77,6 +85,7 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
       return { accessToken, refreshToken, user: toPublicUser(user) };
     },
 
+    //REFRESH - used by: v1/auth/refresh
     async refresh(input: RefreshInput): Promise<RefreshResult> {
       const { refreshToken: oldRefreshToken } = input;
       const decoded = tokens.verifyRefresh(oldRefreshToken) as JwtPayload || String; // throws if invalid/expired
@@ -114,5 +123,30 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
         refreshToken,
       };
     },
+
+    // ME - used by: v1/auth/me
+    async me(input: MeInput): Promise<MeResult> {
+      const {userId} = input;
+      const user = await users.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // If the type of created_at is Date | undefined, guard it explicitly
+      if (!user.created_at) {
+          // Either treat this as "user not found/invalid"…
+          throw new Error("User not found");
+          // …or you could choose a different error if you want:
+          // throw new Error("User record missing created_at");
+        }
+      return {
+        id: String(user.id),
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        createdAt: user.created_at,
+      };
+    },
+
   };
 }

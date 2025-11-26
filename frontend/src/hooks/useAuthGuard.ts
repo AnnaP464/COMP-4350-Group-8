@@ -1,3 +1,15 @@
+/*
+ *If there’s no access token → status "unauthorized" and redirect.
+
+ *If /v1/auth/me returns 200 → status "authorized".
+
+ * If /v1/auth/me returns 401 → "unauthorized" + redirect.
+
+ * If /v1/auth/me returns any other non-OK (404/500/etc.) → "unauthorized" (no redirect).
+
+ * On network / CORS error → "unauthorized" + redirect.
+*/
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiFetch from "../api/ApiFetch"; // your wrapper
@@ -10,12 +22,15 @@ export default function useAuthGuard(role: string) : AuthStatus {
 
   useEffect(() => {
 
-     const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token");
 
     // If there is no token at all, don't auto-logout here.
     // The route itself (navigation logic) should prevent unauthenticated access.
     if (!token) {
       setStatus("unauthorized");
+
+      //if role is valid, redirect to login page
+      //else redirect to / (entry point of app)
       if (role) {
         navigate("/User-login", { state: { role }, replace: true });
       } else {
@@ -29,23 +44,25 @@ export default function useAuthGuard(role: string) : AuthStatus {
         {
             // Make a authenticated request
             const res = await apiFetch("/v1/auth/me");  // returns current user
-            
+            console.log(res.status);
             if(res.ok){
                 setStatus("authorized");
-                return;
             }
-            
             //token invalid/expired
-            if (res.status === 401){
+            else if (res.status === 401){
                 localStorage.clear();
                 setStatus("unauthorized");
 
+                //if role is valid, redirect to login page
+                //else redirect to / (entry point of app)
                 if (role) {
                 navigate("/User-login", { state: { role }, replace: true });
                 } else {
-                navigate("/User-login", { replace: true });
+                navigate("/User-login", { replace: true }); 
                 }
-                return;
+            }
+            else{
+                setStatus("unauthorized");
             }
 
             // Auth check failed
@@ -62,7 +79,7 @@ export default function useAuthGuard(role: string) : AuthStatus {
     }
 
     check();
-  }, [navigate, role]);
+  }, [navigate, role]); //use effect ends
 
   return status;
 }
