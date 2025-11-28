@@ -1,3 +1,11 @@
+/*------------------------------------------------------------------------------------------------
+Displays the list of events whose status is accepted
+
+uses useAuthGaurd to protect this path
+Calls /components/MyEventList to list the accepted events
+
+-----------------------------------------------------------------------------------------------------*/
+
 import React from "react";
 import MyEventList from "./components/MyEventList";
 import useAuthGuard from "./hooks/useAuthGuard";

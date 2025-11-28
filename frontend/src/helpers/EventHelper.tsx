@@ -9,6 +9,10 @@ export type CleanEvent = {
   description: string;
   createdAtDate: string;
   createdAtTime: string;
+
+  // NEW: raw timestamps for logic
+  startTimestamp: number;
+  endTimestamp: number;
 };
 
 export function cleanEvents(rawEvents: any[], upComingOnly: boolean): CleanEvent[] {
@@ -52,7 +56,11 @@ export function cleanEvent(rawEvent: any, upComingOnly: boolean){
       }),
       createdAtTime: createdAtTime.toLocaleTimeString("en-Ca", {
         timeZone: timeZone, hour: "numeric", minute: "2-digit", hour12: true
-      })
+      }),
+
+      // NEW: keep the real timestamps
+      startTimestamp: startTime.getTime(),
+      endTimestamp: endTime.getTime(),
     };
   }
 }

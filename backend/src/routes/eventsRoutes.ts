@@ -2,8 +2,13 @@ import { Router } from "express";
 import { requireAuth } from "../middleware/requireAuth"; // your JWT middleware
 import { validateRequest } from "../middleware/validateRequest";
 import { schemas} from "../spec/zod";
+
 import type { GeofencesController } from "../contracts/geofences.ctrl.contracts";
+//import type { AttendanceController } from "../contracts/attendance.ctrl.contracts";
+
 import { createEventGeofencesRoutes } from "./geofenceRoutes";
+//import { createEventAttendanceRoutes } from "./attendanceRoutes";
+
 
 import {
   // existing
@@ -17,6 +22,10 @@ import {
   listAccepted,
   acceptApplicant,
   rejectApplicant,
+  
+  getAttendanceStatus,
+  signInAttendance,
+  signOutAttendance
 } from "../controllers/eventsController";
 /**
  * @swagger
@@ -319,13 +328,13 @@ import {
 
 export function createEventsRouter(deps: {
   geofencesController: GeofencesController;
+  // attendanceController: AttendanceController;
   // ...other controllers for events domain
 }) 
 {
   const r = Router();
 
   // Public: list all events (optionally filter to "mine" via ?mine=1)
-  //r.get("/", listEvents);    
   // validate query first, then only auth if ?mine=1
   r.get(
     "/",
@@ -393,7 +402,10 @@ export function createEventsRouter(deps: {
 
   // geofences under /events
   r.use(createEventGeofencesRoutes(deps.geofencesController));
-
+  // Attendance under /events
+  //(POST /events/:eventId/attendance/sign-in, sign-out, status)
+  // r.use(createEventAttendanceRoutes(deps.attendanceController));
+  
   //DELETE /v1/events/withdraw
   r.delete(
     "/withdraw",
@@ -403,7 +415,8 @@ export function createEventsRouter(deps: {
   );
 
   //GET /v1/myapllications
-  r.get("/me/applications", 
+  r.get(
+    "/me/applications", 
     requireAuth(), 
     listMyApplications
   );
@@ -438,6 +451,26 @@ export function createEventsRouter(deps: {
     requireAuth(),
     rejectApplicant
   );
+
+    // Attendance endpoints
+  r.get(
+    "/:eventId/attendance/status",
+    requireAuth(),
+    getAttendanceStatus
+  );
+
+  r.post(
+    "/:eventId/attendance/sign-in",
+    requireAuth(),
+    signInAttendance
+  );
+
+  r.post(
+    "/:eventId/attendance/sign-out",
+    requireAuth(),
+    signOutAttendance
+  );
+
 
   
   return r;

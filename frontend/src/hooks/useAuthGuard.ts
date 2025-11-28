@@ -34,7 +34,7 @@ export default function useAuthGuard(role: string) : AuthStatus {
       if (role) {
         navigate("/User-login", { state: { role }, replace: true });
       } else {
-        navigate("/User-login", { replace: true });
+        navigate("/", { replace: true });
       }
       return;
     }
@@ -58,7 +58,7 @@ export default function useAuthGuard(role: string) : AuthStatus {
                 if (role) {
                 navigate("/User-login", { state: { role }, replace: true });
                 } else {
-                navigate("/User-login", { replace: true }); 
+                navigate("/", { replace: true }); 
                 }
             }
             else{
@@ -73,7 +73,7 @@ export default function useAuthGuard(role: string) : AuthStatus {
             if (role) {
             navigate("/User-login", { state: { role }, replace: true });
             } else {
-            navigate("/User-login", { replace: true });
+            navigate("/", { replace: true });
             }
         }
     }

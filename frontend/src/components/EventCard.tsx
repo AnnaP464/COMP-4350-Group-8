@@ -29,12 +29,12 @@ interface EventCardProps {
    */
   variant?: "feed" | "myEvents";
 
-  /**
-   * Optional footer area (e.g., status + Withdraw button).
-   * For "myEvents" we’ll wrap this in .status-row so your existing
-   * EventList.css styles apply.
-   */
   footer?: React.ReactNode;
+
+  clockMode?: "none" | "my-events";    // tells card to show clock button
+  clockState?: AttendanceState;
+  onClockIn?: () => void;
+  onClockOut?: () => void;
 }
 
 const EventCard: React.FC<EventCardProps> = ({
@@ -42,6 +42,10 @@ const EventCard: React.FC<EventCardProps> = ({
   onClick,
   variant = "feed",
   footer,
+  clockMode,
+  clockState,
+  onClockIn,
+  onClockOut,
 }) => {
   const isMyEvents = variant === "myEvents";
 
@@ -118,6 +122,25 @@ const EventCard: React.FC<EventCardProps> = ({
 
       {footer && (
         <div className={isMyEvents ? "status-row" : undefined}>{footer}</div>
+      )}
+
+
+      {clockMode === "my-events" && (
+        <div className="clock-row">
+          {clockState === "clocked-in" ? (
+            <button className="option-btn" onClick={onClockOut}>
+              Clock out
+            </button>
+          ) : (
+            <button
+              className="option-btn"
+              onClick={onClockIn}
+              disabled={clockState === "too-early" || clockState === "event-ended"}
+            >
+              {clockState === "not-in-fence" ? "Not in geofence" : "Clock in"}
+            </button>
+          )}
+        </div>
       )}
     </article>
   );

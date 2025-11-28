@@ -1,4 +1,4 @@
-CREATE TABLE event_attendance (
+CREATE TABLE IF NOT EXISTS event_attendance (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id      uuid NOT NULL REFERENCES events(id) ON DELETE CASCADE,
   user_id       uuid NOT NULL REFERENCES users(id)  ON DELETE CASCADE,

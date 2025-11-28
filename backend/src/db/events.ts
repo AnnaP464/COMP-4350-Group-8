@@ -270,3 +270,21 @@ export async function listRegisteredEventsByUser(userId: string): Promise<EventR
   return rows;
 }
 
+//used for event attendance only
+export async function getEventById(eventId: string): Promise<EventRow | null> {
+  const { rows } = await query<EventRow>(
+    `SELECT 
+      id,
+      organizer_id AS "organizerId",
+      job_name     AS "jobName",
+      description,
+      start_time   AS "startTime",
+      end_time     AS "endTime",
+      location,
+      created_at   AS "createdAt"
+    FROM events
+    WHERE id = $1`,
+    [eventId]
+  );
+  return rows[0] ?? null;
+}

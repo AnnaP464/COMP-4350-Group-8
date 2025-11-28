@@ -43,6 +43,7 @@ services:
 
   migrate:
     image: bitnami/postgresql:latest
+    restart: "no" # to allow migration to re run everytime docker is built
     depends_on:
       db:
         condition: service_healthy
@@ -51,8 +52,10 @@ services:
     volumes:
       - ./backend/migrations:/migrations:ro
     entrypoint: ["/bin/bash","-lc"]
+    #set -e allows migration to exit with non zero code when a migration fails
     command: >
-      'for f in /migrations/*.sql; do
+      'set -e;   
+      for f in /migrations/*.sql; do
         echo "Applying $$f";
         psql "$$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$$f";
       done;
@@ -121,7 +124,7 @@ services:
       db:
         condition: service_healthy
       migrate: 
-        condition: service_completed_successfully
+        condition: service_started #service_completed_successfully
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
 

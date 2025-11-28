@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import * as eventService from "../services/eventsService";
 import * as events from "../db/events";
+import { attendanceRepo } from "../db/attendance";
+import type { AttendanceRow } from "../contracts/attendance.contracts";
+
 
 // POST /v1/events (auth required)
 export async function createEvent(req: Request, res: Response, next: NextFunction) {
@@ -213,5 +216,242 @@ export async function rejectApplicant(req: Request, res: Response, next: NextFun
     return res.status(200).json({ message: "Rejected", signup: row });
   } catch (err) {
     next(err);
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// Event attendance: status + sign-in / sign-out
+// ---------------------------------------------------------------------------
+
+
+function computeTotalMinutesFromActions(
+  actions: AttendanceRow[],
+  now: Date
+): number {
+  let totalMs = 0;
+  let lastSignIn: Date | null = null;
+
+  for (const row of actions) {
+    const t = new Date(row.at_time); // PG timestamptz -> string -> Date
+
+    if (row.action === "sign_in") {
+      // Start a new interval
+      lastSignIn = t;
+    } else if (row.action === "sign_out" && lastSignIn) {
+      // Close current interval
+      totalMs += t.getTime() - lastSignIn.getTime();
+      lastSignIn = null;
+    }
+  }
+
+  // If still signed in at "now", count that open interval too
+  if (lastSignIn) {
+    totalMs += now.getTime() - lastSignIn.getTime();
+  }
+
+  return Math.floor(totalMs / 60_000); // minutes
+}
+
+
+type AttendanceStatusView = {
+  status: {
+    isSignedIn: boolean;
+    totalMinutes: number;
+  };
+  rules: {
+    canSignIn: boolean;
+    canSignOut: boolean;
+    reason?: string;
+  };
+};
+
+// Helper: get authed user from req.user (set by requireAuth)
+function getAuthedUser(req: Request): { id: string; role?: string } | null {
+  const u = (req as any).user;
+  if (!u || !u.id) return null;
+  return { id: String(u.id), role: (u as any).role };
+}
+
+/**
+ * Build the AttendanceStatusView for a given event/user.
+ * Right now:
+ *  - isSignedIn = whether the last accepted action is "sign_in"
+ *  - totalMinutes = 0 (we're not computing it yet)
+ *  - rules = simple toggle: if signed in → canSignOut, else → canSignIn
+ */
+async function buildAttendanceStatus(
+  eventId: string,
+  userId: string
+): Promise<AttendanceStatusView> {
+  // 1) Load event for time window
+  const event = await events.getEventById(eventId);
+  if (!event) {
+    return {
+      status: {
+        isSignedIn: false,
+        totalMinutes: 0,
+      },
+      rules: {
+        canSignIn: false,
+        canSignOut: false,
+        reason: "Event not found",
+      },
+    };
+  }
+
+  const now = new Date();
+  const start = new Date(event.startTime);
+  const end   = new Date(event.endTime);
+
+  // allow sign-in from 5 min before start → end
+  const SIGNIN_EARLY_MINUTES = 5;
+  const startWindow = new Date(start.getTime() - SIGNIN_EARLY_MINUTES * 60_000);
+  const withinSignInWindow = now >= startWindow && now <= end;
+
+  // 2) All accepted actions
+  const actions = await attendanceRepo.listAcceptedActions({ eventId, userId });
+
+  // Determine if user is currently signed in (last action is sign_in)
+  const last = actions[actions.length - 1];
+  const isSignedIn = !!last && last.action === "sign_in";
+
+  // 3) Compute total minutes from all in/out pairs
+  const totalMinutes = computeTotalMinutesFromActions(actions, now);
+
+  // 4) Rules & reason
+  let canSignIn = false;
+  let canSignOut = false;
+  let reason: string | undefined;
+
+  if (isSignedIn) {
+    // already in → only allow sign-out
+    canSignOut = true;
+  } else {
+    if (!withinSignInWindow) {
+      if (now < startWindow) {
+        reason = `You can only sign in within ${SIGNIN_EARLY_MINUTES} minutes before the event starts.`;
+      } else {
+        reason = "This event has ended";
+      }
+    } else {
+      canSignIn = true;
+    }
+  }
+
+  return {
+    status: {
+      isSignedIn,
+      totalMinutes,
+    },
+    rules: {
+      canSignIn,
+      canSignOut,
+      ...(reason ? { reason } : {}),
+    },
+  };
+}
+
+
+
+// GET /v1/events/:eventId/attendance/status
+export async function getAttendanceStatus(req: Request, res: Response) {
+  try {
+    const { eventId } = req.params as { eventId: string };
+    const user = getAuthedUser(req);
+    if (!user) 
+      return res.status(401).json({ message: "Unauthorized" });
+
+    const status = await buildAttendanceStatus(eventId, user.id);
+    return res.json(status);
+  } catch (err) {
+    console.error("getAttendanceStatus error:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// POST /v1/events/:eventId/attendance/sign-in
+export async function signInAttendance(req: Request, res: Response) {
+  try {
+    const { eventId } = req.params as { eventId: string };
+    const user = getAuthedUser(req);
+    if (!user) 
+      return res.status(401).json({ message: "Unauthorized" });
+
+    const body = req.body as {
+      lon?: number;
+      lat?: number;
+      accuracy_m?: number;
+    };
+
+    // 1) Check status & rules first
+    const statusBefore = await buildAttendanceStatus(eventId, user.id);
+    if (!statusBefore.rules.canSignIn) {
+      return res.status(403).json({
+        message: statusBefore.rules.reason ?? "You cannot sign in right now.",
+        status: statusBefore,
+      });
+    }
+
+    // 2) Record sign-in
+    // Later we'll enforce time window + geofence here.
+    await attendanceRepo.insertAction({
+      eventId,
+      userId: user.id,
+      action: "sign_in",
+      accepted: true,// later: enforce geofence + time windows
+      accuracy_m: body.accuracy_m ?? null,
+    });
+
+    // 3) Return updated status
+    const status = await buildAttendanceStatus(eventId, user.id);
+    res.status(200).json(status);
+
+  } catch (err) {
+    console.error("signInAttendance error:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// POST /v1/events/:eventId/attendance/sign-out
+export async function signOutAttendance(req: Request, res: Response) {
+  try {
+    const { eventId } = req.params as { eventId: string };
+    const user = getAuthedUser(req);
+    if (!user)
+        return res.status(401).json({ message: "Unauthorized" });
+
+    const body = req.body as {
+      lon?: number;
+      lat?: number;
+      accuracy_m?: number;
+    };
+
+    // 1) Check status *before* inserting
+    const statusBefore = await buildAttendanceStatus(eventId, user.id);
+    if (!statusBefore.rules.canSignOut) {
+      return res.status(403).json({
+        message:
+          statusBefore.rules.reason ??
+          "You are not currently signed in to this event.",
+        status: statusBefore,
+      });
+    }
+
+    // 2) Record sign-out    
+    await attendanceRepo.insertAction({
+      eventId,
+      userId: user.id,
+      action: "sign_out",
+      accepted: true,
+      accuracy_m: body.accuracy_m ?? null,
+    });
+
+    // 3) Return updated status
+    const status = await buildAttendanceStatus(eventId, user.id);
+    return res.status(200).json(status);
+  } catch (err) {
+    console.error("signOutAttendance error:", err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 }

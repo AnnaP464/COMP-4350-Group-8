@@ -289,7 +289,7 @@ const Dashboard: React.FC = () => {
     }
     if (status === "rejected") {
       return (
-        <button className="option-button rejected" disabled>
+        <button className="apply-button rejected" disabled>
           Rejected
         </button>
       );
@@ -329,6 +329,16 @@ const Dashboard: React.FC = () => {
               }
             >
               My applications
+            </button>
+
+            <button
+              className="option-btn"
+              title="Clock in / out for your events"
+              onClick={() =>
+                navigate("/MyAttendance", { state: { role, items: acceptedList } })
+              }
+            >
+              My attendance
             </button>
 
             <button

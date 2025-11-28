@@ -117,11 +117,11 @@ const HomepageOrganizer: React.FC = () => {
       }
 
       //band aid fix for our timezone, we are 5 hours behind UTC
-      startDate.setMinutes(startDate.getMinutes() - startDate.getTimezoneOffset());
-      endDate.setMinutes(endDate.getMinutes() - endDate.getTimezoneOffset());
+      // startDate.setMinutes(startDate.getMinutes() - startDate.getTimezoneOffset());
+      // endDate.setMinutes(endDate.getMinutes() - endDate.getTimezoneOffset());
 
-      const startISO = startDate.toISOString();
-      const endISO = endDate.toISOString();
+      const startISO = new Date(startTime).toISOString();
+      const endISO = new Date(endTime).toISOString();
 
       // prepare payload in the shape API expects
       const payload = {
