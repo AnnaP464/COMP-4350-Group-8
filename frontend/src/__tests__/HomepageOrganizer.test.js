@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import HomepageOrganizer from "../HomepageOrganizer.tsx";
 import OrganizerProfile from "../OrganizerProfile.tsx";
-import * as ErrorHelper from "../helpers/ErrorHelper";
+import * as AlertHelper from "../helpers/AlertHelper";
 
 // ---- helpers ----
 const setupLocalStorageMock = (seed = {}) => {
@@ -513,7 +513,7 @@ describe("Homepage-Organizer — extra branches", () => {
     fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
 
     await waitFor(() =>
-      expect(window.alert).toHaveBeenCalledWith(ErrorHelper.CAUSALITY_ERROR)
+      expect(window.alert).toHaveBeenCalledWith(AlertHelper.CAUSALITY_ERROR)
     );
   });
 
@@ -578,7 +578,7 @@ describe("Homepage-Organizer — extra branches", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Log-out$/i }));
 
     await waitFor(() =>
-      expect(window.alert).toHaveBeenCalledWith(ErrorHelper.SERVER_ERROR)
+      expect(window.alert).toHaveBeenCalledWith(AlertHelper.SERVER_ERROR)
     );
   });
 });

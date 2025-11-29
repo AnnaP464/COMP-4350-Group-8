@@ -5,7 +5,7 @@ import "./css/EventList.css";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import * as EventHelper from "./helpers/EventHelper";
-import * as ErrorHelper from "./helpers/ErrorHelper";
+import * as AlertHelper from "./helpers/AlertHelper";
 import HomepageHeader from "./components/HomepageHeader";
 import EventList from "./components/EventList";
 
@@ -91,19 +91,19 @@ const HomepageOrganizer: React.FC = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     // basic client-side validation
-    if (!jobName.trim()) return alert(ErrorHelper.JOB_NAME_ERROR);
-    if (!startTime.trim()) return alert(ErrorHelper.START_TIME_ERROR);
-    if (!endTime.trim()) return alert(ErrorHelper.END_TIME_ERROR);
+    if (!jobName.trim()) return alert(AlertHelper.JOB_NAME_ERROR);
+    if (!startTime.trim()) return alert(AlertHelper.START_TIME_ERROR);
+    if (!endTime.trim()) return alert(AlertHelper.END_TIME_ERROR);
     if (new Date(endTime) <= new Date(startTime)) 
-      return alert(ErrorHelper.TIMING_ERROR);
-    if (new Date() > new Date(startTime)) return alert(ErrorHelper.CAUSALITY_ERROR);
-    if (!location.trim()) return alert(ErrorHelper.LOCATION_ERROR);
-    if (!description.trim()) return alert(ErrorHelper.DESCRIPTION_ERROR);
+      return alert(AlertHelper.TIMING_ERROR);
+    if (new Date() > new Date(startTime)) return alert(AlertHelper.CAUSALITY_ERROR);
+    if (!location.trim()) return alert(AlertHelper.LOCATION_ERROR);
+    if (!description.trim()) return alert(AlertHelper.DESCRIPTION_ERROR);
 
     try { 
       const token = localStorage.getItem("access_token");
       if(!token){
-        alert(ErrorHelper.SESSION_EXPIRE_ERROR);
+        alert(AlertHelper.SESSION_EXPIRE_ERROR);
         navigate("/User-login", { state: { role } });
         return;
       }
@@ -112,7 +112,7 @@ const HomepageOrganizer: React.FC = () => {
       const startDate = new Date(startTime)
       const endDate = new Date(endTime)
       if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-        alert("Please choose valid start and end times.");
+        alert(AlertHelper.TIME_FORMATTING_ERROR);
         return;
       }
 
@@ -142,7 +142,7 @@ const HomepageOrganizer: React.FC = () => {
       });
     
       if (response.status === 401) { //auto-redirect if timed-out
-        alert("Your session has expired. Please log in again.");
+        alert(AlertHelper.SESSION_EXPIRE_ERROR);
         console.log("401");
         navigate("/User-login", { state: { role } }); 
         return;
@@ -160,7 +160,7 @@ const HomepageOrganizer: React.FC = () => {
         alert("Unexpected Error: " +  error);
       }
 
-      alert("Success, Event created!");
+      alert(AlertHelper.APPLICATION_PROCESSING);
 
       setRefreshKey(k => k + 1);
       setShowCreate(false);
@@ -174,7 +174,7 @@ const HomepageOrganizer: React.FC = () => {
     } 
     catch (err) {
       console.error("Create job error:", err);
-      alert(ErrorHelper.SERVER_ERROR);
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
 
@@ -212,7 +212,7 @@ const HomepageOrganizer: React.FC = () => {
 
     } catch (error) {
       console.error("Log-out Error:", error);
-      alert(ErrorHelper.SERVER_ERROR);
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
 

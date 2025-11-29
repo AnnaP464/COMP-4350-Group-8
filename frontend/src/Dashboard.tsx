@@ -9,6 +9,7 @@ import { cleanEvents } from "./helpers/EventHelper";
 import HomepageHeader from "./components/HomepageHeader";
 import EventList from "./components/EventList";
 import useAuthGuard from "./hooks/useAuthGuard";
+import * as AlertHelper from  "./helpers/AlertHelper";
 
 const API_URL = "http://localhost:4000";
 
@@ -92,7 +93,7 @@ const Dashboard: React.FC = () => {
           headers: { "Accept": "application/json" }
         });
 
-        if (!response.ok) throw new Error("Failed to fetch events");
+        if (!response.ok) throw new Error(AlertHelper.SERVER_ERROR);
         const data = await response.json();
 
         //deletes events which have passed and cleans up the dates and time to be more readable
@@ -123,7 +124,7 @@ const Dashboard: React.FC = () => {
         if (res.status === 401) {
           // token invalid/expired: surface it, don't silently ignore
           const err = await res.json().catch(() => ({}));
-          alert(err?.message || "Session expired. Please log in again.");
+          alert(err?.message || AlertHelper.SESSION_EXPIRE_ERROR);
           // optionally navigate to login:
           navigate("/User-login", { state: { role } });
           setApplications({});
@@ -201,7 +202,7 @@ const Dashboard: React.FC = () => {
       // window.location.href = "/dashboard";
     } catch (error) {
       console.error("Log-out Error:", error);
-      alert("Network error — could not connect to server.");
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
 
@@ -209,7 +210,7 @@ const Dashboard: React.FC = () => {
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
-        alert("Your session has expired. Please log in again.");
+        alert(AlertHelper.SESSION_EXPIRE_ERROR);
         navigate("/User-login", { state: { role } });
         return;
       }
@@ -262,11 +263,11 @@ const Dashboard: React.FC = () => {
 
       //sucess 201
       setApplications((prev) => ({ ...prev, [eventId]: "applied" }));
-      alert("Application submitted! An organizer will review it.");
+      alert(AlertHelper.APPLICATION_PROCESSING);
 
     } catch (error) {
       console.error("Registration Error:", error);
-      alert("Network error — could not connect to server.");
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
 
