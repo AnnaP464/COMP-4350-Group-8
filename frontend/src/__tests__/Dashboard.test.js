@@ -2,7 +2,7 @@ import React from "react";
 import {render, screen, waitFor, fireEvent} from "@testing-library/react"
 import userEvent from "@testing-library/user-event";
 import Dashboard from "../Dashboard.tsx";
-import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 
 
 // --- Mocks ---
@@ -11,16 +11,6 @@ jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom");
   return { ...actual, useNavigate: () => mockNavigate };
 });
-
-const renderAt = (initial = "/Dashboard") =>
-  render(
-    <MemoryRouter initialEntries={[initial]}>
-      <Routes>
-        <Route path="/Dashboard" element={<Dashboard />} />
-        <Route path="/User-login" element={<div>LOGIN PAGE</div>} />
-      </Routes>
-    </MemoryRouter>
-  );
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -281,7 +271,11 @@ test("logout: OK but non-204 parses JSON then navigates (covers response.status 
     json: async () => ({ message: "bye" }),
   });
 
-  renderAt();
+  const { container } = render(
+    <MemoryRouter>
+        <Dashboard />
+    </MemoryRouter>
+  );
 
   await waitFor(() => expect(screen.getByText(/Dashboard/i)).toBeInTheDocument());
 
