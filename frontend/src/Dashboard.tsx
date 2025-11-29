@@ -73,7 +73,6 @@ const Dashboard: React.FC = () => {
   Fetch real events + my application statuses non-blockingly
   ------------------------------------------------------------------------------*/
   useEffect(() => {
-
     //get user from local storage
     const raw = localStorage.getItem("user");
     if (!raw) return;
@@ -103,7 +102,6 @@ const Dashboard: React.FC = () => {
         console.error("Error fetching events:", error);
       }
     };
-
 
     const fetchMyApplications = async () => {
       const token = localStorage.getItem("access_token");

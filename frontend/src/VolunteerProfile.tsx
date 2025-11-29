@@ -9,7 +9,7 @@ import {
 import "./css/VolunteerProfile.css";
 import ProfilePreviewDialog from "./components/ProfilePreview.tsx";
 import {getAvatarInitials, formatMonthYear} from "./helpers/UserInfoHelper.tsx";
-import * as RoleHelper from "./helpers/RoleHelper";
+import * as AlertHelper from "./helpers/AlertHelper";
 import ProfileTopBar from "./components/ProfileTopBar";
 import ProfileBadges from "./components/ProfileBadges";
 import ProfileRecentActivity from "./components/ProfileRecentActivity";
@@ -38,7 +38,7 @@ const VolunteerProfile: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-      alert("Please sign in first.");
+      alert(AlertHelper.TOKEN_MISSING_ERROR);
       navigate("/User-login", { replace: true, state: { role } });
       return;
     }
@@ -56,14 +56,14 @@ const VolunteerProfile: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.status === 401) {
-          alert("Session expired. Please log in again.");
+          alert(AlertHelper.SESSION_EXPIRE_ERROR);
           navigate("/User-login", { replace: true, state: { role } });
           return;
         }
         const data = await res.json();
         setMe(data);
       } catch (e) {
-        alert("Failed to load profile.");
+        alert(AlertHelper.PROFILE_FETCH_ERROR);
         navigate("/Dashboard", { replace: true, state: { role } });
       } finally {
         setLoading(false);

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./css/EventList.css";
 import { Clock, MapPin } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
-import * as RoleHelper from "./helpers/RoleHelper";
+import * as AlertHelper from "./helpers/AlertHelper";
 
 const API_URL = "http://localhost:4000";
 
@@ -34,7 +34,7 @@ const MyRegistrations: React.FC = () => {
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
-        alert("Your session has expired. Please log in again.");
+        alert(AlertHelper.SESSION_EXPIRE_ERROR);
         navigate("/User-login", { state: { role } });
         return;
       }
@@ -69,18 +69,18 @@ const MyRegistrations: React.FC = () => {
 
       setRefreshKey(k => k + 1);
 
-      alert("User has been successfully deregistered for the event");
+      alert(AlertHelper.DEREGISTRATION_SUCCESS);
 
     } catch (error) {
       console.error("Deregistration Error:", error);
-      alert("Network error — could not connect to server.");
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-      alert("Please log in to view your events.");
+      alert(AlertHelper.TOKEN_MISSING_ERROR);
       navigate("/User-login", { replace: true, state : { role } });
       return;
     }
@@ -96,7 +96,7 @@ const MyRegistrations: React.FC = () => {
         });
 
         if (res.status === 401) {
-          alert("Session expired. Please log in again.");
+          alert(AlertHelper.SESSION_EXPIRE_ERROR);
           navigate("/User-login", { replace: true, state : { role } });
           return;
         }

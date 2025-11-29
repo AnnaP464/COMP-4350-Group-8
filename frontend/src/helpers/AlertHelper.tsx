@@ -23,8 +23,12 @@ export const LOCATION_ERROR = "Location is required";
 export const DESCRIPTION_ERROR = "Description is required";
 export const SESSION_EXPIRE_ERROR = "Your session has expired. Please log in again.";
 
+export const TOKEN_MISSING_ERROR = "Please log in.";
+export const EVENT_ID_MISSING_ERROR = "Missing event id";
+export const EVENT_FETCH_ERROR = "Failed to Fetch Event List";
+export const CONFLICTING_EVENT_ERROR = "User has a conflicting accepted event.";
+export const PROFILE_FETCH_ERROR = "Failed to load profile.";
+
 //Successes
 export const APPLICATION_PROCESSING = "Application submitted! An organizer will review it.";
-
-
-//Info
+export const DEREGISTRATION_SUCCESS = "User has been successfully deregistered for the event";

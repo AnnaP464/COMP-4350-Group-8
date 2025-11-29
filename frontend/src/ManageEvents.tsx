@@ -1,8 +1,8 @@
 // src/ManageEvent.tsx
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import * as RoleHelper from "./helpers/RoleHelper";
 import * as EventHelper from "./helpers/EventHelper";
+import * as AlertHelper from "./helpers/AlertHelper";
 import "./css/Homepage.css";
 import "./css/EventList.css";
 import "./css/ManageEvents.css";
@@ -20,7 +20,7 @@ const ManageEvent: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const loc = useLocation();
-  const state = (loc.state as RoleHelper.AuthChoiceState) || {};
+  const state = loc.state || {};
   const role = state?.role;
 
   const [info, setInfo] = useState<EventHelper.CleanEvent | null>(null);
@@ -31,12 +31,12 @@ const ManageEvent: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-      alert("Please log in.");
+      alert(AlertHelper.TOKEN_MISSING_ERROR);
       navigate("/User-login", { state: { role } });
       return;
     }
     if (!eventId) {
-      alert("Missing event id");
+      alert(AlertHelper.EVENT_ID_MISSING_ERROR);
       navigate("/Homepage-Organizer");
       return;
     }
@@ -69,7 +69,7 @@ const ManageEvent: React.FC = () => {
         setAccepted(acc);
       } catch (e) {
         console.error(e);
-        alert("Failed to load event data.");
+        alert(AlertHelper.EVENT_FETCH_ERROR);
       } finally {
         setLoading(false);
       }
@@ -83,7 +83,7 @@ const ManageEvent: React.FC = () => {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (res.status === 409) {
-      alert("User has a conflicting accepted event.");
+      alert(AlertHelper.CONFLICTING_EVENT_ERROR);
       return;
     }
     if (!res.ok) {
