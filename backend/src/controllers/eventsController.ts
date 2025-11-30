@@ -752,7 +752,15 @@ export async function getAttendanceStatus(
       throw new AuthError();
     }
 
-    const status = await eventService.getAttendanceStatusService(eventId, user.id);
+     //allow organizer to specify which user’s status to inspect
+     //if user id present in query, fetch for that user; organizer fetch for volunteer status
+     //else fetch for authed user; volunteer fetch their own status
+    const queryUserId = (req.query.userId as string | undefined) ?? null;
+    const targetUserId = queryUserId && queryUserId.trim() !== ""
+      ? queryUserId
+      : user.id;
+
+    const status = await eventService.getAttendanceStatusService(eventId, targetUserId);
     return res.json(status);
   } catch (err) {
     next(err);

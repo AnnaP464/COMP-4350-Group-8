@@ -8,6 +8,7 @@ import * as EventHelper from "./helpers/EventHelper";
 import * as ErrorHelper from "./helpers/ErrorHelper";
 import HomepageHeader from "./components/HomepageHeader";
 import EventList from "./components/EventList";
+import useAuthGuard from "./hooks/useAuthGuard";
 
 const API_URL = "http://localhost:4000";
 
@@ -28,6 +29,7 @@ const HomepageOrganizer: React.FC = () => {
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
 
+  const authStatus = useAuthGuard()
   const [user, setUser] = React.useState<PublicUser | null>(null);
 
   //const [posts, setPosts] = useState<EventHelper.CleanEvent[]>([]);
@@ -84,8 +86,9 @@ const HomepageOrganizer: React.FC = () => {
     fetchEvents();
   },[navigate, refreshKey] );
 
-  if (!user) 
-    return <div>Loading…</div>;
+  if(authStatus !== "authorized"){
+    return;
+  }
 
   //handles creation of events
   const handleCreate = async (e: React.FormEvent) => {

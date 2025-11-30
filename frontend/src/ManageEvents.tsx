@@ -1,5 +1,5 @@
 // src/ManageEvent.tsx
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper";
 import * as EventHelper from "./helpers/EventHelper";
@@ -9,12 +9,16 @@ import "./css/ManageEvents.css";
 import "./css/EventCard.css";
 
 import EventCard from "./components/EventCard";
-
+import useAuthGuard from "./hooks/useAuthGuard";
+import formatMinutes from "./helpers/FormatMinutes";
+import type { AttendanceStatus } from "./api/AttendanceApiFetch";
 
 const API_URL = "http://localhost:4000";
 
 type Applicant = { id: string; username: string; email: string; applied_at: string };
 type Accepted  = { id: string; username: string; email: string; registered_at: string; decided_at: string };
+
+type AttendanceMap = Record<string, AttendanceStatus | undefined>;
 
 const ManageEvent: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -23,10 +27,49 @@ const ManageEvent: React.FC = () => {
   const state = (loc.state as RoleHelper.AuthChoiceState) || {};
   const role = state?.role;
 
+  const authStatus = useAuthGuard(role);
+
   const [info, setInfo] = useState<EventHelper.CleanEvent | null>(null);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [accepted, setAccepted] = useState<Accepted[]>([]);
+  const [attendanceByUserId, setAttendanceByUserId] = useState<AttendanceMap>({});
   const [loading, setLoading] = useState(true);
+
+  // Helper: fetch attendance status for all accepted volunteers
+  async function loadAcceptedAttendance(
+    token: string,
+    evId: string,
+    acceptedList: Accepted[]
+  ) {
+    if (!acceptedList.length) {
+      setAttendanceByUserId({});
+      return;
+    }
+
+    const nextMap: AttendanceMap = {};
+
+    await Promise.all(
+      acceptedList.map(async (vol) => {
+        try {
+          const res = await fetch(
+            `${API_URL}/v1/events/${evId}/attendance/status?userId=${encodeURIComponent(
+              vol.id
+            )}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          if (!res.ok) return;
+          const status: AttendanceStatus = await res.json();
+          nextMap[vol.id] = status;
+        } catch (err) {
+          console.warn("Failed to load attendance for user", vol.id, err);
+        }
+      })
+    );
+
+    setAttendanceByUserId(nextMap);
+  }
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -46,7 +89,7 @@ const ManageEvent: React.FC = () => {
         setLoading(true);
         // 1) Load all my events (withCounts) and find this one for quick info
         const evRes = await fetch(`${API_URL}/v1/events?mine=1`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         const evRows = evRes.ok ? await evRes.json() : [];
         const cleaned = EventHelper.cleanEvents(evRows, false);
@@ -55,18 +98,28 @@ const ManageEvent: React.FC = () => {
 
         // 2) Load applicants + accepted lists
         const [appsRes, accRes] = await Promise.all([
-          fetch(`${API_URL}/v1/events/${eventId}/applicants`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_URL}/v1/events/${eventId}/accepted`,   { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_URL}/v1/events/${eventId}/applicants`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${API_URL}/v1/events/${eventId}/accepted`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ]);
+
         if (appsRes.status === 401 || accRes.status === 401) {
           alert("Session expired.");
           navigate("/User-login", { state: { role } });
           return;
         }
-        const apps = appsRes.ok ? await appsRes.json() : [];
-        const acc  = accRes.ok ? await accRes.json() : [];
+
+        const apps: Applicant[] = appsRes.ok ? await appsRes.json() : [];
+        const acc: Accepted[] = accRes.ok ? await accRes.json() : [];
+
         setApplicants(apps);
         setAccepted(acc);
+
+        // 3) Load attendance status for each accepted volunteer
+        await loadAcceptedAttendance(token, eventId, acc);
       } catch (e) {
         console.error(e);
         alert("Failed to load event data.");
@@ -74,14 +127,24 @@ const ManageEvent: React.FC = () => {
         setLoading(false);
       }
     })();
-  }, [eventId, navigate]);
+  }, [eventId, navigate, role]);
+
+  //protected route: user needs to log in with valid access token to access this path
+  if (authStatus !== "authorized") {
+    return null;
+  }
 
   const accept = async (userId: string) => {
     const token = localStorage.getItem("access_token");
-    const res = await fetch(`${API_URL}/v1/events/${eventId}/applicants/${userId}/accept`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    if (!token || !eventId) return;
+
+    const res = await fetch(
+      `${API_URL}/v1/events/${eventId}/applicants/${userId}/accept`,
+      {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     if (res.status === 409) {
       alert("User has a conflicting accepted event.");
       return;
@@ -90,118 +153,146 @@ const ManageEvent: React.FC = () => {
       alert(await res.text());
       return;
     }
+
     // Move user from applicants -> accepted locally
-    setApplicants(a => a.filter(x => x.id !== userId));
-    
-    // force-refresh the Accepted panel ---
+    setApplicants((a) => a.filter((x) => x.id !== userId));
+
+    // force-refresh the Accepted panel & attendance
     const accRes = await fetch(`${API_URL}/v1/events/${eventId}/accepted`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (accRes.ok) {
-      const acc = await accRes.json();
-      setAccepted(acc);              //update the panel immediately
+      const acc: Accepted[] = await accRes.json();
+      setAccepted(acc);
+      await loadAcceptedAttendance(token, eventId, acc);
     }
   };
 
   const reject = async (userId: string) => {
     const token = localStorage.getItem("access_token");
-    const res = await fetch(`${API_URL}/v1/events/${eventId}/applicants/${userId}/reject`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    if (!token || !eventId) return;
+
+    const res = await fetch(
+      `${API_URL}/v1/events/${eventId}/applicants/${userId}/reject`,
+      {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     if (!res.ok) {
       alert(await res.text());
       return;
     }
-    setApplicants(a => a.filter(x => x.id !== userId));
+    setApplicants((a) => a.filter((x) => x.id !== userId));
   };
 
-  if (loading) 
-    return <main className="myreg-container"><p>Loading…</p></main>;
-
+  if (loading)
     return (
-    <main className="myreg-container">
-        <div className="myreg-glass">
-          <header className="myreg-header">
-              <h2 className="myreg-title">Manage Event</h2>
-              <div className="myreg-actions">
-              <button className="option-btn" onClick={() => navigate(-1)}>
-                  Back
-              </button>
-              </div>
-          </header>
-
-          {info && <EventCard ev={info} />}
-
-          <section className="applicants-section">
-              {/* Applicants box */}
-              <div className="myreg-glass applicants-box">
-                <h3 className="section-subtitle">
-                    Applicants ({applicants.length})
-                </h3>
-
-                {applicants.length === 0 ? (
-                    <p className="empty-text">No applicants yet.</p>
-                ) : (
-                    applicants.map((a) => (
-                    <div key={a.id} className="myreg-card applicant-card">
-                        <div className="user-line">
-                        <strong>{a.username}</strong>
-                        <span className="applicant-email">{a.email}</span>
-                        </div>
-                        <small>
-                        Applied at: {new Date(a.applied_at).toLocaleString()}
-                        </small>
-                        <div className="applicant-actions">
-                        <button
-                            className="option-btn"
-                            onClick={() => accept(a.id)}
-                        >
-                            Accept
-                        </button>
-                        <button
-                            className="cancel-btn"
-                            onClick={() => reject(a.id)}
-                        >
-                            Reject
-                        </button>
-                        </div>
-                    </div>
-                    ))
-                )}
-              </div>
-
-              {/* Accepted box */}
-              <div className="myreg-glass accepted-box">
-                <h3 className="section-subtitle">
-                    Accepted ({accepted.length})
-                </h3>
-
-                {accepted.length === 0 ? (
-                    <p className="empty-text">No accepted volunteers yet.</p>
-                ) : (
-                    accepted.map((a) => (
-                    <div key={a.id} className="myreg-card applicant-card">
-                        <div className="user-line">
-                        <strong>{a.username}</strong>
-                        <span className="applicant-email">{a.email}</span>
-                        </div>
-                        <small>
-                        Accepted at:{" "}
-                        {a.decided_at
-                            ? new Date(a.decided_at).toLocaleString()
-                            : "-"}
-                        </small>
-                    </div>
-                    ))
-                )}
-              </div>
-          </section>
-        </div>
-    </main>
+      <main className="myreg-container">
+        <p>Loading…</p>
+      </main>
     );
 
+  return (
+    <main className="myreg-container">
+      <div className="myreg-glass">
+        <header className="myreg-header">
+          <h2 className="myreg-title">Manage Event</h2>
+          <div className="myreg-actions">
+            <button className="option-btn" onClick={() => navigate(-1)}>
+              Back
+            </button>
+          </div>
+        </header>
 
+        {info && <EventCard ev={info} />}
+
+        <section className="applicants-section">
+          {/* Applicants box */}
+          <div className="myreg-glass applicants-box">
+            <h3 className="section-subtitle">
+              Applicants ({applicants.length})
+            </h3>
+
+            {applicants.length === 0 ? (
+              <p className="empty-text">No applicants yet.</p>
+            ) : (
+              applicants.map((a) => (
+                <div key={a.id} className="myreg-card applicant-card">
+                  <div className="user-line">
+                    <strong>{a.username}</strong>
+                    <span className="applicant-email">{a.email}</span>
+                  </div>
+                  <small>
+                    Applied at: {new Date(a.applied_at).toLocaleString()}
+                  </small>
+                  <div className="applicant-actions">
+                    <button
+                      className="option-btn"
+                      onClick={() => accept(a.id)}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="cancel-btn"
+                      onClick={() => reject(a.id)}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Accepted box (with attendance info) */}
+          <div className="myreg-glass accepted-box">
+            <h3 className="section-subtitle">
+              Accepted ({accepted.length})
+            </h3>
+
+            {accepted.length === 0 ? (
+              <p className="empty-text">No accepted volunteers yet.</p>
+            ) : (
+              accepted.map((a) => {
+                const status = attendanceByUserId[a.id];
+                const isSignedIn = status?.status.isSignedIn ?? false;
+                const minutes = status?.status.totalMinutes ?? 0;
+
+                return (
+                  <div key={a.id} className="myreg-card applicant-card">
+                    <div className="user-line">
+                      <strong>{a.username}</strong>
+                      <span className="applicant-email">{a.email}</span>
+                    </div>
+                    <div className="accepted-at-attendance-status">
+                    <small>
+                      Accepted at:{" "}
+                      {a.decided_at
+                        ? new Date(a.decided_at).toLocaleString([], { year: "numeric", month: "short", day: "numeric",
+                                                                      hour: "2-digit", minute: "2-digit", hour12: true,})
+                        : "-"}
+                    </small>
+                    
+                    <small className="status-line">
+                      Attendance:{" "}
+                      {status
+                        ? isSignedIn
+                          ? "Currently signed in"
+                          : "Not signed in"
+                        : "No status yet"}
+                      {status && ` · ${formatMinutes(minutes)} tracked`}
+                    </small>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </section>
+      </div>
+    </main>
+  );
 };
 
 export default ManageEvent;
