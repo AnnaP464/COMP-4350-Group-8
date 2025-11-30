@@ -5,25 +5,15 @@ import "./css/AuthChoice.css";
 import "./css/EventList.css";
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { cleanEvents } from "./helpers/EventHelper";
+import { cleanEvents, type CleanEvent} from "./helpers/EventHelper";
 import HomepageHeader from "./components/HomepageHeader";
 import EventList from "./components/EventList";
 import useAuthGuard from "./hooks/useAuthGuard";
+import { getStoredUser } from "./helpers/RoleHelper";
 
 const API_URL = "http://localhost:4000";
 
-type EventPost = {
-  id: string;
-  jobName: string;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  description: string;
-  createdAtDate: string;
-  createdAtTime: string;
-};
+type EventPost = CleanEvent;
 
 type AppStatus = "applied" | "accepted" | "rejected";
 type AppMap = Record<string, AppStatus>;
@@ -35,10 +25,16 @@ const loginStatusAuthorized = "authorized"
 const Dashboard: React.FC = () => {
 
   const navigate = useNavigate();
-  const location = useLocation();
-  const state = location.state;
-  const role = state?.role;
+  // const location = useLocation();
+  // const state = location.state;
+  // const role = state?.role;
 
+  //read user from localStorage to get role
+  //role is only needed when redirecting them to Volunteer Login page when session expires/logs out
+  const user = getStoredUser();
+  const role = user?.role;
+
+  
   const [username, setUsername] = useState<string | null>(null);
 
   //map of eventId -> status so we can render the correct button state
@@ -171,7 +167,7 @@ const Dashboard: React.FC = () => {
 
     //clear local state
     localStorage.removeItem("user");
-    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("access_token");
 
     try {
       const response = await fetch(`${API_URL}/v1/auth/logout`, {

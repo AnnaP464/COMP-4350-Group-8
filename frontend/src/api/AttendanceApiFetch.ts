@@ -1,21 +1,29 @@
-// api/attendance.ts
+/*-------------------------------------------------------------------------------------------------------
+Used by MyAttendance to make api calls to 
+ 1. fetchAttendanceStatus, 
+ 2. signInToEvent and 
+ 3. signOutOfEvent
+----------------------------------------------------------------------------------------------------------*/
+
 import apiFetch from "./ApiFetch";
 
+
+//backend gives me this when fetching status
 export type AttendanceStatus = {
-  eventId: string;
-  userId: string;
+  // eventId: string;
+  // userId: string;
   status: {
     isSignedIn: boolean;
-    lastAction: "sign_in" | "sign_out" | null;
-    lastActionAt: string | null;
+    // lastAction: "sign_in" | "sign_out" | null;
+    // lastActionAt: string | null;
     totalMinutes: number;
   };
-  window: {
-    startTime: string;
-    endTime: string;
-  };
+  // window: {
+  //   startTime: string;
+  //   endTime: string;
+  // };
   rules: {
-    now: string;
+    // now: string;
     canSignIn: boolean;
     canSignOut: boolean;
     reason?: string;
@@ -36,8 +44,8 @@ export async function fetchAttendanceStatus(
 }
 
 type SignBody = {
-  lon: number;
-  lat: number;
+  lon?: number;
+  lat?: number;
   accuracy_m?: number;
 };
 

@@ -12,74 +12,66 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import apiFetch from "../api/ApiFetch"; // your wrapper
+import apiFetch from "../api/ApiFetch";
 
 type AuthStatus = "checking" | "authorized" | "unauthorized";
 
-export default function useAuthGuard(role: string) : AuthStatus {
+// helper function: NO hooks here, just uses the navigate we pass in
+function redirectToLoginOrHome(
+  navigate: ReturnType<typeof useNavigate>,
+  role?: string | null
+) {
+  alert("You are not logged in.");
+  if (role) {
+    navigate("/User-login", { state: { role }, replace: true });
+  } else {
+    navigate("/", { replace: true });
+  }
+}
+
+export default function useAuthGuard(role?: string | null): AuthStatus {
   const navigate = useNavigate();
   const [status, setStatus] = useState<AuthStatus>("checking");
 
   useEffect(() => {
-
     const token = localStorage.getItem("access_token");
 
-    // If there is no token at all, don't auto-logout here.
-    // The route itself (navigation logic) should prevent unauthenticated access.
     if (!token) {
       setStatus("unauthorized");
-
-      //if role is valid, redirect to login page
-      //else redirect to / (entry point of app)
-      if (role) {
-        navigate("/User-login", { state: { role }, replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+      redirectToLoginOrHome(navigate, role);
       return;
     }
 
     async function check() {
-        try 
-        {
-            // Make a authenticated request
-            const res = await apiFetch("/v1/auth/me");  // returns current user
-            console.log(res.status);
-            if(res.ok){
-                setStatus("authorized");
-            }
-            //token invalid/expired
-            else if (res.status === 401){
-                localStorage.clear();
-                setStatus("unauthorized");
+      try {
+        // Make an authenticated request
+        const res = await apiFetch("/v1/auth/me"); // returns current user
+        console.log(res.status);
 
-                //if role is valid, redirect to login page
-                //else redirect to / (entry point of app)
-                if (role) {
-                navigate("/User-login", { state: { role }, replace: true });
-                } else {
-                navigate("/", { replace: true }); 
-                }
-            }
-            else{
-                setStatus("unauthorized");
-            }
-
-            // Auth check failed
-        } catch (err) {
-            // Refresh failed → means session expired
-            localStorage.clear();
-            setStatus("unauthorized");
-            if (role) {
-            navigate("/User-login", { state: { role }, replace: true });
-            } else {
-            navigate("/", { replace: true });
-            }
+        if (res.ok) {
+          setStatus("authorized");
         }
+        // token invalid/expired
+        else if (res.status === 401) {
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("user");
+          setStatus("unauthorized");
+          redirectToLoginOrHome(navigate, role);
+        } else {
+          // other server error → unauthorized, but no redirect
+          setStatus("unauthorized");
+        }
+      } catch (err) {
+        // network / CORS error → treat like expired session
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user");
+        setStatus("unauthorized");
+        redirectToLoginOrHome(navigate, role);
+      }
     }
 
     check();
-  }, [navigate, role]); //use effect ends
+  }, [navigate, role]);
 
   return status;
 }

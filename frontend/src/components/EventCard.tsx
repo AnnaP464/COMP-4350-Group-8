@@ -3,20 +3,22 @@ import { Clock, MapPin } from "lucide-react";
 // import "../css/Homepage.css"; 
 // import "../css/EventList.css";  // for .myreg-* styles
 import "../css/EventCard.css";
+import type { CleanEvent } from "../helpers/EventHelper";
 
+// interface EventPost {
+//   id: string;
+//   jobName: string;
+//   startDate: string;
+//   endDate: string;
+//   startTime: string;
+//   endTime: string;
+//   location: string;
+//   description: string;
+//   createdAtDate: string;
+//   createdAtTime: string;
+// }
 
-interface EventPost {
-  id: string;
-  jobName: string;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  description: string;
-  createdAtDate: string;
-  createdAtTime: string;
-}
+type EventPost = CleanEvent;
 
 interface EventCardProps {
   ev: EventPost;

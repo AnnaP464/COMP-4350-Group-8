@@ -20,6 +20,8 @@ import * as RoleHelper from "../helpers/RoleHelper";
 import EventCard from "./EventCard";
 import { useEventClock } from "../hooks/useEventClock";
 import type { CleanEvent } from "../helpers/EventHelper";
+import { MyRegContainer, MyRegSection } from "./MyRegLayout";
+
 
 const API_URL = "http://localhost:4000";
 
@@ -180,20 +182,18 @@ const MyEventList: React.FC<MyEventListProps> = ({
 
 
   return (
-    <main className="myreg-container">
-      <div className="myreg-glass">
-        <header className="myreg-header">
-          <h2 className="myreg-title">{title}</h2>
-          <div className="myreg-actions">
-            <button
-              className="option-btn"
-              onClick={() => navigate("/Dashboard", { state: { role } })}
-            >
-              Back to Dashboard
-            </button>
-          </div>
-        </header>
-
+    <MyRegContainer>
+      <MyRegSection
+        title={title}
+        actions={
+          <button
+            className="option-btn"
+            onClick={() => navigate("/Dashboard", { state: { role } })}
+          >
+            Back to Dashboard
+          </button>
+        }
+      >
         {list.length === 0 ? (
           <p className="myreg-empty">
             {mode === "accepted"
@@ -201,23 +201,23 @@ const MyEventList: React.FC<MyEventListProps> = ({
               : "No applications to show."}
           </p>
         ) : (
-            <div className="myreg-list"> {list.map((e) => (
-              
-                // display the event using EventCard.
-                // pass status and widthdraw button as footer 
-                // for EventCard to display them inside the card as footer.
-                //choose variant "myEvents" to signal use of footer in EventCard
-                <MyEventRow
-                  key={e.id}
-                  ev={e}
-                  mode={mode}
-                  onWithdraw={handleWithdraw}
-                />
+          <div className="myreg-list">
+            {list.map((e) => (
+              // display the event using EventCard.
+              // pass status and withdraw button as footer 
+              // for EventCard to display them inside the card as footer.
+              // choose variant "myEvents" to signal use of footer in EventCard
+              <MyEventRow
+                key={e.id}
+                ev={e}
+                mode={mode}
+                onWithdraw={handleWithdraw}
+              />
             ))}
-            </div>
+          </div>
         )}
-      </div>
-    </main>
+      </MyRegSection>
+    </MyRegContainer>
   );
 
 };

@@ -1,3 +1,11 @@
+/*--------------------------------------------------------------------------------------------
+Used by MyAttendance.tsx
+
+useState(Data.now()) sets nowMS to current timestamp
+useEffect runs onces and calls scheduleNextTick() and sets a timeout for the next full minute
+When timeout fires, setNowMs updates React state of MyAttendance, and MyAttendance re-renders to show live time update
+---------------------------------------------------------------------------------------------*/
+
 import { useEffect, useState } from "react";
 
 export default function useAccurateMinuteClock() {
