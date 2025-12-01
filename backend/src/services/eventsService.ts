@@ -89,6 +89,8 @@
 import * as events from "../db/events";
 import { attendanceRepo } from "../db/attendance";
 import type { AttendanceRow } from "../contracts/attendance.contracts";
+import { geofences } from "../db/geofences";
+
 
 // allow sign-in from 5 min before start → end
 const SIGNIN_EARLY_MINUTES = 5;
@@ -301,12 +303,14 @@ export async function getAttendanceStatusService(
 
 /* ------------------------------------------------------------------
    Attendance: sign-in / sign-out service functions
-   They mirror applyForEventService style: return an outcome object.
 -------------------------------------------------------------------*/
 
 type SignBody = {
+  lon?: number;
+  lat?: number;
   accuracy_m?: number | null;
 };
+
 
 export type SignInResult =
   | { outcome: "ok"; status: AttendanceStatusView }
@@ -317,7 +321,8 @@ export async function signInAttendanceService(
   userId: string,
   body: SignBody
 ): Promise<SignInResult> {
-  // 1) Check status & rules first
+  // 1. Check status and rules first
+  // a) Time window check
   const statusBefore = await getAttendanceStatusService(eventId, userId);
   if (!statusBefore.rules.canSignIn) {
     return {
@@ -327,7 +332,49 @@ export async function signInAttendanceService(
     };
   }
 
-  // 2) Record sign-in (same as old controller)
+  // b) validate location for geofence
+  const { lon, lat, accuracy_m } = body;
+
+  if (
+    typeof lon !== "number" ||
+    typeof lat !== "number" ||
+    Number.isNaN(lon) ||
+    Number.isNaN(lat)
+  ) {
+    // Request didn’t include usable coordinates
+    return {
+      outcome: "forbidden",
+      message: "Missing or invalid location for sign-in.",
+      status: statusBefore,
+    };
+  }
+
+  // 3) geofence check (uses db/geofences.isPointInsideAnyFence)
+  const insideFence = await geofences.isPointInsideAnyFence({
+    eventId,
+    lon,
+    lat,
+  });
+
+  if (!insideFence) {
+    // Log attempt as NOT accepted so you can audit later.
+    // This row will NOT count towards minutes because accepted = false.
+    await attendanceRepo.insertAction({
+      eventId,
+      userId,
+      action: "sign_in",
+      accepted: false,
+      accuracy_m: accuracy_m ?? null,
+    });
+
+    return {
+      outcome: "forbidden",
+      message: "You must be within the event geofence to sign in.",
+      status: statusBefore,
+    };
+  }
+
+  // 4) Record sign-in (inside time window and geofence)
   await attendanceRepo.insertAction({
     eventId,
     userId,
@@ -336,7 +383,7 @@ export async function signInAttendanceService(
     accuracy_m: body.accuracy_m ?? null,
   });
 
-  // 3) Return updated status
+  // 5) Return updated status
   const status = await getAttendanceStatusService(eventId, userId);
   return { outcome: "ok", status };
 }

@@ -145,35 +145,76 @@ export async function deleteFence(id: string): Promise<void> {
 /**
  * Point-in-any-fence test (returns true if the lon/lat lies inside any fence of the event)
  * Input lon/lat are WGS84. We transform to 3857 to match storage.
+ * 
+ * no geofence events -> treat point as inside fence
  */
 export async function isPointInsideAnyFence(opts: {
   eventId: string;
   lon: number; // WGS84 longitude
   lat: number; // WGS84 latitude
 }): Promise<boolean> {
+  const { eventId, lon, lat } = opts;
+
   const { rows } = await query<{ inside: boolean }>(
-    `
-    SELECT EXISTS (
-      SELECT 1
-      FROM event_geofences eg
-      WHERE eg.event_id = $1
-        AND (
-          -- polygon case: ST_Contains on 3857
-          (eg.area IS NOT NULL AND ST_Contains(
-             eg.area,
-             ST_Transform(ST_SetSRID(ST_MakePoint($2, $3), 4326), 3857)
-           ))
-          OR
-          -- circle case: center + radius_m in 3857 units (meters)
-          (eg.center IS NOT NULL AND ST_DWithin(
-             eg.center,
-             ST_Transform(ST_SetSRID(ST_MakePoint($2, $3), 4326), 3857),
-             eg.radius_m
-           ))
+    // `
+    // SELECT EXISTS (
+    //   SELECT 1
+    //   FROM event_geofences eg
+    //   WHERE eg.event_id = $1
+    //     AND (
+    //       -- polygon case: ST_Contains on 3857
+    //       (eg.area IS NOT NULL AND ST_Contains(
+    //          eg.area,
+    //          ST_Transform(ST_SetSRID(ST_MakePoint($2, $3), 4326), 3857)
+    //        ))
+    //       OR
+    //       -- circle case: center + radius_m in 3857 units (meters)
+    //       (eg.center IS NOT NULL AND ST_DWithin(
+    //          eg.center,
+    //          ST_Transform(ST_SetSRID(ST_MakePoint($2, $3), 4326), 3857),
+    //          eg.radius_m
+    //        ))
+    //     )
+    // ) AS inside
+    // `,
+    // [opts.eventId, opts.lon, opts.lat]
+
+       `
+    SELECT
+      CASE
+        -- If no fences exist for this event, treat it as "geofence disabled"
+        WHEN NOT EXISTS (
+          SELECT 1 FROM event_geofences WHERE event_id = $1
         )
-    ) AS inside
+        THEN TRUE
+        ELSE EXISTS (
+          SELECT 1
+          FROM event_geofences eg
+          WHERE eg.event_id = $1
+            AND (
+              -- polygon/multipolygon: check ST_Contains on 3857
+              (eg.area IS NOT NULL AND ST_Contains(
+                 eg.area,
+                 ST_Transform(
+                   ST_SetSRID(ST_MakePoint($2, $3), 4326),
+                   3857
+                 )
+               ))
+              OR
+              -- circle: center + radius_m (meters) in 3857
+              (eg.center IS NOT NULL AND ST_DWithin(
+                 eg.center,
+                 ST_Transform(
+                   ST_SetSRID(ST_MakePoint($2, $3), 4326),
+                   3857
+                 ),
+                 eg.radius_m
+               ))
+            )
+        )
+      END AS inside
     `,
-    [opts.eventId, opts.lon, opts.lat]
+    [eventId, lon, lat]
   );
   return rows[0]?.inside ?? false;
 }

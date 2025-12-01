@@ -24,21 +24,21 @@ export function createEventGeofencesRoutes(ctrl: GeofencesController) {
 
   // POST /events/:eventId/geofences/polygon
   r.post(
-    "/events/:eventId/geofences/polygon",
+    "/:eventId/geofences/polygon",
     validateRequest({ params: EventIdParam, body: PolygonBody }),
     ctrl.createPolygon
   );
 
   // POST /events/:eventId/geofences/circle
   r.post(
-    "/events/:eventId/geofences/circle",
+    "/:eventId/geofences/circle",
     validateRequest({ params: EventIdParam, body: CircleBody }),
     ctrl.createCircle
   );
 
   // GET /events/:eventId/geofences
   r.get(
-    "/events/:eventId/geofences",
+    "/:eventId/geofences",
     validateRequest({ params: EventIdParam }),
     ctrl.listByEvent
   );

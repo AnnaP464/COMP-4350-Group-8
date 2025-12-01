@@ -464,12 +464,14 @@
 //   }
 // }
 
-
-// src/controllers/eventsController.ts
 import { Request, Response, NextFunction } from "express";
 import * as eventService from "../services/eventsService";
 import * as events from "../db/events";
 import { AuthError } from "../errors";
+
+import { attendanceRepo } from "../db/attendance";
+import { geofences } from "../db/geofences";
+
 
 // Helper: get authed user from req.user (set by requireAuth)
 function getAuthedUser(req: Request): { id: string; role?: string } | null {
@@ -639,6 +641,10 @@ export async function listMyApplications(
 
 /* ------------------------------------------------------------------
    Organizer – applicants / accepted
+    1. list all applicants (volunteers who have applied)
+    2. list all accepted applicants
+    3. accept an applicant
+    4. reject an applicant
 -------------------------------------------------------------------*/
 
 // GET /v1/events/:eventId/applicants (organizer)
@@ -735,7 +741,10 @@ export async function rejectApplicant(req: Request, res: Response, next: NextFun
 }
 
 /* ------------------------------------------------------------------
-   Event attendance: status + sign-in / sign-out
+   Event attendance: 
+   1. status 
+   2. sign-in 
+   3. sign-out
 -------------------------------------------------------------------*/
 
 // GET /v1/events/:eventId/attendance/status
@@ -785,10 +794,13 @@ export async function signInAttendance(
       lat?: number;
       accuracy_m?: number;
     };
-
+    
     const result = await eventService.signInAttendanceService(eventId, user.id, {
+      lon: body.lon,
+      lat: body.lat,
       accuracy_m: body.accuracy_m ?? null,
     });
+
 
     if (result.outcome === "forbidden") {
       // Same 403 shape as your old controller:
