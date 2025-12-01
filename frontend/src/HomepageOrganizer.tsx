@@ -16,6 +16,14 @@ type PublicUser = {
   username: string; 
 };
 
+type EventDraft = {
+  jobName: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  description: string;
+};
+
 const HomepageOrganizer: React.FC = () => {
   const [events, setEvents] = useState<EventHelper.CleanEvent[]>([]);
   const [showProfile, setShowProfile] = useState(false);
@@ -69,8 +77,6 @@ const HomepageOrganizer: React.FC = () => {
         }
 
         const rows = await response.json();
-
-        
         const cleanData = EventHelper.cleanEvents(rows, false);
         setEvents(cleanData);
       } catch {
@@ -91,15 +97,13 @@ const HomepageOrganizer: React.FC = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     // basic client-side validation
-    if (!jobName.trim()) return alert(AlertHelper.JOB_NAME_ERROR);
-    if (!startTime.trim()) return alert(AlertHelper.START_TIME_ERROR);
-    if (!endTime.trim()) return alert(AlertHelper.END_TIME_ERROR);
-    if (new Date(endTime) <= new Date(startTime)) 
-      return alert(AlertHelper.TIMING_ERROR);
-    if (new Date() > new Date(startTime)) return alert(AlertHelper.CAUSALITY_ERROR);
-    if (!location.trim()) return alert(AlertHelper.LOCATION_ERROR);
-    if (!description.trim()) return alert(AlertHelper.DESCRIPTION_ERROR);
-
+    const draft = { jobName, startTime, endTime, location, description };
+    const error = validateEvent(draft);
+    if (error) {
+      alert(error);
+      return;
+    }
+    
     try { 
       const token = localStorage.getItem("access_token");
       if(!token){
@@ -176,6 +180,24 @@ const HomepageOrganizer: React.FC = () => {
       console.error("Create job error:", err);
       alert(AlertHelper.SERVER_ERROR);
     }
+  };
+
+  const validateEvent = (draft: EventDraft): string | null => {
+    if (!draft.jobName.trim()) return AlertHelper.JOB_NAME_ERROR;
+    if (!draft.startTime.trim()) return AlertHelper.START_TIME_ERROR;
+    if (!draft.endTime.trim()) return AlertHelper.END_TIME_ERROR;
+  
+    const start = new Date(draft.startTime);
+    const end = new Date(draft.endTime);
+    if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) {
+      if (end <= start) return AlertHelper.TIMING_ERROR;
+      if (new Date() > start) return AlertHelper.CAUSALITY_ERROR;
+    }
+  
+    if (!draft.location.trim()) return AlertHelper.LOCATION_ERROR;
+    if (!draft.description.trim()) return AlertHelper.DESCRIPTION_ERROR;
+  
+    return null;
   };
 
 

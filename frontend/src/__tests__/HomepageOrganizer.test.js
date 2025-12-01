@@ -431,7 +431,7 @@ describe("Homepage-Organizer — extra branches", () => {
     fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
 
     await waitFor(() =>
-      expect(window.alert).toHaveBeenCalledWith("Success, Event created!")
+      expect(window.alert).toHaveBeenCalledWith("Application submitted! An organizer will review it.")
     );
   });
 
