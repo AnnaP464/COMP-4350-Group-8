@@ -4,9 +4,8 @@ import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper"
 import * as AlertHelper from "./helpers/AlertHelper";
+import * as UserService from "./services/UserService";
 import {Link} from "react-router-dom";
-
-const API_URL = "http://localhost:4000";
 
 const SignupUser: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -33,18 +32,7 @@ const SignupUser: React.FC = () => {
     if (!password.trim()) return setErrorMsg(AlertHelper.PASSWORD_ERROR);
     if (password !== confirmPassword) return setErrorMsg(AlertHelper.CONFIRM_PASSWORD_ERROR);
     try {
-      const response = await fetch(`${API_URL}/v1/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          role,
-        }),
-      });
+      const response = await UserService.register(username, email, password, role);
 
       //sign up failed
       if (!response.ok) {

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./css/Homepage.css"; // re-use your existing styles
 import "./css/AuthChoice.css";
 import "./css/EventList.css";
@@ -8,8 +8,9 @@ import * as EventHelper from "./helpers/EventHelper";
 import * as AlertHelper from "./helpers/AlertHelper";
 import HomepageHeader from "./components/HomepageHeader";
 import EventList from "./components/EventList";
-
-const API_URL = "http://localhost:4000";
+import * as EventService from "./services/EventService";
+import * as AuthService from "./services/AuthService";
+import * as UserService from "./services/UserService";
 
 type PublicUser = { 
   email: string; 
@@ -50,11 +51,11 @@ const HomepageOrganizer: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const raw = localStorage.getItem("user");
+    const raw = AuthService.getUser();
     if(raw)
       setUser(JSON.parse(raw) as PublicUser);
 
-    const token = localStorage.getItem("access_token");
+    const token = AuthService.getToken();
     //send user to organizer login
     if(!token){
       navigate("/User-login", { state: { role } });
@@ -64,13 +65,7 @@ const HomepageOrganizer: React.FC = () => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_URL}/v1/events?mine=1`, {
-          method: "GET",
-          headers: {
-            "Accept": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        });
+        const response = await EventService.fetchMyEvents(token);
         
         if (!response.ok) {
            return;
@@ -103,9 +98,9 @@ const HomepageOrganizer: React.FC = () => {
       alert(error);
       return;
     }
-    
+
     try { 
-      const token = localStorage.getItem("access_token");
+      const token = AuthService.getToken();
       if(!token){
         alert(AlertHelper.SESSION_EXPIRE_ERROR);
         navigate("/User-login", { state: { role } });
@@ -136,14 +131,7 @@ const HomepageOrganizer: React.FC = () => {
         description: description.trim(),
       };
 
-      const response = await fetch(`${API_URL}/v1/events`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await EventService.createEvent(token, payload);
     
       if (response.status === 401) { //auto-redirect if timed-out
         alert(AlertHelper.SESSION_EXPIRE_ERROR);
@@ -206,15 +194,10 @@ const HomepageOrganizer: React.FC = () => {
     e.preventDefault();
 
     //clear local state
-    localStorage.removeItem("user");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    AuthService.logout();
 
     try {
-      const response = await fetch(`${API_URL}/v1/auth/logout`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json",}
-      });
+      const response = await UserService.logout();
 
       if (!response.ok) {
         const err = await response.text();

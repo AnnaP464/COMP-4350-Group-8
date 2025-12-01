@@ -15,10 +15,9 @@ Called by:
 import React, { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../css/EventList.css";
-import * as RoleHelper from "../helpers/RoleHelper";
 import EventCard from "./EventCard";
-
-const API_URL = "http://localhost:4000";
+import * as AuthService from "../services/AuthService";
+import * as EventService from "../services/EventService";
 
 export type EventPost = {
   id: string;
@@ -58,7 +57,7 @@ const MyEventList: React.FC<MyEventListProps> = ({
 }) => {
   const navigate = useNavigate();
   const loc = useLocation();
-  const state = loc.state as (RoleHelper.AuthChoiceState & { items?: EventWithStatus[] }) | undefined;
+  const state = loc.state;
   const role = state?.role;
 
   // Prefer explicit props, else read from navigation state
@@ -70,21 +69,14 @@ const MyEventList: React.FC<MyEventListProps> = ({
 
   const handleWithdraw = async (eventId: string) => {
     try {
-      const token = localStorage.getItem("access_token");
+      const token = AuthService.getToken();
       if (!token) {
         alert("Your session has expired. Please log in again.");
         navigate("/User-login", { state: { role } });
         return;
       }
 
-      const res = await fetch(`${API_URL}/v1/events/withdraw`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ eventId }),
-      });
+      const res = await EventService.withdrawFromEvent(token, eventId);
 
       if (!res.ok) {
         const err = await res.text();

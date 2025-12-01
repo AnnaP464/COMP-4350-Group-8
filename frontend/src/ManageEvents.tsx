@@ -3,15 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import * as EventHelper from "./helpers/EventHelper";
 import * as AlertHelper from "./helpers/AlertHelper";
+import * as AuthService from "./services/AuthService";
+import * as EventService from "./services/EventService";
 import "./css/Homepage.css";
 import "./css/EventList.css";
 import "./css/ManageEvents.css";
 import "./css/EventCard.css";
 
 import EventCard from "./components/EventCard";
-
-
-const API_URL = "http://localhost:4000";
 
 type Applicant = { id: string; username: string; email: string; applied_at: string };
 type Accepted  = { id: string; username: string; email: string; registered_at: string; decided_at: string };
@@ -29,7 +28,7 @@ const ManageEvent: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = AuthService.getToken();
     if (!token) {
       alert(AlertHelper.TOKEN_MISSING_ERROR);
       navigate("/User-login", { state: { role } });
@@ -45,19 +44,14 @@ const ManageEvent: React.FC = () => {
       try {
         setLoading(true);
         // 1) Load all my events (withCounts) and find this one for quick info
-        const evRes = await fetch(`${API_URL}/v1/events?mine=1`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const evRes = await EventService.fetchMyEvents(token);
         const evRows = evRes.ok ? await evRes.json() : [];
         const cleaned = EventHelper.cleanEvents(evRows, false);
         const found = cleaned.find((e: any) => e.id === eventId) || null;
         setInfo(found);
 
         // 2) Load applicants + accepted lists
-        const [appsRes, accRes] = await Promise.all([
-          fetch(`${API_URL}/v1/events/${eventId}/applicants`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_URL}/v1/events/${eventId}/accepted`,   { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
+        const [appsRes, accRes] = await EventService.fetchApplicants(token, eventId);
         if (appsRes.status === 401 || accRes.status === 401) {
           alert("Session expired.");
           navigate("/User-login", { state: { role } });
@@ -77,11 +71,9 @@ const ManageEvent: React.FC = () => {
   }, [eventId, navigate]);
 
   const accept = async (userId: string) => {
-    const token = localStorage.getItem("access_token");
-    const res = await fetch(`${API_URL}/v1/events/${eventId}/applicants/${userId}/accept`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    if(!eventId) return;
+    const token = AuthService.getToken();
+    const res = await EventService.acceptApplicant(token, eventId, userId);
     if (res.status === 409) {
       alert(AlertHelper.CONFLICTING_EVENT_ERROR);
       return;
@@ -94,9 +86,8 @@ const ManageEvent: React.FC = () => {
     setApplicants(a => a.filter(x => x.id !== userId));
     
     // force-refresh the Accepted panel ---
-    const accRes = await fetch(`${API_URL}/v1/events/${eventId}/accepted`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    
+    const accRes = await EventService.fetchAcceptedApplicants(token, eventId);
     if (accRes.ok) {
       const acc = await accRes.json();
       setAccepted(acc);              //update the panel immediately
@@ -104,11 +95,9 @@ const ManageEvent: React.FC = () => {
   };
 
   const reject = async (userId: string) => {
-    const token = localStorage.getItem("access_token");
-    const res = await fetch(`${API_URL}/v1/events/${eventId}/applicants/${userId}/reject`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    if(!eventId) return;
+    const token = AuthService.getToken();
+    const res = await EventService.rejectApplicant(token, eventId, userId);
     if (!res.ok) {
       alert(await res.text());
       return;

@@ -13,6 +13,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiFetch from "../api/ApiFetch"; // your wrapper
+import * as AuthService from "../services/AuthService";
 
 type AuthStatus = "checking" | "authorized" | "unauthorized";
 
@@ -22,7 +23,7 @@ export default function useAuthGuard(role: string) : AuthStatus {
 
   useEffect(() => {
 
-    const token = localStorage.getItem("access_token");
+    const token = AuthService.getToken();
 
     // If there is no token at all, don't auto-logout here.
     // The route itself (navigation logic) should prevent unauthenticated access.
@@ -43,14 +44,14 @@ export default function useAuthGuard(role: string) : AuthStatus {
         try 
         {
             // Make a authenticated request
-            const res = await apiFetch("/v1/auth/me");  // returns current user
+            const res = await apiFetch();
             console.log(res.status);
             if(res.ok){
                 setStatus("authorized");
             }
             //token invalid/expired
             else if (res.status === 401){
-                localStorage.clear();
+                AuthService.clearLocalStorage();
                 setStatus("unauthorized");
 
                 //if role is valid, redirect to login page
@@ -68,7 +69,7 @@ export default function useAuthGuard(role: string) : AuthStatus {
             // Auth check failed
         } catch (err) {
             // Refresh failed → means session expired
-            localStorage.clear();
+            AuthService.clearLocalStorage();
             setStatus("unauthorized");
             if (role) {
             navigate("/User-login", { state: { role }, replace: true });
