@@ -7,6 +7,10 @@ Used by MyAttendance to make api calls to
 
 import apiFetch from "./ApiFetch";
 
+import * as AuthService from "../services/AuthService";
+import * as UserService from "../services/UserService";
+
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
 //backend gives me this when fetching status
 export type AttendanceStatus = {
@@ -29,13 +33,21 @@ export type AttendanceStatus = {
     reason?: string;
   };
 };
+  const token = AuthService.getToken();
+    //send user to organizer login
+    
 
 export async function fetchAttendanceStatus(
   eventId: string
 ): Promise<AttendanceStatus> {
-  const res = await fetch (`/v1/events/${eventId}/attendance/status`, {
+  const res = await fetch (`${API}/v1/events/${eventId}/attendance/status`, {
+     headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
     method: "GET",
   });
+
 
   if (!res.ok) {
     throw new Error(`Status fetch failed: ${res.status}`);
@@ -53,7 +65,11 @@ export async function signInToEvent(
   eventId: string,
   body: SignBody
 ): Promise<AttendanceStatus> {
-  const res = await fetch (`/v1/events/${eventId}/attendance/sign-in`, {
+  const res = await fetch (`${API}/v1/events/${eventId}/attendance/sign-in`, {
+    headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -68,7 +84,11 @@ export async function signOutFromEvent(
   eventId: string,
   body: SignBody
 ): Promise<AttendanceStatus> {
-  const res = await fetch (`/v1/events/${eventId}/attendance/sign-out`, {
+  const res = await fetch (`${API}/v1/events/${eventId}/attendance/sign-out`, {
+    headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+    },
     method: "POST",
     body: JSON.stringify(body),
   });

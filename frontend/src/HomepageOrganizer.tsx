@@ -8,6 +8,8 @@ import * as AlertHelper from "./helpers/AlertHelper";
 import HomepageHeader from "./components/HomepageHeader";
 import EventList from "./components/EventList";
 import useAuthGuard from "./hooks/useAuthGuard";
+import GeofenceMap from "./components/GeofenceMap";
+import type { Feature } from "geojson";
 
 import * as EventService from "./services/EventService";
 import * as AuthService from "./services/AuthService";
@@ -25,6 +27,7 @@ type EventDraft = {
   location: string;
   description: string;
 };
+
 
 const HomepageOrganizer: React.FC = () => {
   const [events, setEvents] = useState<EventHelper.CleanEvent[]>([]);
@@ -44,9 +47,7 @@ const HomepageOrganizer: React.FC = () => {
 
   // Step 2 – Geofence form state (optional)
   const [gfName, setGfName] = useState("");
-  const [gfLat, setGfLat] = useState("");
-  const [gfLon, setGfLon] = useState("");
-  const [gfRadius, setGfRadius] = useState("");
+  const [geofenceShape, setGeofenceShape] = useState<Feature| null>(null);
 
   const authStatus = useAuthGuard();
   const [user, setUser] = React.useState<PublicUser | null>(null);
@@ -73,9 +74,7 @@ const HomepageOrganizer: React.FC = () => {
     setDescription("");
 
     setGfName("");
-    setGfLat("");
-    setGfLon("");
-    setGfRadius("");
+    setGeofenceShape(null);
   };
 
   useEffect(() => {
@@ -197,7 +196,7 @@ const HomepageOrganizer: React.FC = () => {
   };
 
   // STEP 2: optional geofence creation
-  const handleCreateGeofence = async (e: React.FormEvent) => {
+ const handleCreateGeofence = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!createdEventId) {
@@ -206,50 +205,76 @@ const HomepageOrganizer: React.FC = () => {
       return;
     }
 
-    const token = localStorage.getItem("access_token");
+    const token = AuthService.getToken();
     if (!token) {
       alert(AlertHelper.SESSION_EXPIRE_ERROR);
       navigate("/User-login", { state: { role } });
       return;
     }
 
-    const lon = Number(gfLon);
-    const lat = Number(gfLat);
-    const radius_m = Number(gfRadius);
-
     if (!gfName.trim()) {
       alert("Please provide a name for the geofence.");
       return;
     }
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-      alert("Please provide valid latitude and longitude.");
+
+    if (!geofenceShape) {
+      alert("Please draw a geofence on the map.");
       return;
     }
-    if (!Number.isFinite(radius_m) || radius_m <= 0) {
-      alert("Please provide a positive radius in meters.");
-      return;
+
+    const geom = geofenceShape.geometry;
+    const props: any = geofenceShape.properties || {};
+
+    let url =
+      `${import.meta.env.VITE_API_URL ?? "http://localhost:4000"}` +
+      `/v1/events/${createdEventId}/geofences`;
+    let body: any;
+
+    // Geoman circle encoding: geometry is Point, properties._pmType === "Circle"
+    if (props._pmType === "Circle" && geom.type === "Point") {
+      const coords = geom.coordinates as [number, number]; // [lon, lat]
+      const lon = coords[0];
+      const lat = coords[1];
+      const radius_m = props.radius ?? props.radius_m;
+
+      if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(radius_m)) {
+        alert("Invalid circle geometry from map.");
+        return;
+      }
+
+      body = {
+        name: gfName.trim(),
+        lat,
+        lon,
+        radius_m,
+      };
+      url += "/circle";
+    } else {
+      // Treat anything else as polygon/multipolygon
+      if (geom.type !== "Polygon" && geom.type !== "MultiPolygon") {
+        alert("Unsupported geometry type. Please draw a polygon or circle.");
+        return;
+      }
+
+      body = {
+        name: gfName.trim(),
+        geojson4326: geom, // send full GeoJSON geometry – adjust if your API expects only coordinates
+      };
+      url += "/polygon";
     }
 
     try {
-      const res = await fetch(
-        `"http://localhost:4000"/v1/events/${createdEventId}/geofences/circle`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name: gfName.trim(),
-            lon,
-            lat,
-            radius_m,
-          }),
-        }
-      );
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
 
       if (res.status === 401) {
-        alert("Your session has expired. Please log in again.");
+        alert(AlertHelper.SESSION_EXPIRE_ERROR);
         navigate("/User-login", { state: { role } });
         return;
       }
@@ -260,16 +285,18 @@ const HomepageOrganizer: React.FC = () => {
         return;
       }
 
-      // We don't strictly need the response body here
       await res.json().catch(() => undefined);
 
-      alert("Geofence saved! Volunteers will only be able to sign in inside this area.");
+      alert(
+        "Geofence saved! Volunteers will only be able to sign in inside this area."
+      );
       resetCreateModal();
     } catch (err) {
       console.error("Create geofence error:", err);
       alert(AlertHelper.SERVER_ERROR);
     }
   };
+
   const validateEvent = (draft: EventDraft): string | null => {
     if (!draft.jobName.trim()) return AlertHelper.JOB_NAME_ERROR;
     if (!draft.startTime.trim()) return AlertHelper.START_TIME_ERROR;
@@ -341,9 +368,7 @@ const HomepageOrganizer: React.FC = () => {
                 setLocation("");
                 setDescription("");
                 setGfName("");
-                setGfLat("");
-                setGfLon("");
-                setGfRadius("");
+                setGeofenceShape(null);
               }}
               title="Create a job post"
             >
@@ -473,6 +498,7 @@ const HomepageOrganizer: React.FC = () => {
                   sign-ins to a specific area. Volunteers will need to be inside
                   this geofence to clock in.
                 </p>
+
                 <input
                   className="text-input"
                   type="text"
@@ -480,30 +506,15 @@ const HomepageOrganizer: React.FC = () => {
                   value={gfName}
                   onChange={(e) => setGfName(e.target.value)}
                 />
-                <input
-                  className="text-input"
-                  type="number"
-                  step="0.000001"
-                  placeholder="Latitude (e.g. 49.8951)"
-                  value={gfLat}
-                  onChange={(e) => setGfLat(e.target.value)}
-                />
-                <input
-                  className="text-input"
-                  type="number"
-                  step="0.000001"
-                  placeholder="Longitude (e.g. -97.1384)"
-                  value={gfLon}
-                  onChange={(e) => setGfLon(e.target.value)}
-                />
-                <input
-                  className="text-input"
-                  type="number"
-                  min="1"
-                  placeholder="Radius in meters (e.g. 100)"
-                  value={gfRadius}
-                  onChange={(e) => setGfRadius(e.target.value)}
-                />
+
+                {/* Interactive map */}
+                <div style={{ height: 300, borderRadius: 8, overflow: "hidden" }}>
+                  <GeofenceMap
+                    value={geofenceShape}
+                    onChange={setGeofenceShape}
+                  />
+                </div>
+
                 <div
                   style={{
                     display: "flex",
@@ -523,11 +534,7 @@ const HomepageOrganizer: React.FC = () => {
                     <button
                       type="button"
                       className="guest-btn"
-                      onClick={() => {
-                        // let them tweak event again if you want to allow; for now
-                        // just go back to viewing their events
-                        resetCreateModal();
-                      }}
+                      onClick={resetCreateModal}
                     >
                       Cancel
                     </button>
@@ -537,7 +544,7 @@ const HomepageOrganizer: React.FC = () => {
                   </div>
                 </div>
               </form>
-            )}
+              )}
           </div>
         </div>
       )}
