@@ -14,6 +14,6 @@ CREATE TABLE IF NOT EXISTS event_geofences (
 );
 
 -- Indexes for fast spatial queries
-CREATE INDEX idx_event_geofences_area_gix   ON event_geofences USING GIST (area);
-CREATE INDEX idx_event_geofences_center_gix ON event_geofences USING GIST (center);
-CREATE INDEX idx_event_geofences_event      ON event_geofences(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_geofences_area_gix   ON event_geofences USING GIST (area);
+CREATE INDEX IF NOT EXISTS idx_event_geofences_center_gix ON event_geofences USING GIST (center);
+CREATE INDEX IF NOT EXISTS idx_event_geofences_event      ON event_geofences(event_id);

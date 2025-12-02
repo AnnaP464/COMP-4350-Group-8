@@ -10,5 +10,5 @@ CREATE TABLE IF NOT EXISTS event_attendance (
   UNIQUE (event_id, user_id, action, at_time)   -- or a smarter key if needed
 );
 
-CREATE INDEX idx_attendance_event ON event_attendance(event_id);
-CREATE INDEX idx_attendance_user  ON event_attendance(user_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_event ON event_attendance(event_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_user  ON event_attendance(user_id);
