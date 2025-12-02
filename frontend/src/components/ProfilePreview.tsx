@@ -1,23 +1,19 @@
 import "../css/ProfilePreview.css";
 import React, { useEffect, useState } from "react";
+import * as AuthService from "../services/AuthService";
+import * as UserService from "../services/UserService";
 
-const API_URL = "http://localhost:4000";
-const PROFILE_ENDPOINT = `${API_URL}/v1/users/me/profile`;
 const serverErrorMsg = "Couldn't update your profile. Try again.";
 
 // helper to upload avatar
 async function uploadAvatar(file: File): Promise<string> {
-  const token = localStorage.getItem("access_token");
+  const token = AuthService.getToken();
   if (!token) throw new Error("Not logged in");
 
-  const fd = new FormData();
-  fd.append("avatar", file);
+  const formData = new FormData();
+  formData.append("avatar", file);
 
-  const res = await fetch(`${API_URL}/v1/users/me/avatar`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: fd,
-  });
+  const res = await UserService.getAvatar(token, formData);
 
   if (!res.ok) 
     throw new Error(await res.text().catch(() => "Upload failed"));
@@ -75,14 +71,12 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
   // Fetch latest profile when dialog opens
   useEffect(() => {
     if (!open) return;
-    const token = localStorage.getItem("access_token");
+    const token = AuthService.getToken();
     if (!token) return;
 
     (async () => {
       try {
-        const res = await fetch(PROFILE_ENDPOINT, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await UserService.fetchProfile(token);
         if (res.ok) {
           const p = await res.json();
           setForm({
@@ -123,14 +117,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
     }
 
     try {
-      const res = await fetch(PROFILE_ENDPOINT, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(form),
-      });
+      const res = await UserService.fetchProfile(token);
 
       if (!res.ok) 
         throw new Error(await res.text().catch(() => "Request failed"));

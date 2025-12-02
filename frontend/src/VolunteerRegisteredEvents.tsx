@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./css/EventList.css";
 import { Clock, MapPin } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
-import * as RoleHelper from "./helpers/RoleHelper";
-
-const API_URL = "http://localhost:4000";
+import * as AlertHelper from "./helpers/AlertHelper";
+import * as EventService from "./services/EventService";
+import * as AuthService from "./services/AuthService";
 
 type EventPost = {
   id: string;
@@ -32,9 +32,9 @@ const MyRegistrations: React.FC = () => {
 
   const handleDeregistration = async (eventId: string) => {
     try {
-      const token = localStorage.getItem("access_token");
+      const token = AuthService.getToken();
       if (!token) {
-        alert("Your session has expired. Please log in again.");
+        alert(AlertHelper.SESSION_EXPIRE_ERROR);
         navigate("/User-login", { state: { role } });
         return;
       }
@@ -42,16 +42,7 @@ const MyRegistrations: React.FC = () => {
       //verify token before sending request off
       //get token by user id
 
-      const response = await fetch(`${API_URL}/v1/events/deregister`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          eventId: eventId
-        })
-      });
+      const response = await EventService.deregister(token, eventId);
 
       if (!response.ok) {
         const err = await response.text();
@@ -69,18 +60,18 @@ const MyRegistrations: React.FC = () => {
 
       setRefreshKey(k => k + 1);
 
-      alert("User has been successfully deregistered for the event");
+      alert(AlertHelper.DEREGISTRATION_SUCCESS);
 
     } catch (error) {
       console.error("Deregistration Error:", error);
-      alert("Network error — could not connect to server.");
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = AuthService.getToken();
     if (!token) {
-      alert("Please log in to view your events.");
+      alert(AlertHelper.TOKEN_MISSING_ERROR);
       navigate("/User-login", { replace: true, state : { role } });
       return;
     }
@@ -88,15 +79,10 @@ const MyRegistrations: React.FC = () => {
     (async () => {
       try {
         // If your backend uses a different path, change it here (see backend snippet below)
-        const res = await fetch(`${API_URL}/v1/events?registered=1`, {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await EventService.fetchRegisteredEvents(token);
 
         if (res.status === 401) {
-          alert("Session expired. Please log in again.");
+          alert(AlertHelper.SESSION_EXPIRE_ERROR);
           navigate("/User-login", { replace: true, state : { role } });
           return;
         }

@@ -12,7 +12,8 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import apiFetch from "../api/ApiFetch";
+import apiFetch from "../api/ApiFetch"; // your wrapper
+import * as AuthService from "../services/AuthService";
 
 type AuthStatus = "checking" | "authorized" | "unauthorized";
 
@@ -34,7 +35,8 @@ export default function useAuthGuard(role?: string | null): AuthStatus {
   const [status, setStatus] = useState<AuthStatus>("checking");
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+
+    const token = AuthService.getToken();
 
     if (!token) {
       setStatus("unauthorized");
@@ -43,15 +45,15 @@ export default function useAuthGuard(role?: string | null): AuthStatus {
     }
 
     async function check() {
-      try {
-        // Make an authenticated request
-        const res = await apiFetch("/v1/auth/me"); // returns current user
+      try 
+      {
+        // Make a authenticated request
+        const res = await fetch("/v1/auth/me"); // returns current user;
         console.log(res.status);
-
-        if (res.ok) {
-          setStatus("authorized");
+        if(res.ok){
+            setStatus("authorized");
         }
-        // token invalid/expired
+        //token invalid/expired
         else if (res.status === 401) {
           localStorage.removeItem("access_token");
           localStorage.removeItem("user");

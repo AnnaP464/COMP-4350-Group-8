@@ -16,11 +16,26 @@ import type { AttendanceState } from "../helpers/AttendanceHelper";
 
 type UseEventClockOpts = {
   eventId: string;
-  startTimeIso: string;  // or startDate + startTime, whichever you have
-  endTimeIso: string;
+  // startTimeIso: string;  // or startDate + startTime,
+  // endTimeIso: string;
 };
 
-export function useEventClock({ eventId, startTimeIso, endTimeIso }: UseEventClockOpts) {
+// Helper: wrap navigator.geolocation in a Promise
+function getLocationFromBrowser(): Promise<GeolocationCoordinates> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation is not supported by this browser."));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve(pos.coords),
+      (err) => reject(err)
+    );
+  });
+}
+
+export function useEventClock({ eventId }: UseEventClockOpts) {
   const [status, setStatus] = useState<AttendanceState>("none");
   const [loading, setLoading] = useState(false);
 
@@ -36,7 +51,7 @@ export function useEventClock({ eventId, startTimeIso, endTimeIso }: UseEventClo
     setLoading(true);
     try {
       const coords = await getLocationFromBrowser(); // wraps navigator.geolocation
-      const res = await apiFetch(`/v1/events/${eventId}/attendance/sign-in`, {
+      const res = await fetch (`/v1/events/${eventId}/attendance/sign-in`, {
         method: "POST",
         body: JSON.stringify({
           lat: coords.latitude,
@@ -59,7 +74,7 @@ export function useEventClock({ eventId, startTimeIso, endTimeIso }: UseEventClo
   const clockOut = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await apiFetch(`/v1/events/${eventId}/attendance/sign-out`, {
+      const res = await fetch(`/v1/events/${eventId}/attendance/sign-out`, {
         method: "POST",
       });
 

@@ -33,7 +33,7 @@ export type AttendanceStatus = {
 export async function fetchAttendanceStatus(
   eventId: string
 ): Promise<AttendanceStatus> {
-  const res = await apiFetch(`/v1/events/${eventId}/attendance/status`, {
+  const res = await fetch (`/v1/events/${eventId}/attendance/status`, {
     method: "GET",
   });
 
@@ -53,7 +53,7 @@ export async function signInToEvent(
   eventId: string,
   body: SignBody
 ): Promise<AttendanceStatus> {
-  const res = await apiFetch(`/v1/events/${eventId}/attendance/sign-in`, {
+  const res = await fetch (`/v1/events/${eventId}/attendance/sign-in`, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -68,7 +68,7 @@ export async function signOutFromEvent(
   eventId: string,
   body: SignBody
 ): Promise<AttendanceStatus> {
-  const res = await apiFetch(`/v1/events/${eventId}/attendance/sign-out`, {
+  const res = await fetch (`/v1/events/${eventId}/attendance/sign-out`, {
     method: "POST",
     body: JSON.stringify(body),
   });

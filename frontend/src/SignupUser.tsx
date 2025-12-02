@@ -3,10 +3,9 @@ import "./css/AuthChoice.css";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper"
-import * as ErrorHelper from "./helpers/ErrorHelper";
+import * as AlertHelper from "./helpers/AlertHelper";
+import * as UserService from "./services/UserService";
 import {Link} from "react-router-dom";
-
-const API_URL = "http://localhost:4000";
 
 const SignupUser: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -28,36 +27,25 @@ const SignupUser: React.FC = () => {
 
     setErrorMsg("");
 
-    if (!username.trim()) return setErrorMsg(ErrorHelper.NAME_ERROR);
-    if (!email.trim()) return setErrorMsg(ErrorHelper.EMAIL_ERROR);
-    if (!password.trim()) return setErrorMsg(ErrorHelper.PASSWORD_ERROR);
-    if (password !== confirmPassword) return setErrorMsg(ErrorHelper.CONFIRM_PASSWORD_ERROR);
+    if (!username.trim()) return setErrorMsg(AlertHelper.NAME_ERROR);
+    if (!email.trim()) return setErrorMsg(AlertHelper.EMAIL_ERROR);
+    if (!password.trim()) return setErrorMsg(AlertHelper.PASSWORD_ERROR);
+    if (password !== confirmPassword) return setErrorMsg(AlertHelper.CONFIRM_PASSWORD_ERROR);
     try {
-      const response = await fetch(`${API_URL}/v1/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          role,
-        }),
-      });
+      const response = await UserService.register(username, email, password, role);
 
       //sign up failed
       if (!response.ok) {
         try {
           const errorData = await response.json();
           if(response.status === 409) {
-            setErrorMsg(ErrorHelper.DUPLICATE_EMAIL_ERROR);
+            setErrorMsg(AlertHelper.DUPLICATE_EMAIL_ERROR);
           } else if(Array.isArray(errorData.errors)){
             const msg = errorData.errors.map((e:any) => e.message).join("\n");
             if (msg?.includes("8")) {
-              setErrorMsg(ErrorHelper.PASSWORD_LENGTH_ERROR);
+              setErrorMsg(AlertHelper.PASSWORD_LENGTH_ERROR);
             } else if(msg?.includes("3") || msg?.includes("32")) {
-              setErrorMsg(ErrorHelper.NAME_LENGTH_ERROR);
+              setErrorMsg(AlertHelper.NAME_LENGTH_ERROR);
             }
           }
           else if(errorData.message) {
@@ -65,7 +53,7 @@ const SignupUser: React.FC = () => {
           }
         }
         catch (error) {
-          setErrorMsg(ErrorHelper.DUPLICATE_EMAIL_ERROR);
+          setErrorMsg(AlertHelper.DUPLICATE_EMAIL_ERROR);
         }
         return;
       }
@@ -75,7 +63,7 @@ const SignupUser: React.FC = () => {
 
     } catch (error) {
       console.error("Sign-up error:", error);
-      setErrorMsg(ErrorHelper.SERVER_ERROR);
+      setErrorMsg(AlertHelper.SERVER_ERROR);
     }
   };
 

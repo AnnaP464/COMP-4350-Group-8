@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import "@testing-library/jest-dom";
 import SignupUser from "../SignupUser";
-import * as ErrorHelper from "../helpers/ErrorHelper";
+import * as AlertHelper from "../helpers/AlertHelper";
 
 // mock navigate
 const mockNavigate = jest.fn();
@@ -108,7 +108,7 @@ describe("SignupUser", () => {
     fireEvent.click(screen.getByRole("button", { name: /Sign-up/i }));
 
     await waitFor(() =>
-      expect(screen.queryByText(ErrorHelper.DUPLICATE_EMAIL_ERROR)).toBeInTheDocument()
+      expect(screen.queryByText(AlertHelper.DUPLICATE_EMAIL_ERROR)).toBeInTheDocument()
     );
     expect(mockNavigate).not.toHaveBeenCalled();
   });
@@ -155,7 +155,7 @@ describe("SignupUser", () => {
     fireEvent.click(screen.getByRole("button", { name: /Sign-up/i }));
 
     await waitFor(() =>
-      expect(screen.getByText(ErrorHelper.SERVER_ERROR)).toBeInTheDocument()
+      expect(screen.getByText(AlertHelper.SERVER_ERROR)).toBeInTheDocument()
     );
   });
 });

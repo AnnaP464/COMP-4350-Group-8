@@ -3,10 +3,10 @@ import "./css/AuthChoice.css";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import * as RoleHelper from "./helpers/RoleHelper";
-import * as ErrorHelper from "./helpers/ErrorHelper";
+import * as AlertHelper from "./helpers/AlertHelper";
+import * as UserService from "./services/UserService";
+import * as AuthService from "./services/AuthService";
 import {Link} from "react-router-dom";
-
-const API_URL = "http://localhost:4000";
 
 const LoginUser: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -28,22 +28,12 @@ const LoginUser: React.FC = () => {
     setErrorMsg("");
     
     //email or password not entered
-    if (!email.trim()) return setErrorMsg(ErrorHelper.EMAIL_ERROR);
-    if (!password.trim()) return setErrorMsg(ErrorHelper.PASSWORD_ERROR);
+    if (!email.trim()) return setErrorMsg(AlertHelper.EMAIL_ERROR);
+    if (!password.trim()) return setErrorMsg(AlertHelper.PASSWORD_ERROR);
 
     //api call to auth/login
     try {
-      const response = await fetch(`${API_URL}/v1/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          role,
-        }),
-      });
+      const response = await UserService.login(email, password, role);
       
       const data = await response.json();
 
@@ -53,10 +43,8 @@ const LoginUser: React.FC = () => {
         return setErrorMsg(data?.message);
       }
 
-
       //save user and access_token to local storage
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      AuthService.login(data.access_token, JSON.stringify(data.user));
 
       //check if role of user while login matches with the backend role
       //prevents users to login from volunteer screen with organizer credentials
@@ -64,9 +52,8 @@ const LoginUser: React.FC = () => {
       const desiredRole = (role ?? "")
       const backendRole = (data?.user?.role ?? "")
       if(desiredRole && backendRole && desiredRole !== backendRole){
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("user");
-        setErrorMsg(ErrorHelper.LOG_IN_ERROR);
+        AuthService.logout();
+        setErrorMsg(AlertHelper.LOG_IN_ERROR);
         return;
       }
 
@@ -79,12 +66,12 @@ const LoginUser: React.FC = () => {
         navigate("/Dashboard");
       } 
       else {  // Unknown role: send them back or show a safe default
-        setErrorMsg(ErrorHelper.LOG_IN_ERROR);
+        setErrorMsg(AlertHelper.LOG_IN_ERROR);
       }
 
     } catch (error) {
       console.error("Login error:", error);
-      setErrorMsg(ErrorHelper.SERVER_ERROR);
+      setErrorMsg(AlertHelper.SERVER_ERROR);
     }
   }; //log in logic ends
 

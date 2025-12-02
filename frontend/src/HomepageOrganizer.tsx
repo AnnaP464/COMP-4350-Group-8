@@ -1,19 +1,29 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./css/Homepage.css"; // re-use your existing styles
 import "./css/AuthChoice.css";
 import "./css/EventList.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import * as EventHelper from "./helpers/EventHelper";
-import * as ErrorHelper from "./helpers/ErrorHelper";
+import * as AlertHelper from "./helpers/AlertHelper";
 import HomepageHeader from "./components/HomepageHeader";
 import EventList from "./components/EventList";
 import useAuthGuard from "./hooks/useAuthGuard";
 
-const API_URL = "http://localhost:4000";
+import * as EventService from "./services/EventService";
+import * as AuthService from "./services/AuthService";
+import * as UserService from "./services/UserService";
 
 type PublicUser = {
   email: string;
   username: string;
+};
+
+type EventDraft = {
+  jobName: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  description: string;
 };
 
 const HomepageOrganizer: React.FC = () => {
@@ -69,12 +79,12 @@ const HomepageOrganizer: React.FC = () => {
   };
 
   useEffect(() => {
-    const raw = localStorage.getItem("user");
-    if (raw) {
+    const raw = AuthService.getUser();
+    if(raw){
       setUser(JSON.parse(raw) as PublicUser);
     }
 
-    const token = localStorage.getItem("access_token");
+    const token = AuthService.getToken();
     //send user to organizer login
     if (!token) {
       navigate("/User-login", { state: { role } });
@@ -84,14 +94,8 @@ const HomepageOrganizer: React.FC = () => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_URL}/v1/events?mine=1`, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
+        const response = await EventService.fetchMyEvents(token);
+        
         if (!response.ok) {
           return;
         }
@@ -117,32 +121,26 @@ const HomepageOrganizer: React.FC = () => {
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     // basic client-side validation
-    if (!jobName.trim()) return alert(ErrorHelper.JOB_NAME_ERROR);
-    if (!startTime.trim()) return alert(ErrorHelper.START_TIME_ERROR);
-    if (!endTime.trim()) return alert(ErrorHelper.END_TIME_ERROR);
-    if (new Date(endTime) <= new Date(startTime))
-      return alert(ErrorHelper.TIMING_ERROR);
-    if (new Date() > new Date(startTime))
-      return alert(ErrorHelper.CAUSALITY_ERROR);
-    if (!location.trim()) return alert(ErrorHelper.LOCATION_ERROR);
-    if (!description.trim()) return alert(ErrorHelper.DESCRIPTION_ERROR);
+    const draft = { jobName, startTime, endTime, location, description };
+    const error = validateEvent(draft);
+    if (error) {
+      alert(error);
+      return;
+    }
 
-    try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        alert(ErrorHelper.SESSION_EXPIRE_ERROR);
+    try { 
+      const token = AuthService.getToken();
+      if(!token){
+        alert(AlertHelper.SESSION_EXPIRE_ERROR);
         navigate("/User-login", { state: { role } });
         return;
       }
 
       // Convert local datetime-local values to ISO UTC strings
-      const startDate = new Date(startTime);
-      const endDate = new Date(endTime);
-      if (
-        Number.isNaN(startDate.getTime()) ||
-        Number.isNaN(endDate.getTime())
-      ) {
-        alert("Please choose valid start and end times.");
+      const startDate = new Date(startTime)
+      const endDate = new Date(endTime)
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+        alert(AlertHelper.TIME_FORMATTING_ERROR);
         return;
       }
 
@@ -158,18 +156,12 @@ const HomepageOrganizer: React.FC = () => {
         description: description.trim(),
       };
 
-      const response = await fetch(`${API_URL}/v1/events`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.status === 401) {
-        alert("Your session has expired. Please log in again.");
-        navigate("/User-login", { state: { role } });
+      const response = await EventService.createEvent(token, payload);
+    
+      if (response.status === 401) { //auto-redirect if timed-out
+        alert(AlertHelper.SESSION_EXPIRE_ERROR);
+        console.log("401");
+        navigate("/User-login", { state: { role } }); 
         return;
       }
 
@@ -185,7 +177,7 @@ const HomepageOrganizer: React.FC = () => {
         return null;
       });
 
-      alert("Success, Event created!");
+      alert(AlertHelper.APPLICATION_PROCESSING);
 
       // Refresh the list so new event appears in feed
       setRefreshKey((k) => k + 1);
@@ -200,7 +192,7 @@ const HomepageOrganizer: React.FC = () => {
       }
     } catch (err) {
       console.error("Create job error:", err);
-      alert(ErrorHelper.SERVER_ERROR);
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
 
@@ -216,7 +208,7 @@ const HomepageOrganizer: React.FC = () => {
 
     const token = localStorage.getItem("access_token");
     if (!token) {
-      alert(ErrorHelper.SESSION_EXPIRE_ERROR);
+      alert(AlertHelper.SESSION_EXPIRE_ERROR);
       navigate("/User-login", { state: { role } });
       return;
     }
@@ -240,7 +232,7 @@ const HomepageOrganizer: React.FC = () => {
 
     try {
       const res = await fetch(
-        `${API_URL}/v1/events/${createdEventId}/geofences/circle`,
+        `"http://localhost:4000"/v1/events/${createdEventId}/geofences/circle`,
         {
           method: "POST",
           headers: {
@@ -275,24 +267,37 @@ const HomepageOrganizer: React.FC = () => {
       resetCreateModal();
     } catch (err) {
       console.error("Create geofence error:", err);
-      alert(ErrorHelper.SERVER_ERROR);
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
+  const validateEvent = (draft: EventDraft): string | null => {
+    if (!draft.jobName.trim()) return AlertHelper.JOB_NAME_ERROR;
+    if (!draft.startTime.trim()) return AlertHelper.START_TIME_ERROR;
+    if (!draft.endTime.trim()) return AlertHelper.END_TIME_ERROR;
+  
+    const start = new Date(draft.startTime);
+    const end = new Date(draft.endTime);
+    if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) {
+      if (end <= start) return AlertHelper.TIMING_ERROR;
+      if (new Date() > start) return AlertHelper.CAUSALITY_ERROR;
+    }
+  
+    if (!draft.location.trim()) return AlertHelper.LOCATION_ERROR;
+    if (!draft.description.trim()) return AlertHelper.DESCRIPTION_ERROR;
+  
+    return null;
+  };
+
 
   //handles logging out
   const handleLogout = async (e: React.FormEvent) => {
     e.preventDefault();
 
     //clear local state
-    localStorage.removeItem("user");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    AuthService.logout();
 
     try {
-      const response = await fetch(`${API_URL}/v1/auth/logout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await UserService.logout();
 
       if (!response.ok) {
         const err = await response.text();
@@ -311,7 +316,7 @@ const HomepageOrganizer: React.FC = () => {
       navigate("/", { replace: true });
     } catch (error) {
       console.error("Log-out Error:", error);
-      alert(ErrorHelper.SERVER_ERROR);
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
 

@@ -9,7 +9,9 @@ import "./css/VolunteerProfile.css"; // reuse existing styling
 import ProfilePreviewDialog from "./components/ProfilePreview"
 import ProfileBadges from "./components/ProfileBadges";
 import ProfileRecentActivity from "./components/ProfileRecentActivity";
-
+import * as AlertHelper from "./helpers/AlertHelper";
+import * as UserService from "./services/UserService";
+import * as AuthService from "./services/AuthService";
 
 type Me = { id: string; username: string; email?: string; role: string; createdAt: string };
 
@@ -38,27 +40,25 @@ const OrganizerProfile: React.FC = () => {
   ];
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = AuthService.getToken();
     if (!token) {
-      alert("Please sign in first.");
+      alert(AlertHelper.TOKEN_MISSING_ERROR);
       navigate("/User-login", { replace: true, state: { role: "Organizer" } });
       return;
     }
 
     (async () => {
       try {
-        const res = await fetch("http://localhost:4000/v1/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await UserService.authMe(token);
         if (res.status === 401) {
-          alert("Session expired. Please log in again.");
+          alert(AlertHelper.SESSION_EXPIRE_ERROR);
           navigate("/User-login", { replace: true, state: { role: "Organizer" } });
           return;
         }
         const data = await res.json();
         setMe(data);
       } catch (e) {
-        alert("Failed to load profile.");
+        alert(AlertHelper.PROFILE_FETCH_ERROR);
         navigate("/Homepage-Organizer", { replace: true });
       } finally {
         setLoading(false);

@@ -11,7 +11,10 @@ import EventList from "./components/EventList";
 import useAuthGuard from "./hooks/useAuthGuard";
 import { getStoredUser } from "./helpers/RoleHelper";
 
-const API_URL = "http://localhost:4000";
+import * as AlertHelper from  "./helpers/AlertHelper";
+import * as EventService from "./services/EventService";
+import * as AuthService from "./services/AuthService";
+import * as UserService from "./services/UserService";
 
 type EventPost = CleanEvent;
 
@@ -68,9 +71,8 @@ const Dashboard: React.FC = () => {
   Fetch real events + my application statuses non-blockingly
   ------------------------------------------------------------------------------*/
   useEffect(() => {
-
     //get user from local storage
-    const raw = localStorage.getItem("user");
+    const raw = AuthService.getUser();
     if (!raw) return;
     try {
       const u = JSON.parse(raw);
@@ -83,12 +85,9 @@ const Dashboard: React.FC = () => {
     //fetch events + my application statuses (if logged in)
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${API_URL}/v1/events`, {
-          method: "GET",
-          headers: { "Accept": "application/json" }
-        });
+        const response = await EventService.fetchAllEvents();
 
-        if (!response.ok) throw new Error("Failed to fetch events");
+        if (!response.ok) throw new Error(AlertHelper.SERVER_ERROR);
         const data = await response.json();
 
         //deletes events which have passed and cleans up the dates and time to be more readable
@@ -99,9 +98,8 @@ const Dashboard: React.FC = () => {
       }
     };
 
-
     const fetchMyApplications = async () => {
-      const token = localStorage.getItem("access_token");
+      const token = AuthService.getToken();
       
       if (!token){      // not logged in -> no application status to render
         setApplications({});
@@ -109,17 +107,12 @@ const Dashboard: React.FC = () => {
       }
 
       try {
-        const res = await fetch(`${API_URL}/v1/events/me/applications`, {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
+        const res = await EventService.fetchApplications(token);
 
         if (res.status === 401) {
           // token invalid/expired: surface it, don't silently ignore
           const err = await res.json().catch(() => ({}));
-          alert(err?.message || "Session expired. Please log in again.");
+          alert(err?.message || AlertHelper.SESSION_EXPIRE_ERROR);
           // optionally navigate to login:
           navigate("/User-login", { state: { role } });
           setApplications({});
@@ -166,16 +159,10 @@ const Dashboard: React.FC = () => {
     e.preventDefault();
 
     //clear local state
-    localStorage.removeItem("user");
-    localStorage.removeItem("access_token");
+    AuthService.logout();
 
     try {
-      const response = await fetch(`${API_URL}/v1/auth/logout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
+      const response = await UserService.logout();
 
       if (!response.ok) {
         const err = await response.text();
@@ -197,15 +184,15 @@ const Dashboard: React.FC = () => {
       // window.location.href = "/dashboard";
     } catch (error) {
       console.error("Log-out Error:", error);
-      alert("Network error — could not connect to server.");
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
 
   const handleApply = async (eventId: string) => {
     try {
-      const token = localStorage.getItem("access_token");
+      const token = AuthService.getToken();
       if (!token) {
-        alert("Your session has expired. Please log in again.");
+        alert(AlertHelper.SESSION_EXPIRE_ERROR);
         navigate("/User-login", { state: { role } });
         return;
       }
@@ -213,16 +200,7 @@ const Dashboard: React.FC = () => {
       //verify token before sending request off
       //get token by user id
 
-      const response = await fetch(`${API_URL}/v1/events/apply`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          eventId: eventId
-        })
-      });
+      const response = await EventService.applyToEvent(token, eventId);
 
       //store the applied event in the applied list of applications
       setApplications(prev => ({ ...prev, [eventId]: "applied" }));
@@ -258,11 +236,11 @@ const Dashboard: React.FC = () => {
 
       //sucess 201
       setApplications((prev) => ({ ...prev, [eventId]: "applied" }));
-      alert("Application submitted! An organizer will review it.");
+      alert(AlertHelper.APPLICATION_PROCESSING);
 
     } catch (error) {
       console.error("Registration Error:", error);
-      alert("Network error — could not connect to server.");
+      alert(AlertHelper.SERVER_ERROR);
     }
   };
 

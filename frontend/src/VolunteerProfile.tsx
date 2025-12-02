@@ -9,14 +9,12 @@ import {
 import "./css/VolunteerProfile.css";
 import ProfilePreviewDialog from "./components/ProfilePreview.tsx";
 import {getAvatarInitials, formatMonthYear} from "./helpers/UserInfoHelper.tsx";
-import * as RoleHelper from "./helpers/RoleHelper";
+import * as AlertHelper from "./helpers/AlertHelper";
 import ProfileTopBar from "./components/ProfileTopBar";
 import ProfileBadges from "./components/ProfileBadges";
 import ProfileRecentActivity from "./components/ProfileRecentActivity";
-
-
-const API_URL = "http://localhost:4000";
-//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+import * as UserService from "./services/UserService";
+import * as AuthService from "./services/AuthService";
 
 type Me = { id: string; username: string; email?: string; role: string, createdAt: string};
 const VolunteerProfile: React.FC = () => {
@@ -36,14 +34,14 @@ const VolunteerProfile: React.FC = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = AuthService.getToken();
     if (!token) {
-      alert("Please sign in first.");
+      alert(AlertHelper.TOKEN_MISSING_ERROR);
       navigate("/User-login", { replace: true, state: { role } });
       return;
     }
 
-    const saved = localStorage.getItem("hoursGoal");
+    const saved = AuthService.getHourGoal();
     if (saved) {
         const n = Number(saved);
         if (!Number.isNaN(n) && n > 0) 
@@ -52,18 +50,16 @@ const VolunteerProfile: React.FC = () => {
 
     (async () => {
       try {
-        const res = await fetch(`${API_URL}/v1/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await UserService.authMe(token);
         if (res.status === 401) {
-          alert("Session expired. Please log in again.");
+          alert(AlertHelper.SESSION_EXPIRE_ERROR);
           navigate("/User-login", { replace: true, state: { role } });
           return;
         }
         const data = await res.json();
         setMe(data);
       } catch (e) {
-        alert("Failed to load profile.");
+        alert(AlertHelper.PROFILE_FETCH_ERROR);
         navigate("/Dashboard", { replace: true, state: { role } });
       } finally {
         setLoading(false);
@@ -239,7 +235,7 @@ if (!me) return <main className="vp-container">Could not load profile.</main>;
                       return;
                   }
                   setHoursGoal(n);
-                  localStorage.setItem("hoursGoal", String(n));
+                  AuthService.setHourGoal(n);
                   setShowGoalDialog(false);
                   }}
                   style={{ display: "grid", gap: 10 }}
