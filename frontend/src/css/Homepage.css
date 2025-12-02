@@ -38,6 +38,22 @@ CSS for Volunteer Dashboard & Organizer-Homepage
   backdrop-filter: blur(14px) saturate(140%);
 }
 
+/* allow buttons on homepage header wrap to the next line instead of overflowing */
+.button-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .navigation-container {
+    padding: 0 1rem;
+  }
+}
+
+
+
 /* .content-box {
   display: grid;
   gap: 16px;

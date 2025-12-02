@@ -10,27 +10,24 @@ Called by:
     2. MyRegisteredEvents.tsx
           - MyRegistered.tsx passes the accepted list
 
+No fetch here. Dashboard already fetched and filtered
 -------------------------------------------------------------------*/
 
 import React, { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../css/EventList.css";
 import EventCard from "./EventCard";
+import { useEventClock } from "../hooks/useEventClock";
+import type { CleanEvent } from "../helpers/EventHelper";
+import { MyRegContainer, MyRegSection } from "./MyRegLayout";
+
+
+const API_URL = "http://localhost:4000";
 import * as AuthService from "../services/AuthService";
 import * as EventService from "../services/EventService";
 
-export type EventPost = {
-  id: string;
-  jobName: string;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  description: string;
-  createdAtDate: string;
-  createdAtTime: string;
-};
+export type EventPost = CleanEvent;
+
 
 export type AppStatus = "applied" | "accepted" | "rejected" | "withdrawn";
 
@@ -44,6 +41,86 @@ interface MyEventListProps {
   /** Display mode: accepted (registered) or applications (applied/rejected) */
   mode: "accepted" | "applications";
 }
+
+
+type MyEventRowProps = {
+  ev: EventWithStatus;
+  mode: "accepted" | "applications";
+  onWithdraw: (id: string) => void;
+};
+
+const MyEventRow: React.FC<MyEventRowProps> = ({ ev, mode, onWithdraw }) => {
+  const isAcceptedMode = mode === "accepted" && ev.status === "accepted";
+
+  const { status: clockStatus, loading, clockIn, clockOut } = useEventClock({
+    eventId: ev.id,
+    // if your hook needs start/end times, pass them here too
+  });
+
+  const footer = (
+    <>
+      {/* existing status + withdraw UI */}
+      <span className="status-line">
+        Status: <strong>{ev.status}</strong>
+      </span>
+
+      {ev.status !== "rejected" && (
+        <button
+          onClick={() => onWithdraw(ev.id)}
+          className="cancel-btn"
+          type="button"
+        >
+          Withdraw
+        </button>
+      )}
+
+      {isAcceptedMode && (
+        <div className="clock-row">
+          {clockStatus === "clocked-in" ? (
+            <button
+              className="option-btn"
+              type="button"
+              disabled={loading}
+              onClick={clockOut}
+            >
+              {loading ? "Clocking out…" : "Clock out"}
+            </button>
+          ) : (
+            <button
+              className="option-btn"
+              type="button"
+              disabled={
+                loading ||
+                clockStatus === "too-early" ||
+                clockStatus === "event-ended"
+              }
+              onClick={clockIn}
+            >
+              {loading
+                ? "Checking location…"
+                : clockStatus === "not-in-fence"
+                ? "Not in geofence"
+                : "Clock in"}
+            </button>
+          )}
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <EventCard
+      ev={ev}
+      variant="myEvents"
+      footer={footer}
+    />
+  );
+};
+
+
+/* ----------------------------------------------------------------------------- */
+
+/* ------------------------- main MyEventList component ------------------------ */
 
 /**
  * A single page that renders a list of events (with status) passed via location.state or props.
@@ -91,23 +168,26 @@ const MyEventList: React.FC<MyEventListProps> = ({
       console.error("Withdraw error:", e);
       alert("Network error — could not connect to server.");
     }
-  };
+  };//handleWithdraw ends
+
+
+  
+
+
 
   return (
-    <main className="myreg-container">
-      <div className="myreg-glass">
-        <header className="myreg-header">
-          <h2 className="myreg-title">{title}</h2>
-          <div className="myreg-actions">
-            <button
-              className="option-btn"
-              onClick={() => navigate("/Dashboard", { state: { role } })}
-            >
-              Back to Dashboard
-            </button>
-          </div>
-        </header>
-
+    <MyRegContainer>
+      <MyRegSection
+        title={title}
+        actions={
+          <button
+            className="option-btn"
+            onClick={() => navigate("/Dashboard", { state: { role } })}
+          >
+            Back to Dashboard
+          </button>
+        }
+      >
         {list.length === 0 ? (
           <p className="myreg-empty">
             {mode === "accepted"
@@ -115,40 +195,23 @@ const MyEventList: React.FC<MyEventListProps> = ({
               : "No applications to show."}
           </p>
         ) : (
-            <div className="myreg-list"> {list.map((e) => (
-              
-                // display the event using EventCard.
-                // pass status and widthdraw button as footer 
-                // for EventCard to display them inside the card as footer.
-                //choose variant "myEvents" to signal use of footer in EventCard
-                <EventCard
+          <div className="myreg-list">
+            {list.map((e) => (
+              // display the event using EventCard.
+              // pass status and withdraw button as footer 
+              // for EventCard to display them inside the card as footer.
+              // choose variant "myEvents" to signal use of footer in EventCard
+              <MyEventRow
                 key={e.id}
                 ev={e}
-                variant="myEvents"
-                footer={
-                  <>
-                    <span className="status-line">
-                      Status: <strong>{e.status}</strong>
-                    </span>
-
-                    {e.status !== "rejected" && (
-                      <button
-                        onClick={() => handleWithdraw(e.id)}
-                        className="cancel-btn"
-                        type="button"
-                      >
-                        Withdraw
-                      </button>
-                    )}
-                  </>
-                }
+                mode={mode}
+                onWithdraw={handleWithdraw}
               />
-                
             ))}
-            </div>
+          </div>
         )}
-      </div>
-    </main>
+      </MyRegSection>
+    </MyRegContainer>
   );
 
 };

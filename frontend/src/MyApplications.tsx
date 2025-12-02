@@ -1,3 +1,12 @@
+/*------------------------------------------------------------------------------------------------
+Displays the list of events whose status is applied OR rejected
+When the applicant is accepted for the event, that event is moved to the MyRegisteredEvents page 
+
+uses useAuthGaurd to protect this path
+Calls /components/MyEventList to list the appliedORrejected events
+
+--------------------------------------------------------------------------------------------------*/
+
 import React from "react";
 import MyEventList from "./components/MyEventList";
 import { useLocation } from "react-router-dom";

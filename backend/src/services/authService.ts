@@ -76,7 +76,7 @@ export function makeAuthService(deps: { users: User; sessions: Sessions }): Auth
       // user.password_hash is from DB, input.password is plaintext
       // use bcrypt.compare to compare
       const ok = await compare(input.password, user.password_hash);
-      if (!ok) throw new AuthError("Invalid credentials");  //override default authError msg
+      if (!ok) throw new AuthError("Invalid credentials");  //override default AuthError msg
 
       const accessToken = tokens.issueAccessToken({id: user.id, role: user.role});
       const { token: refreshToken, jti } = tokens.issueRefreshToken({id: user.id, role: user.role});

@@ -60,10 +60,10 @@ const LoginUser: React.FC = () => {
       // Route strictly by backend role
       // send the role to the next page with state
       if (backendRole === RoleHelper.ORG_ROLE) {
-        navigate("/Homepage-Organizer", { state: { role } });
+        navigate("/Homepage-Organizer");
       } 
       else if (backendRole === RoleHelper.VOL_ROLE) {
-        navigate("/Dashboard", { state: { role } });
+        navigate("/Dashboard");
       } 
       else {  // Unknown role: send them back or show a safe default
         setErrorMsg(AlertHelper.LOG_IN_ERROR);

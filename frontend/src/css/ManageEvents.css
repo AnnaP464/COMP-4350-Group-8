@@ -67,6 +67,13 @@ Layout for applicants & accepted boxes
   opacity: 0.7;
 }
 
+.accepted-at-attendance-status{
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 4px;      /* small spacing under the user name line */
+}
+
 /* Flex layout for Accept/Reject buttons */
 .applicant-actions {
   margin-top: 8px;

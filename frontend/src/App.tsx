@@ -12,6 +12,7 @@ import MyApplications from "./MyApplications.tsx";
 import OrganizerProfile from "./OrganizerProfile.tsx";
 import MyRegisteredEvents from "./MyRegisteredEvents.tsx";
 import ManageEvent from "./ManageEvents.tsx";
+import MyAttendance from "./MyAttendance";
 
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
         <Route path="/VolunteerProfile"   element={<VolunteerProfile/>}/>
         <Route path="/MyApplications"     element={<MyApplications/>}/>
         <Route path="/MyRegisteredEvents" element={<MyRegisteredEvents/>} />
+        <Route path="/MyAttendance"       element={<MyAttendance />} />
       </Routes>
     </BrowserRouter>
   );

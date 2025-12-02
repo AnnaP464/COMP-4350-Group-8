@@ -7,19 +7,21 @@ import React from "react";
 import EventCard from "./EventCard";
 import "../css/Homepage.css";
 import "../css/EventList.css";
+import type { CleanEvent } from "../helpers/EventHelper";
 
-interface EventPost {
-  id: string;
-  jobName: string;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  description: string;
-  createdAtDate: string;
-  createdAtTime: string;
-}
+// interface EventPost {
+//   id: string;
+//   jobName: string;
+//   startDate: string;
+//   endDate: string;
+//   startTime: string;
+//   endTime: string;
+//   location: string;
+//   description: string;
+//   createdAtDate: string;
+//   createdAtTime: string;
+// }
+type EventPost = CleanEvent;
 
 interface EventListProps {
   title: string;
