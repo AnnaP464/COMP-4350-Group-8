@@ -1,8 +1,10 @@
 import { test, expect } from "@playwright/test";
 
-const email = "test3@test.com"
-const password = "testtest"
-const userName = "testInc2"
+// Use timestamp to avoid conflicts with existing users
+const timestamp = Date.now();
+const email = `test-reg-${timestamp}@test.com`;
+const password = "testtest";
+const userName = `TestUser${timestamp}`;
 
 test.describe.configure({ mode: "serial" });
 

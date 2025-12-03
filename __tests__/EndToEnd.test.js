@@ -1,10 +1,12 @@
 import { test, expect } from "@playwright/test";
 
-const email1 = "test0@test.com"
-const email2 = "test1@test.com"
-const password = "testtest"
-const orgName = "testInc1"
-const userName = "testGuy1"
+// Use timestamp to avoid conflicts with existing users
+const timestamp = Date.now();
+const email1 = `test-org-${timestamp}@test.com`;
+const email2 = `test-vol-${timestamp}@test.com`;
+const password = "testtest";
+const orgName = `TestOrg${timestamp}`;
+const userName = `TestUser${timestamp}`;
 
 test.describe.configure({ mode: "serial" });
 
@@ -53,10 +55,10 @@ test("New organizer registration, login make an event and check profile", async 
     await page.getByPlaceholder("Password *").fill(password);
     await page.getByRole("button", {name: "Log-in"}).click();
 
-    await expect(page.getByText("HiveHand - testInc")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Welcome,/i })).toBeVisible();
 
-    await expect(page.getByRole("button", { name: "Create Event" })).toBeVisible();
-    await page.getByRole("button", {name: "Create Event"}).click();
+    await expect(page.getByRole("button", { name: /New Event/i })).toBeVisible();
+    await page.getByRole("button", {name: /New Event/i}).click();
 
     const now = new Date();
     now.setDate(now.getDate() + 1)
@@ -74,15 +76,15 @@ test("New organizer registration, login make an event and check profile", async 
     await page.getByPlaceholder("End time *").fill(endTime);
     await page.getByPlaceholder("Location *").fill("atlanta");
     await page.getByPlaceholder("Job description *").fill("not good pay not fun, but you get experience");
-    await expect(page.getByRole("button", { name: "Post Job" })).toBeVisible();
-    await page.getByRole("button", {name: "Post Job"}).click();
+    await expect(page.getByRole("button", { name: /Next: Geofence/i })).toBeVisible();
+    await page.getByRole("button", {name: /Next: Geofence/i}).click();
 
-    page.once('dialog', async dialog => {
-      await dialog.accept();
-    });
+    // Wait for geofence modal to appear and skip it
+    await expect(page.getByRole("heading", { name: /Add a geofence/i })).toBeVisible();
+    await page.getByRole("button", { name: /Skip geofence/i }).click();
 
-    await expect(page.getByRole("button", { name: "Log-out" })).toBeVisible();
-    await page.getByRole("button", {name: "Log-out"}).click();
+    await expect(page.getByRole("button", { name: /Sign Out/i })).toBeVisible();
+    await page.getByRole("button", {name: /Sign Out/i}).click();
 
     await expect(
       page.getByRole("heading", { level: 2, name: /welcome to hivehand/i })
