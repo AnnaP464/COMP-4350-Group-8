@@ -277,6 +277,8 @@ test("logout: OK but non-204 parses JSON then navigates (covers response.status 
     </MemoryRouter>
   );
 
+  //gotta log in the user.
+
   await waitFor(() => expect(screen.getByText(/Dashboard/i)).toBeInTheDocument());
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));

@@ -2,7 +2,6 @@
 
 HiveHand is a platform for hosting and finding volunteering oppertunities. Volunteers will see a selection of events they can choose to lend a helping hand at. Organizers will recieve lots of customization options for their events to attract just the right people. The experience will be gameafied to make it more exciting by tracking hours volunteered and keeping score.
 
-
 ## Acknowledgements
 
  - Anna Pavlova
@@ -36,6 +35,8 @@ To run the project you need to run the npm run dev command in the api and the fr
 
 ## [Sprint 2](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%202/sprint2.md)
 
+## [Sprint 3](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%203/sprint3.md)
+
 ## Tech Stack
 
 ##### Frontend 
@@ -52,9 +53,6 @@ PostgreSQL
 
 PostGIS 
 - Native geospatial support for “near me,” distance/radius queries, and map pins that update as events are created.
-##### Blockchain
-Base (Ethereum L2, OP Stack) 
-- supports gamification (verifiable badges/levels tied to anchored records) and trust (organizers/volunteers can confirm history hasn’t been altered).
-- built in trust can be attractive to sponsors and allow rewards to be available to a larger number of people regardless of location and independent of any organization
-- can keep PII in database 
+
+### [Alternative Frontend](https://github.com/AnnaP464/COMP-4350-Group-8-alt-frontend)
 
