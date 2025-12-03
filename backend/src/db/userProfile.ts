@@ -204,5 +204,5 @@ export async function deleteSocialLink(
     `DELETE FROM social_links WHERE user_id = $1 AND platform = $2`,
     [userId, platform]
   );
-  return { deleted: rowCount > 0 };
+  return { deleted: (rowCount ?? 0) > 0 };
 }

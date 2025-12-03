@@ -143,11 +143,6 @@ export default function GeofenceModal({
         );
       }
 
-      if (res.status === 401) {
-        alert("Session expired. Please log in again.");
-        return;
-      }
-
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         alert(text || "Failed to create geofence.");

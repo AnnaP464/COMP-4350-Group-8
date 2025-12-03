@@ -14,6 +14,7 @@ import ProfileTopBar from "./components/ProfileTopBar";
 import ProfileBadges from "./components/ProfileBadges";
 import ProfileRecentActivity from "./components/ProfileRecentActivity";
 import * as UserService from "./services/UserService";
+import type { VolunteerStats } from "./services/UserService";
 import * as AuthService from "./services/AuthService";
 
 type Me = { id: string; username: string; email?: string; role: string, createdAt: string};
@@ -25,6 +26,7 @@ const VolunteerProfile: React.FC = () => {
   const [goalInput, setGoalInput] = useState<string>("");
 
   const [me, setMe] = useState<Me | null>(null);
+  const [stats, setStats] = useState<VolunteerStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   const location = useLocation();
@@ -34,30 +36,32 @@ const VolunteerProfile: React.FC = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
-    const token = AuthService.getToken();
-    if (!token) {
-      alert(AlertHelper.TOKEN_MISSING_ERROR);
-      navigate("/User-login", { replace: true, state: { role } });
-      return;
-    }
-
     const saved = AuthService.getHourGoal();
     if (saved) {
         const n = Number(saved);
-        if (!Number.isNaN(n) && n > 0) 
+        if (!Number.isNaN(n) && n > 0)
             setHoursGoal(n);
     }
 
     (async () => {
       try {
-        const res = await UserService.authMe(token);
-        if (res.status === 401) {
-          alert(AlertHelper.SESSION_EXPIRE_ERROR);
+        // Fetch user info and stats in parallel
+        const [meRes, statsRes] = await Promise.all([
+          UserService.authMe(),
+          UserService.fetchVolunteerStats(),
+        ]);
+
+        if (!meRes.ok) {
           navigate("/User-login", { replace: true, state: { role } });
           return;
         }
-        const data = await res.json();
-        setMe(data);
+        const meData = await meRes.json();
+        setMe(meData);
+
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData);
+        }
       } catch (e) {
         alert(AlertHelper.PROFILE_FETCH_ERROR);
         navigate("/Dashboard", { replace: true, state: { role } });
@@ -80,10 +84,9 @@ if (!me) return <main className="vp-container">Could not load profile.</main>;
   };
 
   const summary = {
-    totalHours: 62,
-    jobsCompleted: 17,
-    upcomingJobs: 2,
-    hoursGoal: 100, // for progress
+    totalHours: stats?.totalHours ?? 0,
+    jobsCompleted: stats?.jobsCompleted ?? 0,
+    upcomingJobs: stats?.upcomingJobs ?? 0,
   };
 
   const badges = [

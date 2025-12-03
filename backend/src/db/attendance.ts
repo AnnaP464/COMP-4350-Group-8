@@ -74,6 +74,74 @@ export async function listAcceptedActions(opts: {
   return rows;
 }
 
+/**
+ * Get all accepted attendance actions for a user across ALL events,
+ * along with each event's end_time so we can cap hours properly.
+ * Grouped by event, ordered by event then time.
+ */
+export type AttendanceWithEventEnd = AttendanceRow & { eventEndTime: string };
+
+export async function listAllAcceptedActionsForUser(
+  userId: string
+): Promise<AttendanceWithEventEnd[]> {
+  const { rows } = await query<AttendanceWithEventEnd>(
+    `
+    SELECT
+      ea.id,
+      ea.event_id,
+      ea.user_id,
+      ea.action,
+      ea.at_time,
+      ea.accepted,
+      e.end_time AS "eventEndTime"
+    FROM event_attendance ea
+    JOIN events e ON e.id = ea.event_id
+    WHERE ea.user_id = $1
+      AND ea.accepted = true
+    ORDER BY ea.event_id, ea.at_time ASC
+    `,
+    [userId]
+  );
+
+  return rows;
+}
+
+/**
+ * Count completed events for a user (accepted events that have ended)
+ */
+export async function countCompletedEventsForUser(userId: string): Promise<number> {
+  const { rows } = await query<{ count: string }>(
+    `
+    SELECT COUNT(DISTINCT ru.event_id)::text AS count
+    FROM registered_users ru
+    JOIN events e ON e.id = ru.event_id
+    WHERE ru.user_id = $1
+      AND ru.status = 'accepted'
+      AND e.end_time < NOW()
+    `,
+    [userId]
+  );
+  return parseInt(rows[0]?.count ?? "0", 10);
+}
+
+/**
+ * Count upcoming events for a user (accepted events that haven't started yet)
+ */
+export async function countUpcomingEventsForUser(userId: string): Promise<number> {
+  const { rows } = await query<{ count: string }>(
+    `
+    SELECT COUNT(DISTINCT ru.event_id)::text AS count
+    FROM registered_users ru
+    JOIN events e ON e.id = ru.event_id
+    WHERE ru.user_id = $1
+      AND ru.status = 'accepted'
+      AND e.start_time > NOW()
+    `,
+    [userId]
+  );
+  return parseInt(rows[0]?.count ?? "0", 10);
+}
+
 export const attendanceRepo: AttendanceRepo = {
   insertAction,
   getLastAcceptedAction,

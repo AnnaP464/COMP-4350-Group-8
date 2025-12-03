@@ -3,7 +3,7 @@ given an eventId + event times, handle:
 
     Current attendance state.
 
-    “Clock in” / “Clock out” functions that:
+    "Clock in" / "Clock out" functions that:
     Ask for geolocation.
     Call the backend.
     Update state.
@@ -16,8 +16,14 @@ import type { AttendanceState } from "../helpers/AttendanceHelper";
 
 type UseEventClockOpts = {
   eventId: string;
-  // startTimeIso: string;  // or startDate + startTime,
-  // endTimeIso: string;
+};
+
+type UseEventClockReturn = {
+  status: AttendanceState;
+  loading: boolean;
+  error: string | null;
+  clockIn: () => Promise<void>;
+  clockOut: () => Promise<void>;
 };
 
 // Helper: wrap navigator.geolocation in a Promise
@@ -35,37 +41,62 @@ function getLocationFromBrowser(): Promise<GeolocationCoordinates> {
   });
 }
 
-export function useEventClock({ eventId }: UseEventClockOpts) {
+export function useEventClock({ eventId }: UseEventClockOpts): UseEventClockReturn {
   const [status, setStatus] = useState<AttendanceState>("none");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Optional: on mount, ask backend if user is currently clocked in
+  // On mount, fetch current attendance status
   useEffect(() => {
     (async () => {
-      // e.g. const res = await apiFetch(`/v1/events/${eventId}/attendance/me`);
-      // setStatus(...) based on response
+      try {
+        const res = await apiFetch(`/v1/events/${eventId}/attendance/status`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status?.isSignedIn) {
+            setStatus("clocked-in");
+          }
+        }
+      } catch {
+        // Ignore - will default to "none"
+      }
     })();
   }, [eventId]);
 
   const clockIn = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const coords = await getLocationFromBrowser(); // wraps navigator.geolocation
-      const res = await fetch (`/v1/events/${eventId}/attendance/sign-in`, {
+      const coords = await getLocationFromBrowser();
+      const res = await apiFetch(`/v1/events/${eventId}/attendance/sign-in`, {
         method: "POST",
         body: JSON.stringify({
           lat: coords.latitude,
           lon: coords.longitude,
-          accuracy: coords.accuracy,
+          accuracy_m: coords.accuracy,
         }),
       });
 
       if (!res.ok) {
-        // TODO: handle 400/403 etc
+        const data = await res.json().catch(() => ({}));
+        const message = data.message || "Clock in failed";
+        setError(message);
+
+        // Update status based on error if provided
+        if (data.status && !data.status.isSignedIn) {
+          setStatus("not-in-fence");
+        }
         return;
       }
 
       setStatus("clocked-in");
+      setError(null);
+    } catch (err) {
+      if (err instanceof GeolocationPositionError) {
+        setError("Could not get your location. Please enable location services.");
+      } else {
+        setError("Failed to clock in. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -73,19 +104,27 @@ export function useEventClock({ eventId }: UseEventClockOpts) {
 
   const clockOut = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch(`/v1/events/${eventId}/attendance/sign-out`, {
+      const res = await apiFetch(`/v1/events/${eventId}/attendance/sign-out`, {
         method: "POST",
+        body: JSON.stringify({}),
       });
 
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message || "Clock out failed");
         return;
       }
-      setStatus("none"); // or "event-ended" depending on server
+
+      setStatus("none");
+      setError(null);
+    } catch {
+      setError("Failed to clock out. Please try again.");
     } finally {
       setLoading(false);
     }
   }, [eventId]);
 
-  return { status, loading, clockIn, clockOut };
+  return { status, loading, error, clockIn, clockOut };
 }

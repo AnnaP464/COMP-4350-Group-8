@@ -1,39 +1,37 @@
-const API_URL = "http://localhost:4000";
+import apiFetch from "../api/ApiFetch";
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+
+// Login/register/logout don't use apiFetch because they happen before
+// we have a token or are managing the token lifecycle themselves
 
 export function logout() {
-  const content = fetch(`${API_URL}/v1/auth/logout`, {
-    method: "POST",
-    headers: { 
-      "Content-Type": "application/json",
-    }
-  });
-  return content;
-}
-
-export function login(email: string, password: string, role: string) {
-  const content = fetch(`${API_URL}/v1/auth/login`, {
+  return fetch(`${API_URL}/v1/auth/logout`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
+  });
+}
+
+export function login(email: string, password: string, role: string) {
+  return fetch(`${API_URL}/v1/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
     body: JSON.stringify({
       email,
       password,
       role,
     }),
   });
-  return content;
-}
-
-export function authMe(token: string | null) {
-  const content = fetch(`${API_URL}/v1/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return content;
 }
 
 export function register(username: string, email: string, password: string, role: string) {
-  const content = fetch(`${API_URL}/v1/auth/register`, {
+  return fetch(`${API_URL}/v1/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -45,29 +43,39 @@ export function register(username: string, email: string, password: string, role
       role,
     }),
   });
-  return content;
-}
-
-export function getAvatar (token: string | null, formData: FormData) {
-  const content = fetch(`${API_URL}/v1/users/me/avatar`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
-  });
-  return content;
-}
-
-export function fetchProfile(token: string | null) {
-  const content = fetch(`${API_URL}/v1/users/me/profile`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return content;
 }
 
 export function refreshToken() {
-  const content = fetch(`${API_URL}/v1/auth/refresh`, {
+  return fetch(`${API_URL}/v1/auth/refresh`, {
     method: "POST",
     credentials: "include",
   });
-  return content;
+}
+
+// These use apiFetch for automatic token handling and refresh
+
+export function authMe(): Promise<Response> {
+  return apiFetch("/v1/auth/me");
+}
+
+export function getAvatar(formData: FormData): Promise<Response> {
+  return apiFetch("/v1/users/me/avatar", {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export function fetchProfile(): Promise<Response> {
+  return apiFetch("/v1/users/me/profile");
+}
+
+export type VolunteerStats = {
+  totalMinutes: number;
+  totalHours: number;
+  jobsCompleted: number;
+  upcomingJobs: number;
+};
+
+export function fetchVolunteerStats(): Promise<Response> {
+  return apiFetch("/v1/users/me/stats");
 }

@@ -25,7 +25,7 @@ describe("GeofencesController", () => {
   test("createPolygon: passes payload and returns 201 + body", async () => {
     const req: any = {
       params: { eventId: "evt-1" },
-      body: { name: "A", geojson4326: '{"type":"Polygon","coordinates":[]}' },
+      body: { name: "A", geojson4326: { type: "Polygon", coordinates: [] } },
     };
     const res = mockRes();
 
@@ -41,26 +41,7 @@ describe("GeofencesController", () => {
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ id: "uuid-1" });
   });
-  // WHY: Ensure controller extracts params/body correctly and sets 201.
-
-  test("createPolygon: when body.geojson4326 is object, it stringifies before calling service", async () => {
-    const req: any = {
-      params: { eventId: "evt-1" },
-      body: { name: "A", geojson4326: { type: "Polygon", coordinates: [] } },
-    };
-    const res = mockRes();
-    service.createPolygon.mockResolvedValue({ id: "uuid-2" });
-
-    await ctrl.createPolygon(req, res);
-
-    expect(service.createPolygon).toHaveBeenCalledWith({
-      eventId: "evt-1",
-      name: "A",
-      geojson4326: JSON.stringify({ type: "Polygon", coordinates: [] }),
-    });
-    expect(res.status).toHaveBeenCalledWith(201);
-  });
-  // WHY: Matches your controller’s normalization behavior (object → string).
+  // WHY: Controller receives object from frontend and stringifies before passing to service.
 
   test("createCircle: forwards payload and returns 201", async () => {
     const req: any = {

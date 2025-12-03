@@ -23,9 +23,9 @@ type PublicUser = {
 // cookies options for refresh token
 const refreshCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production", // set true when behind HTTPS
-  sameSite: "lax" as const, // change to "strict" if you we only want same site requests
-  path: "/v1/auth/refresh",
+  secure: false, // Set to true in production with HTTPS
+  sameSite: "lax" as const,
+  path: "/", // Use root path so cookie is sent to all endpoints (we only read it on /refresh anyway)
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 };
 
@@ -74,7 +74,7 @@ export function makeAuthController(auth: AuthService) : AuthController {
     }
 
     async function refreshToken(req: Request, res: Response, next: NextFunction) {
-      
+
       // Accept either cookie or body
       // NEED TO REMOVE BODY VERSION LATER FOR PRODUCTION
       const cookieToken = (req as any).cookies?.refresh_token;
@@ -87,18 +87,14 @@ export function makeAuthController(auth: AuthService) : AuthController {
 
       try {
         // Call service to verify, rotate, and issue new tokens
-        const { accessToken, refreshToken } = await auth.refresh(oldRefreshToken);
+        const { accessToken, refreshToken } = await auth.refresh({ refreshToken: oldRefreshToken });
 
-        // Try to set cookie; don't error if cookie middleware not present
-        try {
-          res.cookie("refresh_token", refreshToken, refreshCookieOptions);
-        } catch {
-          /* ignore if cookie middleware not present */
-        }
+        // Set new refresh token cookie
+        res.cookie("refresh_token", refreshToken, refreshCookieOptions);
 
-        return res.status(200).json({"access_token": accessToken});
+        return res.status(200).json({ access_token: accessToken });
       } catch (err) {
-        return next(err); 
+        return next(err);
       }
     }
 

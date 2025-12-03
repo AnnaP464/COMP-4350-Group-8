@@ -110,18 +110,7 @@ const Dashboard: React.FC = () => {
       try {
         const res = await EventService.fetchApplications();
 
-        if (res.status === 401) {
-          // token invalid/expired: surface it, don't silently ignore
-          const err = await res.json().catch(() => ({}));
-          alert(err?.message || AlertHelper.SESSION_EXPIRE_ERROR);
-          // optionally navigate to login:
-          navigate("/User-login", { state: { role } });
-          setApplications({});
-          return;
-        }
-
         if (!res.ok) {
-          // log or surface error instead of ignoring
           const text = await res.text().catch(() => "");
           console.warn("Failed to fetch my applications:", res.status, text);
           setApplications({});

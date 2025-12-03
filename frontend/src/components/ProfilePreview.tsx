@@ -1,21 +1,17 @@
 import "../css/ProfilePreview.css";
 import React, { useEffect, useState } from "react";
-import * as AuthService from "../services/AuthService";
 import * as UserService from "../services/UserService";
 
 const serverErrorMsg = "Couldn't update your profile. Try again.";
 
 // helper to upload avatar
 async function uploadAvatar(file: File): Promise<string> {
-  const token = AuthService.getToken();
-  if (!token) throw new Error("Not logged in");
-
   const formData = new FormData();
   formData.append("avatar", file);
 
-  const res = await UserService.getAvatar(token, formData);
+  const res = await UserService.getAvatar(formData);
 
-  if (!res.ok) 
+  if (!res.ok)
     throw new Error(await res.text().catch(() => "Upload failed"));
 
   const { avatarUrl } = await res.json();
@@ -71,12 +67,10 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
   // Fetch latest profile when dialog opens
   useEffect(() => {
     if (!open) return;
-    const token = AuthService.getToken();
-    if (!token) return;
 
     (async () => {
       try {
-        const res = await UserService.fetchProfile(token);
+        const res = await UserService.fetchProfile();
         if (res.ok) {
           const p = await res.json();
           setForm({
@@ -109,17 +103,10 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
     setErrorMsg("");
     setLoading(true);
 
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      alert("You are being logged out. Please log in back.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const res = await UserService.fetchProfile(token);
+      const res = await UserService.fetchProfile();
 
-      if (!res.ok) 
+      if (!res.ok)
         throw new Error(await res.text().catch(() => "Request failed"));
       alert("Profile updated successfully!");
       setIsEditing(false);

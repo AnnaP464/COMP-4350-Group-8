@@ -118,11 +118,6 @@ const ManageEvent: React.FC = () => {
 
         // 2) Load applicants + accepted lists
         const [appsRes, accRes] = await EventService.fetchApplicants(eventId);
-        if (appsRes.status === 401 || accRes.status === 401) {
-          alert("Session expired.");
-          navigate("/User-login", { state: { role } });
-          return;
-        }
 
         const apps: Applicant[] = appsRes.ok ? await appsRes.json() : [];
         const acc: Accepted[] = accRes.ok ? await accRes.json() : [];

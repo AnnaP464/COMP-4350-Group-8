@@ -8,6 +8,7 @@ import {
   upsertSocialLink,
   deleteSocialLink,
 } from "../db/userProfile";
+import { getVolunteerStatsService } from "../services/eventsService";
 
 export async function getMyProfile(req: Request, res: Response, next: NextFunction) {
   try {
@@ -83,6 +84,18 @@ export async function deleteMySocialLink(req: Request, res: Response, next: Next
     const result = await deleteSocialLink(userId, platform);
     if (!result.deleted) return res.status(404).json({ error: "Social link not found" });
     return res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getMyStats(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = (req as any).user?.id ?? req.user?.id;
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const stats = await getVolunteerStatsService(userId);
+    return res.json(stats);
   } catch (err) {
     next(err);
   }

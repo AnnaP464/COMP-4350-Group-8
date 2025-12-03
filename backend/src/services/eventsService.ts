@@ -87,7 +87,13 @@
 
 // src/services/eventsService.ts
 import * as events from "../db/events";
-import { attendanceRepo } from "../db/attendance";
+import {
+  attendanceRepo,
+  listAllAcceptedActionsForUser,
+  countCompletedEventsForUser,
+  countUpcomingEventsForUser,
+  type AttendanceWithEventEnd,
+} from "../db/attendance";
 import type { AttendanceRow } from "../contracts/attendance.contracts";
 import { geofences } from "../db/geofences";
 
@@ -263,10 +269,10 @@ export async function getAttendanceStatusService(
   //    but only up to effectiveNow (never past event end)
   const totalMinutes = computeTotalMinutesFromActions(actions, effectiveNow);
 
-  // // If we are at/after the event end time, treat the user as signed out
-  // if (effectiveNow.getTime() >= end.getTime()) {
-  //   isSignedIn = false;
-  // }
+  // If we are at/after the event end time, treat the user as signed out
+  if (effectiveNow.getTime() >= end.getTime()) {
+    isSignedIn = false;
+  }
 
   // 4) Rules & reason
   let canSignIn = false;
@@ -436,4 +442,94 @@ export async function signOutAttendanceService(
   // 3) Return updated status
   const status = await getAttendanceStatusService(eventId, userId);
   return { outcome: "ok", status };
+}
+
+/* ------------------------------------------------------------------
+   Volunteer Stats: total hours across all events
+-------------------------------------------------------------------*/
+
+export type VolunteerStats = {
+  totalMinutes: number;
+  totalHours: number; // rounded to 1 decimal
+  jobsCompleted: number;
+  upcomingJobs: number;
+};
+
+/**
+ * Compute total volunteer hours across ALL events for a user.
+ * Groups attendance actions by event, computes minutes per event
+ * (capped at event end time), then sums them all.
+ */
+export async function getVolunteerStatsService(
+  userId: string
+): Promise<VolunteerStats> {
+  const now = new Date();
+
+  // Get all attendance actions grouped by event
+  const actions = await listAllAcceptedActionsForUser(userId);
+
+  // Group actions by event
+  const byEvent = new Map<string, AttendanceWithEventEnd[]>();
+  for (const action of actions) {
+    const eventId = action.event_id;
+    if (!byEvent.has(eventId)) {
+      byEvent.set(eventId, []);
+    }
+    byEvent.get(eventId)!.push(action);
+  }
+
+  // Compute total minutes across all events
+  let totalMinutes = 0;
+  for (const [, eventActions] of byEvent) {
+    // Get event end time from the first action (all actions for same event have same end time)
+    const eventEnd = new Date(eventActions[0].eventEndTime);
+    // Use the earlier of now or event end time
+    const effectiveNow = now > eventEnd ? eventEnd : now;
+
+    // Compute minutes for this event using the same logic as single-event
+    totalMinutes += computeTotalMinutesFromActionsGeneric(eventActions, effectiveNow);
+  }
+
+  // Get completed and upcoming counts
+  const [jobsCompleted, upcomingJobs] = await Promise.all([
+    countCompletedEventsForUser(userId),
+    countUpcomingEventsForUser(userId),
+  ]);
+
+  return {
+    totalMinutes,
+    totalHours: Math.round(totalMinutes / 6) / 10, // round to 1 decimal
+    jobsCompleted,
+    upcomingJobs,
+  };
+}
+
+/**
+ * Generic version of computeTotalMinutesFromActions that works with
+ * any array of objects that have action and at_time fields.
+ */
+function computeTotalMinutesFromActionsGeneric(
+  actions: { action: string; at_time: string }[],
+  effectiveNow: Date
+): number {
+  let totalMs = 0;
+  let lastSignIn: Date | null = null;
+
+  for (const row of actions) {
+    const t = new Date(row.at_time);
+
+    if (row.action === "sign_in") {
+      lastSignIn = t;
+    } else if (row.action === "sign_out" && lastSignIn) {
+      totalMs += t.getTime() - lastSignIn.getTime();
+      lastSignIn = null;
+    }
+  }
+
+  // If still signed in, count up to effectiveNow
+  if (lastSignIn) {
+    totalMs += effectiveNow.getTime() - lastSignIn.getTime();
+  }
+
+  return Math.floor(totalMs / 60_000);
 }

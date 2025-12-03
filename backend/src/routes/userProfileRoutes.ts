@@ -12,6 +12,7 @@ import {
   listMySocialLinks,
   upsertMySocialLink,
   deleteMySocialLink,
+  getMyStats,
 } from "../controllers/userProfileController";
 
 const r = Router();
@@ -153,6 +154,41 @@ r.get(
   "/v1/users/me/profile",
   requireAuth(),
   getMyProfile
+);
+
+/**
+ * @swagger
+ * /v1/users/me/stats:
+ *   get:
+ *     tags: [User Profiles]
+ *     summary: Get the authenticated volunteer's statistics (total hours, completed jobs, etc.)
+ *     responses:
+ *       200:
+ *         description: Stats retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalMinutes:
+ *                   type: integer
+ *                   example: 480
+ *                 totalHours:
+ *                   type: number
+ *                   example: 8.0
+ *                 jobsCompleted:
+ *                   type: integer
+ *                   example: 5
+ *                 upcomingJobs:
+ *                   type: integer
+ *                   example: 2
+ *       401:
+ *         description: Unauthorized
+ */
+r.get(
+  "/v1/users/me/stats",
+  requireAuth(),
+  getMyStats
 );
 
 r.put(

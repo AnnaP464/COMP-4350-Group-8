@@ -5,7 +5,6 @@ import { Clock, MapPin } from "lucide-react";
 import * as EventHelper from "./helpers/EventHelper";
 import * as AlertHelper from "./helpers/AlertHelper";
 import * as EventService from "./services/EventService";
-import * as AuthService from "./services/AuthService";
 
 type EventPost = {
   id: string;
@@ -32,13 +31,6 @@ const MyRegistrations: React.FC = () => {
 
   const handleDeregistration = async (eventId: string) => {
     try {
-      const token = AuthService.getToken();
-      if (!token) {
-        alert(AlertHelper.SESSION_EXPIRE_ERROR);
-        navigate("/User-login", { state: { role } });
-        return;
-      }
-
       const response = await EventService.deregister(eventId);
 
       if (!response.ok) {
@@ -47,18 +39,8 @@ const MyRegistrations: React.FC = () => {
         return;
       }
 
-      if (response.status !== 201) {
-        try {
-          await response.json();
-        } catch (error) {
-          console.error("Unexpected JSON package", error);
-        }
-      }
-
       setRefreshKey(k => k + 1);
-
       alert(AlertHelper.DEREGISTRATION_SUCCESS);
-
     } catch (error) {
       console.error("Deregistration Error:", error);
       alert(AlertHelper.SERVER_ERROR);
@@ -66,23 +48,10 @@ const MyRegistrations: React.FC = () => {
   };
 
   useEffect(() => {
-    const token = AuthService.getToken();
-    if (!token) {
-      alert(AlertHelper.TOKEN_MISSING_ERROR);
-      navigate("/User-login", { replace: true, state : { role } });
-      return;
-    }
-
     (async () => {
       try {
-        // If your backend uses a different path, change it here (see backend snippet below)
         const res = await EventService.fetchRegisteredEvents();
 
-        if (res.status === 401) {
-          alert(AlertHelper.SESSION_EXPIRE_ERROR);
-          navigate("/User-login", { replace: true, state : { role } });
-          return;
-        }
         if (!res.ok) {
           const err = await res.text();
           throw new Error(err || "Failed to fetch registered events");

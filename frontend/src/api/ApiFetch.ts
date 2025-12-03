@@ -2,17 +2,15 @@ import * as AuthService from "../services/AuthService";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
-// Flag to prevent multiple simultaneous refresh attempts
-let isRefreshing = false;
+// Singleton promise for token refresh - all concurrent 401s share this
 let refreshPromise: Promise<string | null> | null = null;
 
 async function refreshAccessToken(): Promise<string | null> {
-  // If already refreshing, wait for that to complete
-  if (isRefreshing && refreshPromise) {
+  // If already refreshing, return the existing promise so all callers wait for the same refresh
+  if (refreshPromise) {
     return refreshPromise;
   }
 
-  isRefreshing = true;
   refreshPromise = (async () => {
     try {
       const res = await fetch(`${API_URL}/v1/auth/refresh`, {
@@ -20,7 +18,9 @@ async function refreshAccessToken(): Promise<string | null> {
         credentials: "include", // sends the HttpOnly refresh cookie
       });
 
-      if (!res.ok) return null;
+      if (!res.ok) {
+        return null;
+      }
 
       const data = await res.json();
       AuthService.setToken(data.access_token);
@@ -28,8 +28,10 @@ async function refreshAccessToken(): Promise<string | null> {
     } catch {
       return null;
     } finally {
-      isRefreshing = false;
-      refreshPromise = null;
+      // Clear the promise after a short delay to handle rapid successive 401s
+      setTimeout(() => {
+        refreshPromise = null;
+      }, 100);
     }
   })();
 
@@ -76,9 +78,9 @@ export async function apiFetch(
     const newToken = await refreshAccessToken();
 
     if (!newToken) {
-      // Refresh failed - clear auth state
-      // Don't redirect here; let the calling code handle it
+      // Refresh failed - clear auth state and redirect to login
       AuthService.logout();
+      window.location.href = "/";
       return res;
     }
 

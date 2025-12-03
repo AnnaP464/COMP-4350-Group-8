@@ -149,13 +149,6 @@ const HomepageOrganizer: React.FC = () => {
       };
 
       const response = await EventService.createEvent(payload);
-    
-      if (response.status === 401) { //auto-redirect if timed-out
-        alert(AlertHelper.SESSION_EXPIRE_ERROR);
-        console.log("401");
-        navigate("/User-login", { state: { role } }); 
-        return;
-      }
 
       if (!response.ok) {
         const errText = await response.text();
@@ -198,13 +191,6 @@ const HomepageOrganizer: React.FC = () => {
       return;
     }
 
-    const token = AuthService.getToken();
-    if (!token) {
-      alert(AlertHelper.SESSION_EXPIRE_ERROR);
-      navigate("/User-login", { state: { role } });
-      return;
-    }
-
     if (!gfName.trim()) {
       alert("Please provide a name for the geofence.");
       return;
@@ -218,58 +204,40 @@ const HomepageOrganizer: React.FC = () => {
     const geom = geofenceShape.geometry;
     const props: any = geofenceShape.properties || {};
 
-    let url =
-      `${import.meta.env.VITE_API_URL ?? "http://localhost:4000"}` +
-      `/v1/events/${createdEventId}/geofences`;
-    let body: any;
-
-    // Geoman circle encoding: geometry is Point, properties._pmType === "Circle"
-    if (props._pmType === "Circle" && geom.type === "Point") {
-      const coords = geom.coordinates as [number, number]; // [lon, lat]
-      const lon = coords[0];
-      const lat = coords[1];
-      const radius_m = props.radius ?? props.radius_m;
-
-      if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(radius_m)) {
-        alert("Invalid circle geometry from map.");
-        return;
-      }
-
-      body = {
-        name: gfName.trim(),
-        lat,
-        lon,
-        radius_m,
-      };
-      url += "/circle";
-    } else {
-      // Treat anything else as polygon/multipolygon
-      if (geom.type !== "Polygon" && geom.type !== "MultiPolygon") {
-        alert("Unsupported geometry type. Please draw a polygon or circle.");
-        return;
-      }
-
-      body = {
-        name: gfName.trim(),
-        geojson4326: geom, // send full GeoJSON geometry – adjust if your API expects only coordinates
-      };
-      url += "/polygon";
-    }
-
     try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
+      let res: Response;
 
-      if (res.status === 401) {
-        alert(AlertHelper.SESSION_EXPIRE_ERROR);
-        navigate("/User-login", { state: { role } });
-        return;
+      // Geoman circle encoding: geometry is Point, properties._pmType === "Circle"
+      if (props._pmType === "Circle" && geom.type === "Point") {
+        const coords = geom.coordinates as [number, number]; // [lon, lat]
+        const lon = coords[0];
+        const lat = coords[1];
+        const radius_m = props.radius ?? props.radius_m;
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(radius_m)) {
+          alert("Invalid circle geometry from map.");
+          return;
+        }
+
+        res = await EventService.createCircleGeofence(
+          createdEventId!,
+          gfName.trim(),
+          lat,
+          lon,
+          radius_m
+        );
+      } else {
+        // Treat anything else as polygon/multipolygon
+        if (geom.type !== "Polygon" && geom.type !== "MultiPolygon") {
+          alert("Unsupported geometry type. Please draw a polygon or circle.");
+          return;
+        }
+
+        res = await EventService.createPolygonGeofence(
+          createdEventId!,
+          gfName.trim(),
+          geom
+        );
       }
 
       if (!res.ok) {
@@ -277,8 +245,6 @@ const HomepageOrganizer: React.FC = () => {
         alert(text || "Failed to create geofence.");
         return;
       }
-
-      await res.json().catch(() => undefined);
 
       alert(
         "Geofence saved! Volunteers will only be able to sign in inside this area."

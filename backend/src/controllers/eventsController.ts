@@ -557,7 +557,7 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
 // POST /v1/events/apply (auth required)
 export async function applyForEvent(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = req.user.id;        // from auth
+    const userId = req.user!.id;        // from auth
     const { eventId } = req.body;
 
     const { outcome, row } = await eventService.applyForEventService(userId, eventId);

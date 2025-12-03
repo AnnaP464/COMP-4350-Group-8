@@ -22,8 +22,6 @@ import type { CleanEvent } from "../helpers/EventHelper";
 import { MyRegContainer, MyRegSection } from "./MyRegLayout";
 
 
-const API_URL = "http://localhost:4000";
-import * as AuthService from "../services/AuthService";
 import * as EventService from "../services/EventService";
 
 export type EventPost = CleanEvent;
@@ -52,9 +50,8 @@ type MyEventRowProps = {
 const MyEventRow: React.FC<MyEventRowProps> = ({ ev, mode, onWithdraw }) => {
   const isAcceptedMode = mode === "accepted" && ev.status === "accepted";
 
-  const { status: clockStatus, loading, clockIn, clockOut } = useEventClock({
+  const { status: clockStatus, loading, error, clockIn, clockOut } = useEventClock({
     eventId: ev.id,
-    // if your hook needs start/end times, pass them here too
   });
 
   const footer = (
@@ -103,6 +100,7 @@ const MyEventRow: React.FC<MyEventRowProps> = ({ ev, mode, onWithdraw }) => {
                 : "Clock in"}
             </button>
           )}
+          {error && <p className="clock-error">{error}</p>}
         </div>
       )}
     </>
@@ -146,13 +144,6 @@ const MyEventList: React.FC<MyEventListProps> = ({
 
   const handleWithdraw = async (eventId: string) => {
     try {
-      const token = AuthService.getToken();
-      if (!token) {
-        alert("Your session has expired. Please log in again.");
-        navigate("/User-login", { state: { role } });
-        return;
-      }
-
       const res = await EventService.withdrawFromEvent(eventId);
 
       if (!res.ok) {
@@ -168,7 +159,7 @@ const MyEventList: React.FC<MyEventListProps> = ({
       console.error("Withdraw error:", e);
       alert("Network error — could not connect to server.");
     }
-  };//handleWithdraw ends
+  };
 
 
   
