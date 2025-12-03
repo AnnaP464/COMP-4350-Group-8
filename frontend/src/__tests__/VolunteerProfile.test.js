@@ -16,11 +16,23 @@ jest.mock("react-router-dom", () => {
 
 // Mock UserService
 const mockAuthMe = jest.fn();
-const mockFetchVolunteerStats = jest.fn();
 jest.mock("../services/UserService", () => ({
   __esModule: true,
   authMe: (...args) => mockAuthMe(...args),
+}));
+
+// Mock AttendanceService (fetchVolunteerStats now lives here)
+const mockFetchVolunteerStats = jest.fn();
+jest.mock("../services/AttendanceService", () => ({
+  __esModule: true,
   fetchVolunteerStats: (...args) => mockFetchVolunteerStats(...args),
+}));
+
+// Mock AuthService for localStorage access
+jest.mock("../services/AuthService", () => ({
+  __esModule: true,
+  getHourGoal: jest.fn(() => null),
+  setHourGoal: jest.fn(),
 }));
 
 const setupLocalStorageMock = (store = {}) => {
@@ -75,10 +87,12 @@ describe("VolunteerProfile", () => {
       status: 401,
       json: async () => ({}),
     });
+    // fetchVolunteerStats returns stats directly (not a Response)
     mockFetchVolunteerStats.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ totalMinutes: 0, totalHours: 0, jobsCompleted: 0, upcomingJobs: 0 }),
+      totalHours: 0,
+      jobsCompleted: 0,
+      upcomingJobs: 0,
+      recentActivity: [],
     });
 
     renderWithRoutes({ role: "Volunteer" });
@@ -100,16 +114,12 @@ describe("VolunteerProfile", () => {
         createdAt: "2025-01-01T00:00:00Z",
       }),
     });
-    // Mock fetchVolunteerStats success
+    // fetchVolunteerStats returns stats directly (not a Response)
     mockFetchVolunteerStats.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        totalMinutes: 120,
-        totalHours: 2,
-        jobsCompleted: 5,
-        upcomingJobs: 2,
-      }),
+      totalHours: 2,
+      jobsCompleted: 5,
+      upcomingJobs: 2,
+      recentActivity: [],
     });
 
     renderWithRoutes({ role: "Volunteer" });
@@ -127,8 +137,10 @@ describe("VolunteerProfile", () => {
     const saveBtn = screen.getByRole("button", { name: /save goal/i });
     fireEvent.click(saveBtn);
 
+    // AuthService.setHourGoal is mocked, so check it was called
+    const { setHourGoal } = require("../services/AuthService");
     await waitFor(() => {
-      expect(ls.setItem).toHaveBeenCalledWith("hoursGoal", "120");
+      expect(setHourGoal).toHaveBeenCalledWith(120);
     });
   });
 
@@ -155,15 +167,12 @@ describe("VolunteerProfile", () => {
         createdAt: "2025-01-01T00:00:00Z",
       }),
     });
+    // fetchVolunteerStats returns stats directly (not a Response)
     mockFetchVolunteerStats.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        totalMinutes: 300,
-        totalHours: 5,
-        jobsCompleted: 10,
-        upcomingJobs: 3,
-      }),
+      totalHours: 5,
+      jobsCompleted: 10,
+      upcomingJobs: 3,
+      recentActivity: [],
     });
 
     renderWithRoutes({ role: "Volunteer" });
