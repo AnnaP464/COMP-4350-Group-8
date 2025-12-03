@@ -176,7 +176,7 @@ const HomepageOrganizer: React.FC = () => {
         return null;
       });
 
-      alert(AlertHelper.APPLICATION_PROCESSING);
+      alert(AlertHelper.EVENT_CREATED);
 
       // Refresh the list so new event appears in feed
       setRefreshKey((k) => k + 1);

@@ -1,14 +1,12 @@
-/*--------------------------------------------------
-Global background image for the whole app
-----------------------------------------------------*/
-html, body, #root {
+
+/* html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
 
   background: url("./helping-hands.jpg") no-repeat center center fixed;
   background-size: cover;
-}
+} */
 
 .login-container {
   display: flex;

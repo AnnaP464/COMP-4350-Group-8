@@ -31,4 +31,5 @@ export const PROFILE_FETCH_ERROR = "Failed to load profile.";
 
 //Successes
 export const APPLICATION_PROCESSING = "Application submitted! An organizer will review it.";
+export const EVENT_CREATED = "The event has been created successfully!"
 export const DEREGISTRATION_SUCCESS = "User has been successfully deregistered for the event";
