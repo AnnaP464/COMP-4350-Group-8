@@ -66,10 +66,11 @@ services:
     environment:
       DATABASE_URL: postgres://hivedev:verysafe@db-test:5432/hivehand_test
     volumes:
-      - ./backend/migrations:/migrs:ro
+      - ./backend/migrations:/migrations:ro
     entrypoint: ["/bin/bash","-lc"]
     command: >
-      'for f in /migrations/*.sql; do
+      'set -e;
+      for f in /migrations/*.sql; do
         echo "Applying $$f";
         psql "$$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$$f";
       done;

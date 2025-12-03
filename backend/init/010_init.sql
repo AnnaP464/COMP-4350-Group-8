@@ -1,2 +1,2 @@
-\connect hivehand;
-CREATE EXTENSION IF NOT EXISTS postgis;
+-- Extensions are created by 000_Extensions.sh
+-- This file can be used for additional init if needed
