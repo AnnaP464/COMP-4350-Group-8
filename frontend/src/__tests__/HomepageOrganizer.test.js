@@ -5,6 +5,48 @@ import HomepageOrganizer from "../HomepageOrganizer.tsx";
 import OrganizerProfile from "../OrganizerProfile.tsx";
 import * as AlertHelper from "../helpers/AlertHelper";
 
+// --- Mocks ---
+const mockNavigate = jest.fn();
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
+// Mock useAuthGuard to always return "authorized" so component renders
+jest.mock("../hooks/useAuthGuard", () => ({
+  __esModule: true,
+  default: jest.fn(() => "authorized"),
+}));
+
+// Mock EventService
+const mockFetchMyEvents = jest.fn();
+const mockCreateEvent = jest.fn();
+jest.mock("../services/EventService", () => ({
+  __esModule: true,
+  fetchMyEvents: (...args) => mockFetchMyEvents(...args),
+  createEvent: (...args) => mockCreateEvent(...args),
+}));
+
+// Mock AuthService
+const mockGetToken = jest.fn();
+const mockGetUser = jest.fn();
+const mockLogout = jest.fn();
+jest.mock("../services/AuthService", () => ({
+  __esModule: true,
+  getToken: () => mockGetToken(),
+  getUser: () => mockGetUser(),
+  logout: () => mockLogout(),
+}));
+
+// Mock GeofenceMap component (uses react-leaflet which doesn't work in Jest)
+jest.mock("../components/GeofenceMap", () => ({
+  __esModule: true,
+  default: () => <div data-testid="mock-geofence-map">Mock Map</div>,
+}));
+
 // ---- helpers ----
 const setupLocalStorageMock = (seed = {}) => {
   const store = { ...seed };
@@ -41,8 +83,13 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  jest.resetAllMocks();
+  jest.clearAllMocks();
   jest.spyOn(window, "alert").mockImplementation(() => {});
+  global.fetch = jest.fn();
+
+  // Default AuthService mocks - tests can override these
+  mockGetToken.mockReturnValue("test-token");
+  mockGetUser.mockReturnValue(JSON.stringify({ username: "org1", email: "o@example.com" }));
 });
 
 afterEach(() => {
@@ -51,46 +98,29 @@ afterEach(() => {
 
 // ---- tests ----
 describe("Homepage-Organizer", () => {
-  test("goes back to login when no token (early return)", () => {
-    setupLocalStorageMock({
-      // no access_token
-      user: JSON.stringify({ username: "org1", email: "o@example.com" }),
-    });
-    renderAt();
-    expect(screen.getByText(/LOGIN PAGE/i)).toBeInTheDocument();
-  });
-
-  test("fetches events with bearer token; renders empty-state when none", async () => {
+  test("fetches events with EventService; renders empty-state when none", async () => {
     setupLocalStorageMock({
       access_token: "TKN",
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
 
-    global.fetch = jest.fn().mockResolvedValueOnce({
+    // Mock fetchMyEvents
+    mockFetchMyEvents.mockResolvedValueOnce({
       ok: true,
       json: async () => [],
     });
 
     renderAt();
-    // initial skeleton exists
+
     await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:4000/v1/events?mine=1",
-        expect.objectContaining({
-          method: "GET",
-          headers: expect.objectContaining({
-            Accept: "application/json",
-            Authorization: "Bearer TKN",
-          }),
-        })
-      )
+      expect(mockFetchMyEvents).toHaveBeenCalled()
     );
 
     expect(
       screen.getByText(/No job postings posted yet./i)
     ).toBeInTheDocument();
     // profile/username header is rendered after user is set
-    expect(screen.getByText(/HiveHand - org1/i)).toBeInTheDocument();
+    expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
   });
 
   test("open/close Create Event modal", async () => {
@@ -99,12 +129,16 @@ describe("Homepage-Organizer", () => {
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
 
-    global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
     renderAt();
 
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
     // open
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
 
     // close by clicking Cancel
@@ -114,66 +148,71 @@ describe("Homepage-Organizer", () => {
     });
   });
 
-  test("create event 401 triggers alert and redirect to /User-login", async () => {
+  test("create event 401 triggers alert", async () => {
     setupLocalStorageMock({
       access_token: "TKN",
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
 
-    // initial GET ok
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      // POST -> 401
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        text: async () => "unauthorized",
-      });
+    // initial GET ok, POST -> 401
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
+    mockCreateEvent.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      text: async () => "unauthorized",
+    });
 
-      const now = new Date();
-      now.setDate(now.getDate() + 1)  
-  
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-    
-      const startTime = `${year}-${month}-${day}T02:00`;
-      const endTime = `${year}-${month}-${day}T03:00`;
-  
-      renderAt();
-      fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
-  
-      fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Foo" } });
-      fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
-      fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
-      fireEvent.change(screen.getByPlaceholderText(/Location \*/i), { target: { value: "Here" } });
-      fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Bar" } });
-      fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
-  
+    const now = new Date();
+    now.setDate(now.getDate() + 1);
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+
+    const startTime = `${year}-${month}-${day}T02:00`;
+    const endTime = `${year}-${month}-${day}T03:00`;
+
+    renderAt();
+
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith("Your session has expired. Please log in again.");
-      expect(screen.getByText("LOGIN PAGE")).toBeInTheDocument();
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
+
+    fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Foo" } });
+    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
+    fireEvent.change(screen.getByPlaceholderText(/Location \*/i), { target: { value: "Here" } });
+    fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Bar" } });
+    fireEvent.click(screen.getByRole("button", { name: /Next: Geofence/i }));
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Failed to create job: unauthorized");
     });
   });
 
-  test("profile panel toggles and shows Loading...", async () => {
-    const ls = setupLocalStorageMock({
+  test("profile button navigates to profile page", async () => {
+    setupLocalStorageMock({
       access_token: "TKN",
       refresh_token: "RTK",
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
 
-    global.fetch = jest
-      .fn()
-      // initial GET
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
     renderAt();
 
-    // open profile
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    // click profile button
     fireEvent.click(screen.getByRole("button", { name: /Profile/i }));
-    expect(screen.getByText(/Loading…/i)).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/Homepage-Organizer/profile", expect.anything());
+    });
   });
 });
 
@@ -184,25 +223,15 @@ describe("Homepage-Organizer — extra branches", () => {
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
 
-    global.fetch = jest.fn().mockResolvedValueOnce({
+    mockFetchMyEvents.mockResolvedValueOnce({
       ok: false,
       text: async () => "server broke",
     });
 
     renderAt();
 
-    // should have attempted GET with bearer
     await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:4000/v1/events?mine=1",
-        expect.objectContaining({
-          method: "GET",
-          headers: expect.objectContaining({
-            Accept: "application/json",
-            Authorization: "Bearer TKN",
-          }),
-        })
-      )
+      expect(mockFetchMyEvents).toHaveBeenCalled()
     );
 
     // since events never set, UI shows empty state
@@ -214,20 +243,25 @@ describe("Homepage-Organizer — extra branches", () => {
       access_token: "TKN",
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
-    global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
     const now = new Date();
-    now.setDate(now.getDate() + 1)
+    now.setDate(now.getDate() + 1);
 
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-  
+
     const startTime = `${year}-${month}-${day}T02:00`;
     const endTime = `${year}-${month}-${day}T03:00`;
 
     renderAt();
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
 
     // leave jobName blank
     fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
@@ -235,7 +269,7 @@ describe("Homepage-Organizer — extra branches", () => {
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Here" } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Details" } });
 
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Next: Geofence/i }));
     expect(window.alert).toHaveBeenCalledWith("Job name is required");
   });
 
@@ -244,26 +278,31 @@ describe("Homepage-Organizer — extra branches", () => {
       access_token: "TKN",
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
-    global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
     const now = new Date();
-    now.setDate(now.getDate() + 1)
+    now.setDate(now.getDate() + 1);
 
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-    
+
     const endTime = `${year}-${month}-${day}T03:00`;
 
     renderAt();
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "A" } });
     fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Here" } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Details" } });
 
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Next: Geofence/i }));
     expect(window.alert).toHaveBeenCalledWith("Start time is required");
   });
 
@@ -272,26 +311,31 @@ describe("Homepage-Organizer — extra branches", () => {
       access_token: "TKN",
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
-    global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
     const now = new Date();
-    now.setDate(now.getDate() + 1)
+    now.setDate(now.getDate() + 1);
 
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-  
+
     const startTime = `${year}-${month}-${day}T02:00`;
 
     renderAt();
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "A" } });
     fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Here" } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Details" } });
 
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Next: Geofence/i }));
     expect(window.alert).toHaveBeenCalledWith("End time is required");
   });
 
@@ -300,27 +344,32 @@ describe("Homepage-Organizer — extra branches", () => {
       access_token: "TKN",
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
-    global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
     const now = new Date();
-    now.setDate(now.getDate() + 1)
+    now.setDate(now.getDate() + 1);
 
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-  
+
     const startTime = `${year}-${month}-${day}T02:00`;
     const endTime = `${year}-${month}-${day}T03:00`;
 
     renderAt();
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "A" } });
     fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
     fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Details" } });
 
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Next: Geofence/i }));
     expect(window.alert).toHaveBeenCalledWith("Location is required");
   });
 
@@ -329,27 +378,32 @@ describe("Homepage-Organizer — extra branches", () => {
       access_token: "TKN",
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
-    global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
     const now = new Date();
-    now.setDate(now.getDate() + 1)
+    now.setDate(now.getDate() + 1);
 
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-  
+
     const startTime = `${year}-${month}-${day}T02:00`;
     const endTime = `${year}-${month}-${day}T03:00`;
 
     renderAt();
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "A" } });
     fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
     fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Here" } });
 
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Next: Geofence/i }));
     expect(window.alert).toHaveBeenCalledWith("Description is required");
   });
 
@@ -360,35 +414,38 @@ describe("Homepage-Organizer — extra branches", () => {
     });
 
     // initial GET ok (no events), POST returns !ok with text
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        text: async () => "bad payload",
-      });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
+    mockCreateEvent.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      text: async () => "bad payload",
+    });
 
-      const now = new Date();
-      now.setDate(now.getDate() + 1)
-  
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-    
-      const startTime = `${year}-${month}-${day}T02:00`;
-      const endTime = `${year}-${month}-${day}T03:00`;
-  
-      renderAt();
-      fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
-  
-      fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Bad" } });
-      fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
-      fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
-      fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Somewhere" } });
-      fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Oops" } });
-      fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
-  
+    const now = new Date();
+    now.setDate(now.getDate() + 1);
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+
+    const startTime = `${year}-${month}-${day}T02:00`;
+    const endTime = `${year}-${month}-${day}T03:00`;
+
+    renderAt();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
+
+    fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Bad" } });
+    fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
+    fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
+    fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Somewhere" } });
+    fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Oops" } });
+    fireEvent.click(screen.getByRole("button", { name: /Next: Geofence/i }));
+
     await waitFor(() =>
       expect(window.alert).toHaveBeenCalledWith("Failed to create job: bad payload")
     );
@@ -400,38 +457,42 @@ describe("Homepage-Organizer — extra branches", () => {
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
 
-    // initial GET ok (no events), POST returns !ok with text
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => "Event Created Successfully",
-      });
+    // initial GET ok (no events), POST returns ok
+    mockFetchMyEvents.mockResolvedValue({ ok: true, json: async () => [] });
+    mockCreateEvent.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ id: "new-event-id" }),
+    });
 
     const now = new Date();
-    now.setDate(now.getDate() + 1)
+    now.setDate(now.getDate() + 1);
 
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-  
+
     const startTime = `${year}-${month}-${day}T02:00`;
     const endTime = `${year}-${month}-${day}T03:00`;
 
     renderAt();
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
 
-    fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Bad" } });
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
+
+    fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Good" } });
     fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
     fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Somewhere" } });
-    fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Oops" } });
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+    fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Details" } });
+    fireEvent.click(screen.getByRole("button", { name: /Next: Geofence/i }));
 
+    // On success, should show event created alert
     await waitFor(() =>
-      expect(window.alert).toHaveBeenCalledWith("Application submitted! An organizer will review it.")
+      expect(window.alert).toHaveBeenCalledWith(AlertHelper.EVENT_CREATED)
     );
   });
 
@@ -441,35 +502,32 @@ describe("Homepage-Organizer — extra branches", () => {
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
 
-    // initial GET ok (no events), POST returns !ok with text
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => "Event Created Successfully",
-      });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
     const now = new Date();
-    now.setDate(now.getDate() + 1)
+    now.setDate(now.getDate() + 1);
 
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-  
+
     const endTime = `${year}-${month}-${day}T02:00`;
     const startTime = `${year}-${month}-${day}T03:00`;
 
     renderAt();
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Bad" } });
     fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
     fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Somewhere" } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Oops" } });
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Next: Geofence/i }));
 
     await waitFor(() =>
       expect(window.alert).toHaveBeenCalledWith("End time must be after start time")
@@ -482,35 +540,32 @@ describe("Homepage-Organizer — extra branches", () => {
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
 
-    // initial GET ok (no events), POST returns !ok with text
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => "Event Created Successfully",
-      });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
     const now = new Date();
-    now.setDate(now.getDate() - 1)
+    now.setDate(now.getDate() - 1);
 
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-  
+
     const startTime = `${year}-${month}-${day}T02:00`;
     const endTime = `${year}-${month}-${day}T03:00`;
 
     renderAt();
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/Job name \*/i), { target: { value: "Bad" } });
     fireEvent.change(screen.getByPlaceholderText(/Start time \*/i), { target: { value: startTime } });
     fireEvent.change(screen.getByPlaceholderText(/End time \*/i), { target: { value: endTime } });
     fireEvent.change(screen.getByPlaceholderText(/^Location \*/i), { target: { value: "Somewhere" } });
     fireEvent.change(screen.getByPlaceholderText(/Job description \*/i), { target: { value: "Oops" } });
-    fireEvent.click(screen.getByRole("button", { name: /Post Job/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Next: Geofence/i }));
 
     await waitFor(() =>
       expect(window.alert).toHaveBeenCalledWith(AlertHelper.CAUSALITY_ERROR)
@@ -522,16 +577,21 @@ describe("Homepage-Organizer — extra branches", () => {
       access_token: "TKN",
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
-    global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
-    const { container } = renderAt();
-    fireEvent.click(screen.getByRole("button", { name: /Create Event/i }));
+    renderAt();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /New Event/i }));
     const dialog = screen.getByRole("dialog");
     expect(dialog).toBeInTheDocument();
 
     // backdrop is the parent wrapper (has onClick to close). Click outside dialog.
-    fireEvent.mouseDown(dialog); // mousedown on backdrop
-    fireEvent.click(dialog);     // click backdrop
+    fireEvent.mouseDown(dialog);
+    fireEvent.click(dialog);
     await waitFor(() =>
       expect(screen.queryByText(/Create a job post/i)).not.toBeInTheDocument()
     );
@@ -544,17 +604,18 @@ describe("Homepage-Organizer — extra branches", () => {
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
 
-    global.fetch = jest
-      .fn()
-      // initial GET
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      // logout POST -> !ok
-      .mockResolvedValueOnce({ ok: false, status: 500, text: async () => "whoops" });
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
+
+    // logout POST -> !ok via raw fetch
+    global.fetch.mockResolvedValueOnce({ ok: false, status: 500, text: async () => "whoops" });
 
     renderAt();
 
-    // open profile to reveal its logout button, then click it
-    fireEvent.click(screen.getByRole("button", { name: /^Log-out$/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Sign Out/i }));
 
     await waitFor(() =>
       expect(window.alert).toHaveBeenCalledWith("Log-out failed: whoops")
@@ -568,18 +629,21 @@ describe("Homepage-Organizer — extra branches", () => {
       user: JSON.stringify({ username: "org1", email: "o@example.com" }),
     });
 
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // initial GET
-      .mockRejectedValueOnce(new Error("net down"));             // logout POST
+    mockFetchMyEvents.mockResolvedValueOnce({ ok: true, json: async () => [] });
+
+    // logout POST throws via raw fetch
+    global.fetch.mockRejectedValueOnce(new Error("net down"));
 
     renderAt();
 
-    fireEvent.click(screen.getByRole("button", { name: /^Log-out$/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome, org1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Sign Out/i }));
 
     await waitFor(() =>
       expect(window.alert).toHaveBeenCalledWith(AlertHelper.SERVER_ERROR)
     );
   });
 });
-

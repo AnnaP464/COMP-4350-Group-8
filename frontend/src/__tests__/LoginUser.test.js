@@ -56,6 +56,7 @@ describe("LoginUser handleSubmit coverage", () => {
     setupLocalStorageMock();
     alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
     mockNavigate.mockReset();
+    global.fetch = jest.fn();
   });
 
   afterEach(() => {
@@ -66,32 +67,33 @@ describe("LoginUser handleSubmit coverage", () => {
     renderWithRole("Organizer");
     await fillAndSubmit({ password: "secret" });
     expect(screen.getByText(AlertHelper.EMAIL_ERROR)).toBeInTheDocument()
-    expect(global.fetch).toBeUndefined(); // no network call
+    expect(global.fetch).not.toHaveBeenCalled(); // no network call
   });
 
   test("early return: alerts when password is missing", async () => {
     renderWithRole("Organizer");
     await fillAndSubmit({ email: "a@b.com" });
     expect(screen.getByText(AlertHelper.PASSWORD_ERROR)).toBeInTheDocument()
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  test("non-OK response shows errorMsg 'Invalid email or password'", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
+  test("non-OK response shows errorMsg from server", async () => {
+    global.fetch.mockResolvedValue({
       ok: false,
-      text: async () => "Unauthorized",
+      json: async () => ({ message: "Invalid credentials" }),
     });
 
     renderWithRole("Volunteer");
     await fillAndSubmit({ email: "v@x.com", password: "pw" });
 
     await waitFor(() =>
-      expect(screen.getByText(/Network Error — Please Try Again Later./i)).toBeInTheDocument()
+      expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument()
     );
     expect(mockNavigate).not.toHaveBeenCalled();
   });
-  
+
   test("success: backend organizer → navigates /Homepage-Organizer", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch.mockResolvedValue({
       ok: true,
       json: async () => ({
         access_token: "A",
@@ -104,12 +106,12 @@ describe("LoginUser handleSubmit coverage", () => {
     await fillAndSubmit({ email: "o@x.com", password: "pw" });
 
     await waitFor(() =>
-      expect(mockNavigate).toHaveBeenCalledWith("/Homepage-Organizer", {"state": {"role": "Organizer"}})
+      expect(mockNavigate).toHaveBeenCalledWith("/Homepage-Organizer")
     );
   });
 
   test("success: backend volunteer → navigates /Dashboard", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch.mockResolvedValue({
       ok: true,
       json: async () => ({
         access_token: "A",
@@ -122,16 +124,35 @@ describe("LoginUser handleSubmit coverage", () => {
     await fillAndSubmit({ email: "v@x.com", password: "pw" });
 
     await waitFor(() =>
-      expect(mockNavigate).toHaveBeenCalledWith("/Dashboard", {"state": {"role": "Volunteer"}})
+      expect(mockNavigate).toHaveBeenCalledWith("/Dashboard")
     );
   });
 
-  test("network error triggers alert", async () => {
-    global.fetch = jest.fn().mockRejectedValue(new Error("boom"));
+  test("network error triggers error message", async () => {
+    global.fetch.mockRejectedValue(new Error("boom"));
     renderWithRole("Organizer");
     await fillAndSubmit({ email: "a@b.com", password: "pw" });
     await waitFor(() =>
       expect(screen.getByText(AlertHelper.SERVER_ERROR)).toBeInTheDocument()
     );
+  });
+
+  test("role mismatch: trying to login as Volunteer with Organizer credentials", async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        access_token: "A",
+        refresh_token: "R",
+        user: { role: "Organizer" },
+      }),
+    });
+
+    renderWithRole("Volunteer"); // Trying to login as Volunteer
+    await fillAndSubmit({ email: "o@x.com", password: "pw" });
+
+    await waitFor(() =>
+      expect(screen.getByText(AlertHelper.LOG_IN_ERROR)).toBeInTheDocument()
+    );
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

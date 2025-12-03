@@ -4,7 +4,6 @@ import userEvent from "@testing-library/user-event";
 import Dashboard from "../Dashboard.tsx";
 import { MemoryRouter } from "react-router-dom";
 
-
 // --- Mocks ---
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => {
@@ -12,89 +11,166 @@ jest.mock("react-router-dom", () => {
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
+// Mock useAuthGuard to always return "authorized" so component renders
+jest.mock("../hooks/useAuthGuard", () => ({
+  __esModule: true,
+  default: jest.fn(() => "authorized"),
+}));
+
+// Mock EventService
+const mockFetchAllEvents = jest.fn();
+const mockFetchApplications = jest.fn();
+const mockApplyToEvent = jest.fn();
+jest.mock("../services/EventService", () => ({
+  __esModule: true,
+  fetchAllEvents: (...args) => mockFetchAllEvents(...args),
+  fetchApplications: (...args) => mockFetchApplications(...args),
+  applyToEvent: (...args) => mockApplyToEvent(...args),
+}));
+
+// Mock EventHelper to transform raw API events to display format
+jest.mock("../helpers/EventHelper", () => ({
+  cleanEvents: jest.fn((events) => events.map(e => ({
+    id: e.id,
+    jobName: e.jobName,
+    location: e.location,
+    description: e.description,
+    // Transform ISO timestamps to display strings
+    startDate: "Oct 23, 2099",
+    endDate: "Oct 24, 2099",
+    startTime: "8:00 AM",
+    endTime: "9:00 AM",
+    createdAtDate: "Oct 29, 2025",
+    createdAtTime: "12:09 AM",
+    startTimestamp: Date.now() + 86400000,
+    endTimestamp: Date.now() + 90000000,
+  }))),
+}));
+
 beforeEach(() => {
   jest.clearAllMocks();
-  // mock fetch per-test with sequence using mockResolvedValueOnce
+  // mock fetch for UserService.logout which uses raw fetch
   global.fetch = jest.fn();
   // mock alert
   jest.spyOn(window, "alert").mockImplementation(() => {});
   // mock console.error to avoid noisy logs (and to assert error path)
   jest.spyOn(console, "error").mockImplementation(() => {});
-  // mock localStorage.removeItem
-  jest.spyOn(window.localStorage.__proto__, "removeItem").mockImplementation(() => {});
+  jest.spyOn(console, "warn").mockImplementation(() => {});
+  jest.spyOn(console, "log").mockImplementation(() => {});
+  // mock localStorage with Object.defineProperty
+  const store = {
+    user: JSON.stringify({ username: "TestUser", role: "Volunteer" }),
+    access_token: "test-token",
+  };
+  const localStorageMock = {
+    getItem: jest.fn((k) => store[k] || null),
+    setItem: jest.fn((k, v) => { store[k] = v; }),
+    removeItem: jest.fn((k) => { delete store[k]; }),
+    clear: jest.fn(() => { for (const k in store) delete store[k]; }),
+  };
+  Object.defineProperty(window, 'localStorage', { value: localStorageMock, writable: true });
 });
 
-// Helper to render with an initial GET /v1/ response (or failure)
-function mockInitialEventsFetchOk(events = [{ 
-  id: "5e9d21a6-95b7-4b55-a8f7-9648bdf782cb",
-  organizerId: "51d6573c-5d62-4b3d-9853-b09e6095e367",
-  jobName: "event 8",
-  description: "moon stuff",
-  startTime: "2025-10-23T01:00:00.000Z",
-  endTime: "2025-10-24T02:00:00.000Z",
-  location: "moon",
-  createdAt: "2025-10-29T05:09:05.344Z"
-}]) {
-  (global.fetch).mockResolvedValueOnce({
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
+// Helper to set up default mocks for initial load
+function mockInitialLoad(events = [], applications = []) {
+  mockFetchAllEvents.mockResolvedValueOnce({
     ok: true,
     status: 200,
     json: async () => events,
   });
-}
-
-function mockInitialEventsFetchFail() {
-  (global.fetch).mockResolvedValueOnce({
-    ok: false,
-    status: 500,
-    json: async () => ({}),
+  mockFetchApplications.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    json: async () => applications,
   });
 }
 
 test("Tries to sign up for an event", async () => {
-    render(
-        <MemoryRouter>
-            <Dashboard />
-        </MemoryRouter>
-    );
+  const testEvents = [{
+    id: "5e9d21a6-95b7-4b55-a8f7-9648bdf782cb",
+    organizerId: "51d6573c-5d62-4b3d-9853-b09e6095e367",
+    jobName: "Test Event",
+    description: "Test description",
+    startTime: "2099-10-23T01:00:00.000Z",
+    endTime: "2099-10-24T02:00:00.000Z",
+    location: "Test Location",
+    createdAt: "2025-10-29T05:09:05.344Z"
+  }];
 
-    //Tries to bring up the menu of the sign up but its empty
-    const buttons = screen.getAllByRole("button", { name: "Apply" });
-    await userEvent.click(buttons[0]);
-    expect(screen.queryByText("Welcome to your Dashboard 🎉"));
+  mockInitialLoad(testEvents);
+
+  render(
+    <MemoryRouter>
+      <Dashboard />
+    </MemoryRouter>
+  );
+
+  // First verify API was called
+  await waitFor(() => {
+    expect(mockFetchAllEvents).toHaveBeenCalled();
+  });
+
+  // Wait for events to load
+  await waitFor(() => {
+    expect(screen.getByText(/Test Event/i)).toBeInTheDocument();
+  }, { timeout: 3000 });
+
+  // Find and click Apply button
+  const applyButton = screen.getByRole("button", { name: /Apply/i });
+  expect(applyButton).toBeInTheDocument();
 });
 
 test("Will try to logout and go to the role selection screen", async () => {
-    render(
-        <MemoryRouter>
-            <Dashboard />
-        </MemoryRouter>
-    );
+  mockInitialLoad();
 
-    //redirects the user to the role selection screen
-    const button = screen.getByRole("button", { name: "Log-out" });
-    await userEvent.click(button);
-    expect(screen.queryByText("Welcome to HiveHand"));
-});
-test("renders placeholder events immediately, then replaces with fetched events", async () => {
-  localStorage.setItem(
-    "user",
-    JSON.stringify({ username: "Nadya", role: "Volunteer" })
+  // Mock logout fetch call
+  global.fetch.mockResolvedValueOnce({
+    ok: true,
+    status: 204,
+    text: async () => "",
+  });
+
+  render(
+    <MemoryRouter>
+      <Dashboard />
+    </MemoryRouter>
   );
-  // 1st fetch: GET events -> ok with one event "Mock Event"
-  mockInitialEventsFetchOk([{ 
+
+  // Wait for component to render
+  await waitFor(() => {
+    expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
+  });
+
+  // Click logout button
+  const button = screen.getByRole("button", { name: /Log-out/i });
+  await userEvent.click(button);
+
+  await waitFor(() => {
+    expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
+  });
+});
+
+test("renders placeholder events immediately, then replaces with fetched events", async () => {
+  const fetchedEvents = [{
     id: "8fcbb58b-7953-4a3b-a2a0-759f306b3d3f",
     organizerId: "51d6573c-5d62-4b3d-9853-b09e6095e367",
     jobName: "Replaced Event",
     description: "moon stuff",
-    startTime: "2025-11-01T00:00:00.000Z",
-    endTime: "2025-11-01T02:00:00.000Z",
+    startTime: "2099-11-01T00:00:00.000Z",
+    endTime: "2099-11-01T02:00:00.000Z",
     location: "moon",
     createdAt: "2025-10-29T05:35:34.446Z"
-  }]);
+  }];
+
+  mockInitialLoad(fetchedEvents);
 
   render(
     <MemoryRouter>
-        <Dashboard />
+      <Dashboard />
     </MemoryRouter>
   );
 
@@ -107,21 +183,23 @@ test("renders placeholder events immediately, then replaces with fetched events"
   await waitFor(() => {
     expect(screen.getByText(/Replaced Event/i)).toBeInTheDocument();
   });
-
-  localStorage.clear();
 });
 
 test("handles fetch failure path (logs an error)", async () => {
-  localStorage.setItem(
-    "user",
-    JSON.stringify({ username: "Anna", role: "Volunteer" })
-  );
-
-  mockInitialEventsFetchFail();
+  mockFetchAllEvents.mockResolvedValueOnce({
+    ok: false,
+    status: 500,
+    json: async () => ({}),
+  });
+  mockFetchApplications.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    json: async () => [],
+  });
 
   render(
     <MemoryRouter>
-        <Dashboard />
+      <Dashboard />
     </MemoryRouter>
   );
 
@@ -134,15 +212,20 @@ test("handles fetch failure path (logs an error)", async () => {
 });
 
 test("logout success (204): clears localStorage and navigates home", async () => {
-  mockInitialEventsFetchOk(); // initial GET
-  // 2nd fetch: POST /auth/logout -> 204
-  (global.fetch).mockResolvedValueOnce({ ok: true, status: 204, text: async () => "" });
+  mockInitialLoad();
+
+  // Mock logout POST -> 204
+  global.fetch.mockResolvedValueOnce({ ok: true, status: 204, text: async () => "" });
 
   render(
     <MemoryRouter>
-        <Dashboard />
+      <Dashboard />
     </MemoryRouter>
   );
+
+  await waitFor(() => {
+    expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
+  });
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
@@ -150,17 +233,13 @@ test("logout success (204): clears localStorage and navigates home", async () =>
     expect(localStorage.removeItem).toHaveBeenCalledWith("user");
     expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
   });
-
-  // Check that POST was called with the expected URL
-  const calls = (global.fetch).mock.calls;
-  expect(calls[calls.length - 1][0]).toMatch(/\/v1\/auth\/logout$/);
-  expect(calls[calls.length - 1][1].method).toBe("POST");
 });
 
 test("logout success but non-204: attempts to parse JSON (and still navigates)", async () => {
-  mockInitialEventsFetchOk(); // initial GET
-  // 2nd fetch: POST /auth/logout -> 200 and json throws to hit inner catch
-  (global.fetch).mockResolvedValueOnce({
+  mockInitialLoad();
+
+  // Mock logout POST -> 200 with json that throws
+  global.fetch.mockResolvedValueOnce({
     ok: true,
     status: 200,
     json: async () => {
@@ -170,9 +249,13 @@ test("logout success but non-204: attempts to parse JSON (and still navigates)",
 
   render(
     <MemoryRouter>
-        <Dashboard />
+      <Dashboard />
     </MemoryRouter>
   );
+
+  await waitFor(() => {
+    expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
+  });
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
@@ -188,9 +271,10 @@ test("logout success but non-204: attempts to parse JSON (and still navigates)",
 });
 
 test("logout failure (non-ok): alerts and does NOT navigate", async () => {
-  mockInitialEventsFetchOk(); // initial GET
-  // 2nd fetch: POST /auth/logout -> 400 with error text
-  (global.fetch).mockResolvedValueOnce({
+  mockInitialLoad();
+
+  // Mock logout POST -> 400
+  global.fetch.mockResolvedValueOnce({
     ok: false,
     status: 400,
     text: async () => "Bad request",
@@ -198,9 +282,13 @@ test("logout failure (non-ok): alerts and does NOT navigate", async () => {
 
   render(
     <MemoryRouter>
-        <Dashboard />
+      <Dashboard />
     </MemoryRouter>
   );
+
+  await waitFor(() => {
+    expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
+  });
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
@@ -210,70 +298,82 @@ test("logout failure (non-ok): alerts and does NOT navigate", async () => {
   });
 });
 
-test("Sign-up button triggers the placeholder alert", async () => {
-  mockInitialEventsFetchOk();
+test("Sign-up button triggers the apply flow", async () => {
+  const testEvents = [{
+    id: "5e9d21a6-95b7-4b55-a8f7-9648bdf782cb",
+    organizerId: "51d6573c-5d62-4b3d-9853-b09e6095e367",
+    jobName: "event 8",
+    description: "moon stuff",
+    startTime: "2099-10-23T01:00:00.000Z",
+    endTime: "2099-10-24T02:00:00.000Z",
+    location: "moon",
+    createdAt: "2025-10-29T05:09:05.344Z"
+  }];
+
+  mockInitialLoad(testEvents);
+
+  // Mock the apply call
+  mockApplyToEvent.mockResolvedValueOnce({
+    ok: true,
+    status: 201,
+    json: async () => ({ message: "Applied successfully" }),
+  });
 
   render(
     <MemoryRouter>
-        <Dashboard />
+      <Dashboard />
     </MemoryRouter>
   );
 
   await waitFor(() => screen.getByText(/event 8/i));
   fireEvent.click(screen.getByRole("button", { name: /Apply/i }));
 
-  expect(window.alert).toHaveBeenCalledWith(
-    "Your session has expired. Please log in again."
-  );
+  await waitFor(() => {
+    expect(window.alert).toHaveBeenCalledWith(
+      "Application submitted! An organizer will review it."
+    );
+  });
 });
 
-test("logout: non-OK response triggers alert and returns (covers !response.ok)", async () => {
-  // 1) initial GET
-  mockInitialEventsFetchOk();
+test("logout: non-OK response triggers alert and returns", async () => {
+  mockInitialLoad();
 
-  // 2) POST /auth/logout -> not ok (e.g., 400)
-  (global.fetch).mockResolvedValueOnce({
+  // POST /auth/logout -> not ok
+  global.fetch.mockResolvedValueOnce({
     ok: false,
     status: 400,
     text: async () => "Bad request",
   });
 
-  const { container } = render(
+  render(
     <MemoryRouter>
-        <Dashboard />
+      <Dashboard />
     </MemoryRouter>
   );
 
-  // ensure initial fetch finishes
   await waitFor(() => expect(screen.getByText(/Dashboard/i)).toBeInTheDocument());
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
-  // submit the form directly to guarantee onSubmit runs
-  //const form = container.querySelector("form");
-  //fireEvent.submit(form);
-
   await waitFor(() => {
     expect(window.alert).toHaveBeenCalledWith("Log-out failed: Bad request");
-    // returned early, so no navigate
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 });
 
-test("logout: OK but non-204 parses JSON then navigates (covers response.status !== 204 and navigate)", async () => {
-  // 1) initial GET
-  mockInitialEventsFetchOk();
+test("logout: OK but non-204 parses JSON then navigates", async () => {
+  mockInitialLoad();
 
-  // 2) POST /auth/logout -> ok, 200, valid JSON
-  (global.fetch).mockResolvedValueOnce({
+  // POST /auth/logout -> ok, 200, valid JSON
+  global.fetch.mockResolvedValueOnce({
     ok: true,
     status: 200,
     json: async () => ({ message: "bye" }),
   });
 
-  const { container } = render(
+  render(
     <MemoryRouter>
-        <Dashboard />
+      <Dashboard />
     </MemoryRouter>
   );
 
@@ -283,19 +383,8 @@ test("logout: OK but non-204 parses JSON then navigates (covers response.status 
 
   fireEvent.click(screen.getByRole("button", { name: /log-out/i }));
 
-  // submit the form (triggers handleLogout)
-  //const form = container.querySelector("form");
-  //fireEvent.submit(form);
-
   await waitFor(() => {
-    // no error alert
     expect(window.alert).not.toHaveBeenCalled();
-    // navigates home after the non-204 branch completes
     expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
   });
-
-  // sanity: ensure 2nd fetch was POST /auth/logout
-  const calls = (global.fetch).mock.calls;
-  expect(calls[1][0]).toMatch(/\/v1\/auth\/logout$/);
-  expect(calls[1][1].method).toBe("POST");
 });

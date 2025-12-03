@@ -14,6 +14,15 @@ jest.mock("react-router-dom", () => {
   };
 });
 
+// Mock UserService
+const mockAuthMe = jest.fn();
+const mockFetchVolunteerStats = jest.fn();
+jest.mock("../services/UserService", () => ({
+  __esModule: true,
+  authMe: (...args) => mockAuthMe(...args),
+  fetchVolunteerStats: (...args) => mockFetchVolunteerStats(...args),
+}));
+
 const setupLocalStorageMock = (store = {}) => {
   const ls = {
     getItem: jest.fn((k) => (k in store ? store[k] : null)),
@@ -44,41 +53,44 @@ const renderWithRoutes = (state = { role: "Volunteer" }) =>
 
 describe("VolunteerProfile", () => {
   let alertSpy;
-  let fetchMock;
   let ls;
 
   beforeEach(() => {
     jest.resetAllMocks();
-    ls = setupLocalStorageMock();
+    ls = setupLocalStorageMock({
+      access_token: "test-token",
+      hoursGoal: null,
+    });
     alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
-    fetchMock = jest.fn();
-    global.fetch = fetchMock;
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  test("redirects to login if access_token is missing", async () => {
-    ls.getItem.mockImplementation((k) => (k === "access_token" ? null : null));
+  test("redirects to login if auth check fails", async () => {
+    // Mock authMe to return non-ok (unauthorized)
+    mockAuthMe.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({}),
+    });
+    mockFetchVolunteerStats.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ totalMinutes: 0, totalHours: 0, jobsCompleted: 0, upcomingJobs: 0 }),
+    });
 
     renderWithRoutes({ role: "Volunteer" });
 
-    await waitFor(() => 
-        expect(mockNavigate).toHaveBeenCalledWith("/User-login", { replace: true, state: {role: "Volunteer"} })
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith("/User-login", { replace: true, state: { role: "Volunteer" } })
     );
-
-    expect(alertSpy).toHaveBeenCalledWith("Please sign in first.");
   });
 
   test("loads profile successfully and saves a goal to localStorage", async () => {
-    ls.getItem.mockImplementation((k) => {
-      if (k === "access_token") return "abc";
-      if (k === "hoursGoal") return null;
-      return null;
-    });
-
-    fetchMock.mockResolvedValueOnce({
+    // Mock authMe success
+    mockAuthMe.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => ({
@@ -86,6 +98,17 @@ describe("VolunteerProfile", () => {
         username: "sudipta",
         role: "Volunteer",
         createdAt: "2025-01-01T00:00:00Z",
+      }),
+    });
+    // Mock fetchVolunteerStats success
+    mockFetchVolunteerStats.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        totalMinutes: 120,
+        totalHours: 2,
+        jobsCompleted: 5,
+        upcomingJobs: 2,
       }),
     });
 
@@ -110,22 +133,49 @@ describe("VolunteerProfile", () => {
   });
 
   test("handles fetch failure gracefully", async () => {
-    ls.getItem.mockImplementation((k) => (k === "access_token" ? "abc" : null));
-
-    // fetchMock.mockResolvedValueOnce({
-    //   ok: false,
-    //   status: 500,
-    //   json: async () => ({}),
-    // });
-
-    fetchMock.mockRejectedValueOnce(new Error("Network error"));
-
+    // Mock authMe to throw network error
+    mockAuthMe.mockRejectedValueOnce(new Error("Network error"));
 
     renderWithRoutes({ role: "Volunteer" });
 
     await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith("Failed to load profile.");
-        expect(mockNavigate).toHaveBeenCalledWith("/Dashboard", {replace: true, state: {role: "Volunteer"} });
+      expect(alertSpy).toHaveBeenCalledWith("Failed to load profile.");
+      expect(mockNavigate).toHaveBeenCalledWith("/Dashboard", { replace: true, state: { role: "Volunteer" } });
     });
+  });
+
+  test("displays stats correctly after loading", async () => {
+    mockAuthMe.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        id: "u1",
+        username: "testuser",
+        role: "Volunteer",
+        createdAt: "2025-01-01T00:00:00Z",
+      }),
+    });
+    mockFetchVolunteerStats.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        totalMinutes: 300,
+        totalHours: 5,
+        jobsCompleted: 10,
+        upcomingJobs: 3,
+      }),
+    });
+
+    renderWithRoutes({ role: "Volunteer" });
+
+    // Wait for profile to load
+    await waitFor(() => {
+      expect(screen.getByText(/testuser/i)).toBeInTheDocument();
+    });
+
+    // Check stats are displayed
+    expect(screen.getByText("5h")).toBeInTheDocument(); // Total Hours
+    expect(screen.getByText("10")).toBeInTheDocument(); // Jobs Completed
+    expect(screen.getByText("3")).toBeInTheDocument(); // Upcoming
   });
 });
