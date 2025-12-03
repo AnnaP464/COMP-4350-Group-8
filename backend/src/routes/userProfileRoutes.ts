@@ -66,7 +66,7 @@ const upload = multer({
  *       additionalProperties: false
  *       properties:
  *         bio:        { type: string, maxLength: 1000 }
- *         avatarUrl:  { type: string, format: uri }
+ *         avatarUrl:  { type: string, format: uri, nullable: true}
  *         phone:      { type: string }
  *         city:       { type: string }
  *         country:    { type: string }

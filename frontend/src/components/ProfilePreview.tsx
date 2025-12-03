@@ -1,18 +1,23 @@
 import "../css/ProfilePreview.css";
 import React, { useEffect, useState } from "react";
 import * as UserService from "../services/UserService";
+import type {
+  ContactPref,
+  UserProfileUpdatePayload,
+} from "../services/UserService";
 
 const serverErrorMsg = "Couldn't update your profile. Try again.";
 
-// helper to upload avatar
+// helper to upload avatar using UserService
 async function uploadAvatar(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("avatar", file);
 
   const res = await UserService.getAvatar(formData);
 
-  if (!res.ok)
+  if (!res.ok) {
     throw new Error(await res.text().catch(() => "Upload failed"));
+  }
 
   const { avatarUrl } = await res.json();
   return avatarUrl;
@@ -27,7 +32,7 @@ interface EditProfileDialogProps {
     city?: string;
     country?: string;
     avatarUrl?: string;
-    contactPref?: "email" | "phone" | "none";
+    contactPref?: ContactPref;
   };
 }
 
@@ -37,7 +42,7 @@ type FormState = {
   city: string;
   country: string;
   avatarUrl: string;
-  contactPref: "email" | "phone" | "none";
+  contactPref: ContactPref;
 };
 
 const DEFAULTS: FormState = {
@@ -49,7 +54,11 @@ const DEFAULTS: FormState = {
   contactPref: "email",
 };
 
-const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, user }) => {
+const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
+  open,
+  onClose,
+  user,
+}) => {
   const [form, setForm] = useState<FormState>({
     ...DEFAULTS,
     bio: user?.bio ?? "",
@@ -57,7 +66,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
     city: user?.city ?? "",
     country: user?.country ?? "",
     avatarUrl: user?.avatarUrl ?? "",
-    contactPref: (user?.contactPref as FormState["contactPref"]) ?? "email",
+    contactPref: (user?.contactPref as ContactPref) ?? "email",
   });
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -79,11 +88,11 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
             city: p.city ?? "",
             country: p.country ?? "",
             avatarUrl: p.avatarUrl ?? "",
-            contactPref: (p.contactPref as FormState["contactPref"]) ?? "email",
+            contactPref: (p.contactPref as ContactPref) ?? "email",
           });
         }
       } catch {
-        /* ignore */
+        // ignore network errors here; UI will still show existing state
       }
     })();
   }, [open]);
@@ -91,23 +100,40 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
   if (!open) return null;
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  //
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
     setLoading(true);
 
     try {
-      const res = await UserService.fetchProfile();
+      const cleanedAvatar = form.avatarUrl?.trim() ?? "";
 
-      if (!res.ok)
+      // Build payload so:
+      // - text fields can be omitted (undefined)
+      // - avatarUrl is either a valid URL or null, NEVER ""
+      const payload: UserProfileUpdatePayload = {
+        bio: form.bio || undefined,
+        phone: form.phone || undefined,
+        city: form.city || undefined,
+        country: form.country || undefined,
+        contactPref: form.contactPref || undefined,
+        avatarUrl: cleanedAvatar ? cleanedAvatar : null,
+      };
+
+      const res = await UserService.updateProfile(payload);
+
+      if (!res.ok) {
         throw new Error(await res.text().catch(() => "Request failed"));
+      }
+
       alert("Profile updated successfully!");
       setIsEditing(false);
     } catch (err) {
@@ -137,9 +163,8 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
           )}
         </div>
 
-          {/* the whole page is basically a form */}
+        {/* the whole page is basically a form */}
         <form onSubmit={handleSubmit} className="profile-form">
-
           {/* Avatar */}
           <div className="profile-preview">
             {form.avatarUrl && (
@@ -158,8 +183,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
                   style={{ display: "none" }}
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
-                    if (!file) 
-                      return;
+                    if (!file) return;
                     if (file.size > 2 * 1024 * 1024) {
                       alert("Max file size is 2MB");
                       return;
@@ -181,74 +205,82 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
 
           {/* Profile info fields */}
           <div className="profile-fields">
+            {/* BIO */}
+            <div className="profile-field">
+              <label className="profile-label" htmlFor="bio">
+                Bio
+              </label>
+              {!isEditing ? (
+                <span className="profile-value bio-preview">
+                  {form.bio || "No bio provided."}
+                </span>
+              ) : (
+                <textarea
+                  id="bio"
+                  name="bio"
+                  value={form.bio}
+                  onChange={handleChange}
+                  rows={4}
+                  className="profile-input"
+                  placeholder="Tell people a bit about yourself…"
+                />
+              )}
+            </div>
 
-              {/* BIO */}
-              <div className="profile-field">
-                <label className="profile-label" htmlFor="bio">Bio</label>
-                {!isEditing ? (
-                  <span className="profile-value bio-preview">{form.bio || "No bio provided."}</span>
-                ) : (
-                  <textarea
-                    id="bio"
-                    name="bio"
-                    value={form.bio}
-                    onChange={handleChange}
-                    rows={4}
-                    className="profile-input"
-                    placeholder="Tell people a bit about yourself…"
-                  />
-                )}
-              </div>
+            {/* Phone */}
+            <div className="profile-field">
+              <label className="profile-label" htmlFor="phone">
+                Phone
+              </label>
+              {!isEditing ? (
+                <span className="profile-value">{form.phone || "—"}</span>
+              ) : (
+                <input
+                  id="phone"
+                  type="tel"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  className="profile-input"
+                />
+              )}
+            </div>
 
-              {/* Phone */}
-              <div className="profile-field">
-                <label className="profile-label" htmlFor="phone">Phone</label>
-                {!isEditing ? (
-                  <span className="profile-value">{form.phone || "—"}</span>
-                ) : (
-                  <input
-                    id="phone"
-                    type="tel"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
-                    className="profile-input"
-                  />
-                )}
-              </div>
+            {/* City */}
+            <div className="profile-field">
+              <label className="profile-label" htmlFor="city">
+                City
+              </label>
+              {!isEditing ? (
+                <span className="profile-value">{form.city || "—"}</span>
+              ) : (
+                <input
+                  id="city"
+                  name="city"
+                  value={form.city}
+                  onChange={handleChange}
+                  className="profile-input"
+                />
+              )}
+            </div>
 
-
-              {/* City */}
-              <div className="profile-field">
-                <label className="profile-label" htmlFor="city">City</label>
-                {!isEditing ? (
-                  <span className="profile-value">{form.city || "—"}</span>
-                ) : (
-                  <input
-                    id="city"
-                    name="city"
-                    value={form.city}
-                    onChange={handleChange}
-                    className="profile-input"
-                  />
-                )}
-              </div>
-
-              {/* Country */}
-              <div className="profile-field">
-                <label className="profile-label" htmlFor="country">Country</label>
-                {!isEditing ? (
-                  <span className="profile-value">{form.country || "—"}</span>
-                ) : (
-                  <input
-                    id="country"
-                    name="country"
-                    value={form.country}
-                    onChange={handleChange}
-                    className="profile-input"
-                  />
-                )}
-              </div>
+            {/* Country */}
+            <div className="profile-field">
+              <label className="profile-label" htmlFor="country">
+                Country
+              </label>
+              {!isEditing ? (
+                <span className="profile-value">{form.country || "—"}</span>
+              ) : (
+                <input
+                  id="country"
+                  name="country"
+                  value={form.country}
+                  onChange={handleChange}
+                  className="profile-input"
+                />
+              )}
+            </div>
           </div>
 
           {/* Save button */}
@@ -258,6 +290,12 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ open, onClose, us
                 {loading || uploading ? "Saving..." : "Save Changes"}
               </button>
             </div>
+          )}
+
+          {errorMsg && (
+            <p className="profile-error" aria-live="polite">
+              {errorMsg}
+            </p>
           )}
         </form>
       </div>

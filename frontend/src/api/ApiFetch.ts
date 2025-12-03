@@ -61,10 +61,16 @@ export async function apiFetch(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  const isFormData =
+    typeof FormData !== "undefined" && options.body instanceof FormData;
+
+  // IMPORTANT: don't force JSON Content-Type for FormData
   // Add Content-Type for JSON if there's a body and no Content-Type set
-  if (options.body && !headers["Content-Type"]) {
+  if (options.body && !headers["Content-Type"] && !isFormData) {
     headers["Content-Type"] = "application/json";
   }
+
+
 
   // Make the initial request
   let res = await fetch(`${API_URL}${url}`, {

@@ -69,6 +69,30 @@ export function fetchProfile(): Promise<Response> {
   return apiFetch("/v1/users/me/profile");
 }
 
+export type ContactPref = "email" | "phone" | "none";
+
+export type UserProfileUpdatePayload = {
+  bio?: string;
+  phone?: string;
+  city?: string;
+  country?: string;
+  avatarUrl?: string | null;
+  contactPref?: ContactPref;
+};
+
+
+export function updateProfile(payload: UserProfileUpdatePayload): Promise<Response> {
+  return apiFetch("/v1/users/me/profile", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+
+
 export type VolunteerStats = {
   totalMinutes: number;
   totalHours: number;

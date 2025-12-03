@@ -113,7 +113,7 @@ services:
     volumes:
       - ./backend:/backend:cached 
       - /backend/node_modules
-      - zodgen:/backend/src/spec # comment out for rerunning openapi file
+      # - zodgen:/backend/src/spec # comment out for rerunning openapi file
       - ./backend:/backend       # ^ same
       - /backend/node_modules
       - uploads:/uploads # for pic upload
