@@ -11,6 +11,8 @@ import "./css/ManageEvents.css";
 import "./css/EventCard.css";
 
 import EventCard from "./components/EventCard";
+import GeofenceModal from "./components/GeofenceModal";
+import type { GeofenceView } from "./components/GeofenceModal";
 import useAuthGuard from "./hooks/useAuthGuard";
 import formatMinutes from "./helpers/FormatMinutes";
 import type { AttendanceStatus } from "./api/AttendanceApiFetch";
@@ -36,6 +38,11 @@ const ManageEvent: React.FC = () => {
   const [accepted, setAccepted] = useState<Accepted[]>([]);
   const [attendanceByUserId, setAttendanceByUserId] = useState<AttendanceMap>({});
   const [loading, setLoading] = useState(true);
+
+  // Geofence state
+  const [geofences, setGeofences] = useState<GeofenceView[]>([]);
+  const [modalMode, setModalMode] = useState<"add" | "edit" | "delete">("add");
+  const [showGeofenceModal, setShowGeofenceModal] = useState(false);
 
   // Helper: fetch attendance status for all accepted volunteers
   async function loadAcceptedAttendance(
@@ -71,6 +78,19 @@ const ManageEvent: React.FC = () => {
     );
 
     setAttendanceByUserId(nextMap);
+  }
+
+  // Helper: fetch geofences for this event
+  async function loadGeofences(token: string, evId: string) {
+    try {
+      const res = await EventService.fetchGeofences(token, evId);
+      if (res.ok) {
+        const data: GeofenceView[] = await res.json();
+        setGeofences(data);
+      }
+    } catch (err) {
+      console.warn("Failed to load geofences:", err);
+    }
   }
 
   useEffect(() => {
@@ -112,6 +132,9 @@ const ManageEvent: React.FC = () => {
 
         // 3) Load attendance status for each accepted volunteer
         await loadAcceptedAttendance(token, eventId, acc);
+
+        // 4) Load geofences
+        await loadGeofences(token, eventId);
       } catch (e) {
         console.error(e);
         alert(AlertHelper.EVENT_FETCH_ERROR);
@@ -163,6 +186,29 @@ const ManageEvent: React.FC = () => {
     setApplicants((a) => a.filter((x) => x.id !== userId));
   };
 
+  // Geofence modal handlers
+  const openAddGeofence = () => {
+    setModalMode("add");
+    setShowGeofenceModal(true);
+  };
+
+  const openEditGeofences = () => {
+    setModalMode("edit");
+    setShowGeofenceModal(true);
+  };
+
+  const openDeleteGeofences = () => {
+    setModalMode("delete");
+    setShowGeofenceModal(true);
+  };
+
+  const handleGeofencesChanged = () => {
+    const token = AuthService.getToken();
+    if (token && eventId) {
+      loadGeofences(token, eventId);
+    }
+  };
+
   if (loading)
     return (
       <main className="myreg-container">
@@ -183,6 +229,23 @@ const ManageEvent: React.FC = () => {
         </header>
 
         {info && <EventCard ev={info} />}
+
+        {/* Geofence action buttons */}
+        <div className="geofence-actions">
+          <button className="option-btn" onClick={openAddGeofence}>
+            Add Geofence
+          </button>
+          {geofences.length > 0 && (
+            <>
+              <button className="option-btn" onClick={openEditGeofences}>
+                Edit Geofences ({geofences.length})
+              </button>
+              <button className="cancel-btn" onClick={openDeleteGeofences}>
+                Delete Geofences
+              </button>
+            </>
+          )}
+        </div>
 
         <section className="applicants-section">
           {/* Applicants box */}
@@ -268,6 +331,17 @@ const ManageEvent: React.FC = () => {
           </div>
         </section>
       </div>
+
+      {/* Geofence Modal */}
+      {eventId && (
+        <GeofenceModal
+          eventId={eventId}
+          mode={modalMode}
+          isOpen={showGeofenceModal}
+          onClose={() => setShowGeofenceModal(false)}
+          onGeofencesChanged={handleGeofencesChanged}
+        />
+      )}
     </main>
   );
 };

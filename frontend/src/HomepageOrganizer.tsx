@@ -351,12 +351,12 @@ const HomepageOrganizer: React.FC = () => {
     <div className="dashboard-container" style={{ alignItems: "stretch" }}>
       {/* Top bar */}
       <HomepageHeader
-        title={`HiveHand - ${user ? user.username : ""}`}
-        subtitle="Homepage"
+        title={`Welcome, ${user ? user.username : ""}`}
+        subtitle="Organizer Dashboard"
         actions={
           <>
             <button
-              className="option-btn"
+              className="option-btn primary-action"
               onClick={() => {
                 setShowCreate(true);
                 setCreateStep("event");
@@ -372,7 +372,7 @@ const HomepageOrganizer: React.FC = () => {
               }}
               title="Create a job post"
             >
-              Create Event
+              <span className="btn-icon">+</span> New Event
             </button>
             <button
               className="option-btn"
@@ -381,7 +381,7 @@ const HomepageOrganizer: React.FC = () => {
               }
               title="Profile & settings"
             >
-              Profile
+              <span className="btn-icon">⚙</span> Profile
             </button>
 
             <button
@@ -389,7 +389,7 @@ const HomepageOrganizer: React.FC = () => {
               type="button"
               onClick={handleLogout}
             >
-              Log-out
+              Sign Out
             </button>
           </>
         }

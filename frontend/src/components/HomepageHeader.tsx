@@ -15,22 +15,20 @@ interface PageHeaderProps {
 
 const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, actions }) => {
   return (
-    <div className="navigation-container" style={{ alignItems: "stretch" }}>
+    <div className="navigation-container">
       <div className="navigation-box">
         <header className="navigation-header">
-          <div>
-            <h2 className="title" style={{ margin: 0 }}>
-              {title}
-            </h2>
-            {subtitle && (
-              <p className="subtitle" style={{ marginTop: 4 }}>
-                {subtitle}
-              </p>
-            )}
+          {/* Top row: Title and subtitle */}
+          <div className="navigation-header-top">
+            <div>
+              <h2>{title}</h2>
+              {subtitle && <p>{subtitle}</p>}
+            </div>
           </div>
 
+          {/* Bottom row: Action buttons */}
           {actions && (
-            <div className="button-box" style={{ display: "flex", gap: 8 }}>
+            <div className="navigation-header-actions">
               {actions}
             </div>
           )}

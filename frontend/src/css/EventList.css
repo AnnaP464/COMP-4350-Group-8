@@ -25,6 +25,7 @@ h3{
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 1.25rem;
 }
 
 /* make the header and empty text stand out more on images */

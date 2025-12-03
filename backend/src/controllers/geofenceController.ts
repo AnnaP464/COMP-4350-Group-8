@@ -11,13 +11,13 @@ export function makeGeofencesController(deps: { service: GeofencesService }) : G
       const { eventId } = req.params as { eventId: string };
       const { name, geojson4326 } = req.body as {
         name: string;
-        geojson4326: string | object;
+        geojson4326: object;
       };
 
       const view = await service.createPolygon({
         eventId,
         name,
-        geojson4326: typeof geojson4326 === "string" ? geojson4326 : JSON.stringify(geojson4326),
+        geojson4326: JSON.stringify(geojson4326),
       });
       res.status(201).json(view);
     },

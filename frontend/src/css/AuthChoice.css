@@ -71,20 +71,47 @@
 }
 
 .option-btn {
-  padding: 0.5rem 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
   border-radius: 8px;
-  border: 1px solid #444;
-  background: #111;
-  background-color: rgb(3, 150, 94);
-  color: #eee;
+  border: none;
+  background: linear-gradient(135deg, #059669, #047857);
+  color: #fff;
+  font-weight: 500;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
 }
 
-/*move button slighly up when hovered*/
+/*move button slightly up when hovered*/
 .option-btn:hover {
-  background-color: #016055;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #047857, #065f46);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.option-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Primary action button - more prominent */
+.option-btn.primary-action {
+  background: linear-gradient(135deg, #10b981, #059669);
+  padding: 12px 20px;
+  font-size: 1rem;
+}
+
+.option-btn.primary-action:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+/* Button icon styling */
+.btn-icon {
+  font-size: 1.1em;
+  line-height: 1;
 }
 
 .guest-btn {
@@ -125,17 +152,33 @@
 }
 
 .cancel-btn {
-  background-color: #e14138;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
   color: #fff;
-  border: 0;
+  border: none;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 10px 16px;
+  font-weight: 500;
   cursor: pointer;
-}
-.cancel-btn:hover {
-  background-color: rgb(222, 38, 38);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
 }
 
-.cancel-btn:disabled { 
-  opacity: 0.6; cursor: not-allowed;
+.cancel-btn:hover {
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.cancel-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }

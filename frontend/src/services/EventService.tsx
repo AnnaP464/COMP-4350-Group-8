@@ -143,3 +143,60 @@ export function withdrawFromEvent(token: string | null, eventId: string) {
   });
   return content;
 }
+
+// ─────────────────────────────────────────────────────────────
+// Geofence Management
+// ─────────────────────────────────────────────────────────────
+
+export function fetchGeofences(token: string | null, eventId: string) {
+  return fetch(`${API_URL}/v1/events/${eventId}/geofences`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function deleteGeofence(token: string | null, geofenceId: string) {
+  return fetch(`${API_URL}/v1/events/geofences/${geofenceId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function createPolygonGeofence(
+  token: string | null,
+  eventId: string,
+  name: string,
+  geojson4326: object
+) {
+  return fetch(`${API_URL}/v1/events/${eventId}/geofences/polygon`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name, geojson4326 }),
+  });
+}
+
+export function createCircleGeofence(
+  token: string | null,
+  eventId: string,
+  name: string,
+  lat: number,
+  lon: number,
+  radius_m: number
+) {
+  return fetch(`${API_URL}/v1/events/${eventId}/geofences/circle`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name, lat, lon, radius_m }),
+  });
+}

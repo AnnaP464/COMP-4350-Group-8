@@ -95,3 +95,152 @@ Layout for applicants & accepted boxes
     grid-template-columns: 1fr;
   }
 }
+
+/* -------------------------------------------------
+   Geofence Action Buttons
+----------------------------------------------------- */
+.geofence-actions {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.geofence-actions .option-btn,
+.geofence-actions .cancel-btn {
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+/* -------------------------------------------------
+   Geofence Modal
+----------------------------------------------------- */
+.geofence-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.geofence-modal-box {
+  background: rgba(30, 30, 40, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.geofence-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.geofence-modal-close {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.geofence-modal-close:hover {
+  color: #fff;
+}
+
+.geofence-modal-content {
+  padding: 20px;
+}
+
+.geofence-modal-description {
+  color: #ccc;
+  font-size: 14px;
+  margin: 0 0 16px 0;
+}
+
+/* Add form */
+.geofence-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.geofence-map-container {
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.geofence-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Geofence list */
+.geofence-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.geofence-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.geofence-list-item:last-child {
+  margin-bottom: 0;
+}
+
+.geofence-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #fff;
+}
+
+.geofence-type {
+  font-size: 12px;
+  color: #888;
+}
+
+.geofence-loading,
+.geofence-empty {
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Responsive adjustments for geofence modal */
+@media (max-width: 600px) {
+  .geofence-modal-box {
+    max-width: 100%;
+    margin: 10px;
+  }
+
+  .geofence-map-container {
+    height: 250px;
+  }
+}

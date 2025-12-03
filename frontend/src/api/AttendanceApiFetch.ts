@@ -33,13 +33,11 @@ export type AttendanceStatus = {
     reason?: string;
   };
 };
-  const token = AuthService.getToken();
-    //send user to organizer login
-    
 
 export async function fetchAttendanceStatus(
   eventId: string
 ): Promise<AttendanceStatus> {
+  const token = AuthService.getToken();
   const res = await fetch (`${API}/v1/events/${eventId}/attendance/status`, {
      headers: {
           "Content-Type": "application/json",
@@ -65,6 +63,7 @@ export async function signInToEvent(
   eventId: string,
   body: SignBody
 ): Promise<AttendanceStatus> {
+  const token = AuthService.getToken();
   const res = await fetch (`${API}/v1/events/${eventId}/attendance/sign-in`, {
     headers: {
           "Content-Type": "application/json",
@@ -84,6 +83,7 @@ export async function signOutFromEvent(
   eventId: string,
   body: SignBody
 ): Promise<AttendanceStatus> {
+  const token = AuthService.getToken();
   const res = await fetch (`${API}/v1/events/${eventId}/attendance/sign-out`, {
     headers: {
           "Content-Type": "application/json",
