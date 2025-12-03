@@ -2,17 +2,27 @@
 // src/OrganizerProfile.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Award, Calendar, Clock, MapPin, TrendingUp } from "lucide-react";
+import { Calendar, Clock, TrendingUp } from "lucide-react";
 import ProfileTopBar from "./components/ProfileTopBar";
 import { getAvatarInitials, formatMonthYear } from "./helpers/UserInfoHelper.tsx";
 import "./css/VolunteerProfile.css"; // reuse existing styling
-import ProfilePreviewDialog from "./components/ProfilePreview"
+import ProfilePreviewDialog from "./components/ProfilePreview";
 import ProfileBadges from "./components/ProfileBadges";
 import ProfileRecentActivity from "./components/ProfileRecentActivity";
 import * as AlertHelper from "./helpers/AlertHelper";
 import * as UserService from "./services/UserService";
+import {
+  fetchOrganizerStats,
+  type OrganizerStats,
+} from "./services/AttendanceService";
 
-type Me = { id: string; username: string; email?: string; role: string; createdAt: string };
+type Me = {
+  id: string;
+  username: string;
+  email?: string;
+  role: string;
+  createdAt: string;
+};
 
 const OrganizerProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -20,34 +30,33 @@ const OrganizerProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
-  // --- Organizer placeholders (swap in real data later) ---
-  const [summary, setSummary] = useState({
-    eventsHosted: 12,
-    volunteersEngaged: 87,
-    upcomingEvents: 3,
-    totalHoursProvided: 240,
-  });
+  const [orgStats, setOrgStats] = useState<OrganizerStats | null>(null);
 
   const badges = [
     { id: 1, label: "Community Builder", desc: "Hosted 5+ events" },
     { id: 2, label: "Coordinator", desc: "50+ volunteers engaged" },
   ];
 
-  const recentEvents = [
-    { id: "e1", title: "Warm Clothing Drive", date: "Oct 30, 2025", where: "Downtown Shelter" },
-    { id: "e2", title: "Riverbank Cleanup", date: "Oct 22, 2025", where: "Red River Walk" },
-  ];
-
   useEffect(() => {
     (async () => {
       try {
-        const res = await UserService.authMe();
-        if (!res.ok) {
-          navigate("/User-login", { replace: true, state: { role: "Organizer" } });
+        // Fetch identity + organizer stats in parallel
+        const [meRes, stats] = await Promise.all([
+          UserService.authMe(),
+          fetchOrganizerStats(),
+        ]);
+
+        if (!meRes.ok) {
+          navigate("/User-login", {
+            replace: true,
+            state: { role: "Organizer" },
+          });
           return;
         }
-        const data = await res.json();
+
+        const data = await meRes.json();
         setMe(data);
+        setOrgStats(stats);
       } catch (e) {
         alert(AlertHelper.PROFILE_FETCH_ERROR);
         navigate("/Homepage-Organizer", { replace: true });
@@ -67,6 +76,16 @@ const OrganizerProfile: React.FC = () => {
     memberSince: formatMonthYear(me.createdAt),
     avatarInitials: getAvatarInitials(me.username),
   };
+
+  const summary = {
+    eventsHosted: orgStats?.eventsHosted ?? 0,           // not displayed yet, but ready
+    volunteersEngaged: orgStats?.volunteersEngaged ?? 0,
+    upcomingEvents: orgStats?.upcomingEvents ?? 0,
+    totalHoursProvided: orgStats?.totalHoursProvided ?? 0,
+  };
+
+  const recentEvents =
+    orgStats?.recentEvents ?? [];
 
   return (
     <main className="vp-container">
@@ -100,21 +119,29 @@ const OrganizerProfile: React.FC = () => {
       {/* Quick Stats */}
       <section className="vp-grid">
         <article className="stat card">
-          <div className="stat-icon"><Clock aria-hidden /></div>
+          <div className="stat-icon">
+            <Clock aria-hidden />
+          </div>
           <div className="stat-body">
             <p className="stat-label">Total Volunteer Hours</p>
             <p className="stat-value">{summary.totalHoursProvided}h</p>
           </div>
         </article>
+
         <article className="stat card">
-          <div className="stat-icon"><TrendingUp aria-hidden /></div>
+          <div className="stat-icon">
+            <TrendingUp aria-hidden />
+          </div>
           <div className="stat-body">
             <p className="stat-label">Volunteers Engaged</p>
             <p className="stat-value">{summary.volunteersEngaged}</p>
           </div>
         </article>
+
         <article className="stat card">
-          <div className="stat-icon"><Calendar aria-hidden /></div>
+          <div className="stat-icon">
+            <Calendar aria-hidden />
+          </div>
           <div className="stat-body">
             <p className="stat-label">Upcoming Events</p>
             <p className="stat-value">{summary.upcomingEvents}</p>
@@ -123,15 +150,12 @@ const OrganizerProfile: React.FC = () => {
       </section>
 
       {/* Badges */}
-      
       <ProfileBadges badges={badges} title="Organizer Achievements" />
 
       {/* Recent Events */}
       <ProfileRecentActivity activities={recentEvents} title="Recent Events" />
-
     </main>
   );
 };
 
 export default OrganizerProfile;
-

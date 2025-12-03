@@ -2,6 +2,8 @@
 import apiFetch from "../api/ApiFetch";
 import { cleanEvents, type CleanEvent } from "../helpers/EventHelper";
 
+/* ---------- Shared types ---------- */
+
 export type RecentActivityItem = {
   id: string;
   title: string;
@@ -10,11 +12,13 @@ export type RecentActivityItem = {
   where: string;
 };
 
+/* ---------- Volunteer stats ---------- */
+
 export type VolunteerStats = {
-  totalHours: number;           // summed hours across all completed events
-  jobsCompleted: number;        // number of completed events with >0 minutes
+  totalHours: number;           // summed hours across completed accepted events
+  jobsCompleted: number;        // number of completed events with > 0 minutes
   upcomingJobs: number;         // accepted events in the future
-  recentActivity: RecentActivityItem[]; // last 3 completed events
+  recentActivity: RecentActivityItem[]; // last few completed events
 };
 
 type ApplicationStatus = "applied" | "accepted" | "rejected" | "withdrawn";
@@ -38,14 +42,15 @@ type AttendanceStatusView = {
 };
 
 /**
- * Aggregates volunteer stats from:
- *  - /v1/events (public events)
- *  - /v1/events/me/applications (to see which ones are accepted)
- *  - /v1/events/:id/attendance/status (minutes tracked per event)
+ * Volunteer view:
+ * Aggregates stats from:
+ *  - /v1/events
+ *  - /v1/events/me/applications
+ *  - /v1/events/:id/attendance/status
  */
 export async function fetchVolunteerStats(): Promise<VolunteerStats> {
   try {
-    // 1) All events (public feed, same as Dashboard)
+    // 1) All events
     const eventsRes = await apiFetch("/v1/events", {
       method: "GET",
       headers: { Accept: "application/json" },
@@ -58,7 +63,7 @@ export async function fetchVolunteerStats(): Promise<VolunteerStats> {
     const rawEvents = await eventsRes.json();
     const events = cleanEvents(rawEvents, false) as CleanEvent[];
 
-    // 2) My applications: know which events I'm accepted for
+    // 2) My applications
     const appsRes = await apiFetch("/v1/events/me/applications", {
       method: "GET",
       headers: { Accept: "application/json" },
@@ -115,8 +120,12 @@ export async function fetchVolunteerStats(): Promise<VolunteerStats> {
       if (typeof startTs === "number" && startTs > now) {
         // future event
         upcomingCount += 1;
-      } else if (typeof endTs === "number" && endTs <= now && minutes > 0) {
-        // past event with some time tracked → completed job
+      } else if (
+        typeof endTs === "number" &&
+        endTs <= now &&
+        minutes > 0
+      ) {
+        // past event with tracked attendance
         completedCount += 1;
         completedActivities.push({ ev, minutes });
       }
@@ -129,8 +138,145 @@ export async function fetchVolunteerStats(): Promise<VolunteerStats> {
       return bEnd - aEnd;
     });
 
-    // Take last 3 completed events as "recent activity"
-    const recentActivity = completedActivities.slice(0, 3).map(({ ev, minutes }) => {
+    const recentActivity: RecentActivityItem[] = completedActivities
+      .slice(0, 3)
+      .map(({ ev, minutes }) => {
+        const endTs = (ev as any).endTimestamp as number | undefined;
+        const date = endTs
+          ? new Date(endTs).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })
+          : "";
+
+        return {
+          id: ev.id,
+          title: (ev as any).jobName ?? "Event",
+          date,
+          hours: +(minutes / 60).toFixed(1),
+          where: (ev as any).location ?? "",
+        };
+      });
+
+    const totalHours = +(totalMinutes / 60).toFixed(1);
+
+    return {
+      totalHours,
+      jobsCompleted: completedCount,
+      upcomingJobs: upcomingCount,
+      recentActivity,
+    };
+  } catch (err) {
+    console.error("fetchVolunteerStats error", err);
+    // Fail soft
+    return {
+      totalHours: 0,
+      jobsCompleted: 0,
+      upcomingJobs: 0,
+      recentActivity: [],
+    };
+  }
+}
+
+/* ---------- Organizer stats ---------- */
+
+export type OrganizerStats = {
+  eventsHosted: number;
+  volunteersEngaged: number;      // distinct volunteers across events
+  upcomingEvents: number;        // my future events
+  totalHoursProvided: number;    // scheduled volunteer-hours (duration * #accepted)
+  recentEvents: {
+    id: string;
+    title: string;
+    date: string;
+    where: string;
+  }[];
+};
+
+/**
+ * Organizer view:
+ * Aggregates stats from:
+ *  - /v1/events?mine=1
+ *  - /v1/events/:eventId/accepted
+ *
+ * NOTE: totalHoursProvided is *scheduled* volunteer-hours
+ *       (event duration * number of accepted volunteers),
+ *       not based on actual clock-in data.
+ */
+export async function fetchOrganizerStats(): Promise<OrganizerStats> {
+  try {
+    // 1) My events as organizer
+    const eventsRes = await apiFetch("/v1/events?mine=1", {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+
+    if (!eventsRes.ok) {
+      throw new Error("Failed to fetch my events");
+    }
+
+    const rawEvents = await eventsRes.json();
+    const events = cleanEvents(rawEvents, false) as CleanEvent[];
+
+    const eventsHosted = events.length;
+
+    const now = Date.now();
+    let upcomingEvents = 0;
+
+    const volunteerIds = new Set<string>();
+    let totalVolunteerMinutes = 0;
+
+    // 2) For each event, fetch accepted volunteers
+    const acceptedLists = await Promise.all(
+      events.map(async (ev) => {
+        try {
+          const res = await apiFetch(`/v1/events/${ev.id}/accepted`, {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          });
+          if (!res.ok) return [];
+          return (await res.json()) as { id: string }[];
+        } catch {
+          return [];
+        }
+      })
+    );
+
+    events.forEach((ev, idx) => {
+      const accepted = acceptedLists[idx] ?? [];
+      const startTs = (ev as any).startTimestamp as number | undefined;
+      const endTs = (ev as any).endTimestamp as number | undefined;
+
+      // count upcoming events
+      if (typeof startTs === "number" && startTs > now) {
+        upcomingEvents += 1;
+      }
+
+      // track distinct volunteers
+      accepted.forEach((a) => volunteerIds.add(a.id));
+
+      // scheduled volunteer-hours = duration * accepted count
+      if (typeof startTs === "number" && typeof endTs === "number") {
+        const durationMinutes = Math.max(
+          0,
+          Math.round((endTs - startTs) / 60000)
+        );
+        totalVolunteerMinutes += durationMinutes * accepted.length;
+      }
+    });
+
+    const totalHoursProvided = +(totalVolunteerMinutes / 60).toFixed(1);
+    const volunteersEngaged = volunteerIds.size;
+
+    // 3) Recent events = latest 3 by end time
+    const sortedEvents = [...events].sort((a, b) => {
+      const aEnd = (a as any).endTimestamp ?? 0;
+      const bEnd = (b as any).endTimestamp ?? 0;
+      return bEnd - aEnd;
+    });
+
+    const recentEvents = sortedEvents.slice(0, 3).map((ev) => {
       const endTs = (ev as any).endTimestamp as number | undefined;
       const date = endTs
         ? new Date(endTs).toLocaleDateString(undefined, {
@@ -144,27 +290,26 @@ export async function fetchVolunteerStats(): Promise<VolunteerStats> {
         id: ev.id,
         title: (ev as any).jobName ?? "Event",
         date,
-        hours: +(minutes / 60).toFixed(1), // convert minutes → hours (1 decimal)
         where: (ev as any).location ?? "",
       };
     });
 
-    const totalHours = +(totalMinutes / 60).toFixed(1);
-
     return {
-      totalHours,
-      jobsCompleted: completedCount,
-      upcomingJobs: upcomingCount,
-      recentActivity,
+      eventsHosted,
+      volunteersEngaged,
+      upcomingEvents,
+      totalHoursProvided,
+      recentEvents,
     };
   } catch (err) {
-    console.error("fetchVolunteerStats error", err);
-    // Fail soft: return zeros instead of breaking the profile page
+    console.error("fetchOrganizerStats error", err);
+    // Fail soft: keep UI working
     return {
-      totalHours: 0,
-      jobsCompleted: 0,
-      upcomingJobs: 0,
-      recentActivity: [],
+      eventsHosted: 0,
+      volunteersEngaged: 0,
+      upcomingEvents: 0,
+      totalHoursProvided: 0,
+      recentEvents: [],
     };
   }
 }
