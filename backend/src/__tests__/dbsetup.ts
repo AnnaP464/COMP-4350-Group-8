@@ -11,7 +11,9 @@ afterEach(async () => {
       users,
       refresh_tokens,
       events,
-      event_geofences
+      event_geofences,
+      event_attendance,
+      registered_users
     RESTART IDENTITY CASCADE;
   `);
 });

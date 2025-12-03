@@ -27,19 +27,15 @@ services:
       POSTGRESQL_POSTGRES_PASSWORD: verysafe
       POSTGRESQL_ENABLE_POSTGIS: "yes"
     volumes:
+      - dbdata-test:/bitnami/postgresql
       - ./backend/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5433:5432"
     healthcheck:
-      test:
-       [
-        "CMD-SHELL",
-        "
-        pg_isready -U $DATABASE_USER -d $DATABASE_NAME
-        "
-        ]
+      test: ["CMD-SHELL", "pg_isready -U hivedev -d hivehand_test"]
       interval: 5s
       timeout: 3s
       retries: 20
-    # no host port needed; other containers reach it via service name `db_test`
 
   migrate:
     image: bitnami/postgresql:latest
@@ -70,7 +66,7 @@ services:
     environment:
       DATABASE_URL: postgres://hivedev:verysafe@db-test:5432/hivehand_test
     volumes:
-      - ./backend/migrations:/migrations:ro
+      - ./backend/migrations:/migrs:ro
     entrypoint: ["/bin/bash","-lc"]
     command: >
       'for f in /migrations/*.sql; do
@@ -161,5 +157,6 @@ services:
 
 volumes:
   dbdata:
+  dbdata-test:
   zodgen:
   uploads: #pic uploads

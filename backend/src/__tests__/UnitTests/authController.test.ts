@@ -106,15 +106,15 @@ describe("AuthController", () => {
 
     await ctrl.refresh(req as Request, res as Response, next as NextFunction);
 
-    expect(svc.refresh).toHaveBeenCalledWith("oldToken");
+    expect(svc.refresh).toHaveBeenCalledWith({ refreshToken: "oldToken" });
 
-    // verify cookie options (don’t hardcode env-dependent flags)
+    // verify cookie options (don't hardcode env-dependent flags)
     expect(res.cookie).toHaveBeenCalledWith(
       "refresh_token",
       "refresh-NEW",
       expect.objectContaining({
         httpOnly: true,
-        path: "/v1/auth/refresh",
+        path: "/",
         sameSite: expect.any(String), // e.g. "lax"
         maxAge: expect.any(Number),
       })
