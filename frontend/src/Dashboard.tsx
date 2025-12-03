@@ -267,16 +267,6 @@ const Dashboard: React.FC = () => {
           <>
             <button
               className="option-btn"
-              title="Your registered events"
-              onClick={() =>
-                navigate("/MyRegisteredEvents", { state: { role, items: acceptedList } })
-              }
-            >
-              My events
-            </button>
-
-            <button
-              className="option-btn"
               title="My applications"
               onClick={() =>
                 navigate("/MyApplications", { state: { role, items: appliedOrRejectedList } })

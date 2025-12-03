@@ -1,23 +1,29 @@
-//src/VolunteerProfile.tsx
-import React, {useEffect, useState} from "react";
+// src/VolunteerProfile.tsx
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Clock,
-  CheckCircle2,
-  TrendingUp,
-} from "lucide-react";
+import { Clock, CheckCircle2, TrendingUp } from "lucide-react";
 import "./css/VolunteerProfile.css";
 import ProfilePreviewDialog from "./components/ProfilePreview.tsx";
-import {getAvatarInitials, formatMonthYear} from "./helpers/UserInfoHelper.tsx";
+import { getAvatarInitials, formatMonthYear } from "./helpers/UserInfoHelper.tsx";
 import * as AlertHelper from "./helpers/AlertHelper";
 import ProfileTopBar from "./components/ProfileTopBar";
 import ProfileBadges from "./components/ProfileBadges";
 import ProfileRecentActivity from "./components/ProfileRecentActivity";
 import * as UserService from "./services/UserService";
-import type { VolunteerStats } from "./services/UserService";
 import * as AuthService from "./services/AuthService";
+import {
+  fetchVolunteerStats,
+  type VolunteerStats,
+} from "./services/AttendanceService";
 
-type Me = { id: string; username: string; email?: string; role: string, createdAt: string};
+type Me = {
+  id: string;
+  username: string;
+  email?: string;
+  role: string;
+  createdAt: string;
+};
+
 const VolunteerProfile: React.FC = () => {
   const navigate = useNavigate();
 
@@ -36,32 +42,30 @@ const VolunteerProfile: React.FC = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
+    // Load saved hours goal from localStorage
     const saved = AuthService.getHourGoal();
     if (saved) {
-        const n = Number(saved);
-        if (!Number.isNaN(n) && n > 0)
-            setHoursGoal(n);
+      const n = Number(saved);
+      if (!Number.isNaN(n) && n > 0) setHoursGoal(n);
     }
 
     (async () => {
       try {
-        // Fetch user info and stats in parallel
-        const [meRes, statsRes] = await Promise.all([
+        // Fetch user info and computed stats in parallel
+        const [meRes, statsData] = await Promise.all([
           UserService.authMe(),
-          UserService.fetchVolunteerStats(),
+          fetchVolunteerStats(),
         ]);
 
         if (!meRes.ok) {
+          // Auth failure → go to login
           navigate("/User-login", { replace: true, state: { role } });
           return;
         }
+
         const meData = await meRes.json();
         setMe(meData);
-
-        if (statsRes.ok) {
-          const statsData = await statsRes.json();
-          setStats(statsData);
-        }
+        setStats(statsData);
       } catch (e) {
         alert(AlertHelper.PROFILE_FETCH_ERROR);
         navigate("/Dashboard", { replace: true, state: { role } });
@@ -69,12 +73,12 @@ const VolunteerProfile: React.FC = () => {
         setLoading(false);
       }
     })();
-  }, [navigate]);
+  }, [navigate, role]);
 
-if (loading) return <main className="vp-container">Loading…</main>;
-if (!me) return <main className="vp-container">Could not load profile.</main>;
+  if (loading) return <main className="vp-container">Loading…</main>;
+  if (!me) return <main className="vp-container">Could not load profile.</main>;
 
-  // ---------- PLACEHOLDERS (no fetching) ----------
+  // ---------- Derived values ----------
   const user = {
     name: me.username ?? "Sudipta Sarker",
     role: me.role,
@@ -89,51 +93,45 @@ if (!me) return <main className="vp-container">Could not load profile.</main>;
     upcomingJobs: stats?.upcomingJobs ?? 0,
   };
 
+  // Badges stay mock for now
   const badges = [
     { id: 1, label: "Starter", desc: "Completed first 3 jobs" },
-    { id: 2, label: "Tutor", desc: "10 middle school tutoring" },
-    { id: 3, label: "Community Lead", desc: "50+ hours" },
   ];
 
-  const recentActivity = [
-    {
-      id: "a1",
-      title: "Food Drive",
-      date: "Oct 26, 2025",
-      hours: 3,
-      where: "Downtown Centre",
-    },
-  ];
+  // Recent activity now comes from backend-derived stats
+  const recentActivity = stats?.recentActivity ?? [];
 
   const progressPct = hoursGoal
-  ? Math.min(100, Math.round((summary.totalHours / hoursGoal) * 100))
-  : 0;
-
+    ? Math.min(100, Math.round((summary.totalHours / hoursGoal) * 100))
+    : 0;
 
   return (
     <main className="vp-container">
       {/* Header / Identity */}
-      
-        
-        <ProfileTopBar
-          name={me.username}
-          role={user.role}
-          city={user.city}
-          memberSince={user.memberSince}
-          avatarInitials={user.avatarInitials}
-          buttons={[
-            { label: "Back to dashboard", variant: "secondary", onClick: () => navigate("/Dashboard", { state: { role } }) },
-            { label: "Edit Profile", onClick: () => setShowEditDialog(true) },
-          ]}
-        />
-        
+      <ProfileTopBar
+        name={me.username}
+        role={user.role}
+        city={user.city}
+        memberSince={user.memberSince}
+        avatarInitials={user.avatarInitials}
+        buttons={[
+          {
+            label: "Back to dashboard",
+            variant: "secondary",
+            onClick: () =>
+              navigate("/Dashboard", {
+                state: { role },
+              }),
+          },
+          { label: "Edit Profile", onClick: () => setShowEditDialog(true) },
+        ]}
+      />
 
       {showEditDialog && (
         <ProfilePreviewDialog
           open={showEditDialog}
           onClose={() => setShowEditDialog(false)}
           user={me}
-          // onSave={null}
         />
       )}
 
@@ -172,116 +170,131 @@ if (!me) return <main className="vp-container">Could not load profile.</main>;
 
       {/* ------ Progress to Goal ---------------- */}
       <section className="card">
-        <header className="section-head" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
+        <header
+          className="section-head"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
             <h2 style={{ margin: 0 }}>Hours Goal</h2>
             {hoursGoal ? (
-                <span className="muted">{summary.totalHours} / {hoursGoal} h</span>
+              <span className="muted">
+                {summary.totalHours} / {hoursGoal} h
+              </span>
             ) : (
-                <span className="muted">No goal set yet</span>
+              <span className="muted">No goal set yet</span>
             )}
-            </div>
-            <button
+          </div>
+          <button
             className="vp-btn secondary"
             type="button"
             onClick={() => {
-                setGoalInput(hoursGoal ? String(hoursGoal) : "");
-                setShowGoalDialog(true);
+              setGoalInput(hoursGoal ? String(hoursGoal) : "");
+              setShowGoalDialog(true);
             }}
             title={hoursGoal ? "Change goal" : "Set goal"}
-            >
+          >
             {hoursGoal ? "Set goal" : "Set goal"}
-            </button>
+          </button>
         </header>
 
         {hoursGoal ? (
-            <>
+          <>
             <div
-                className="progress-wrap"
-                role="progressbar"
-                aria-valuenow={progressPct}
-                aria-valuemin={0}
-                aria-valuemax={100}
+              className="progress-wrap"
+              role="progressbar"
+              aria-valuenow={progressPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
             >
-                <div className="progress-bar" style={{ width: `${progressPct}%` }} />
+              <div
+                className="progress-bar"
+                style={{ width: `${progressPct}%` }}
+              />
             </div>
             <p className="muted">{progressPct}% complete</p>
-            </>
+          </>
         ) : (
-            <p className="muted" style={{ marginTop: 8 }}>
+          <p className="muted" style={{ marginTop: 8 }}>
             Set a goal to start tracking your progress.
-            </p>
+          </p>
         )}
-        </section>
+      </section>
 
-        {/* Set Goal dialog (small window) */}
-        {showGoalDialog && (
+      {/* Set Goal dialog (small window) */}
+      {showGoalDialog && (
         <div
-            className="create-event-screen"
-            role="dialog"
-            aria-modal="true"
-            onClick={() => setShowGoalDialog(false)}
-            style={{ display: "grid", placeItems: "center" }}
+          className="create-event-screen"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowGoalDialog(false)}
+          style={{ display: "grid", placeItems: "center" }}
         >
-            <div
+          <div
             className="card"
             style={{ width: 360, padding: 16 }}
             onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ marginTop: 0, marginBottom: 8 }}>
+              {hoursGoal ? "Change Hours Goal" : "Set Hours Goal"}
+            </h3>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const n = Number(goalInput);
+                if (!Number.isFinite(n) || n <= 0) {
+                  alert("Please enter a positive number of hours.");
+                  return;
+                }
+                setHoursGoal(n);
+                AuthService.setHourGoal(n);
+                setShowGoalDialog(false);
+              }}
+              style={{ display: "grid", gap: 10 }}
             >
-            <h3 style={{ marginTop: 0, marginBottom: 8 }}>{hoursGoal ? "Change Hours Goal" : "Set Hours Goal"}</h3>
-              <form
-                  onSubmit={(e) => {
-                  e.preventDefault();
-                  const n = Number(goalInput);
-                  if (!Number.isFinite(n) || n <= 0) {
-                      alert("Please enter a positive number of hours.");
-                      return;
-                  }
-                  setHoursGoal(n);
-                  AuthService.setHourGoal(n);
-                  setShowGoalDialog(false);
-                  }}
-                  style={{ display: "grid", gap: 10 }}
+              <input
+                className="text-input"
+                type="number"
+                min={1}
+                step={1}
+                placeholder="e.g., 100"
+                value={goalInput}
+                onChange={(e) => setGoalInput(e.target.value)}
+                autoFocus
+              />
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  justifyContent: "flex-end",
+                }}
               >
-                  <input
-                    className="text-input"
-                    type="number"
-                    min={1}
-                    step={1}
-                    placeholder="e.g., 100"
-                    value={goalInput}
-                    onChange={(e) => setGoalInput(e.target.value)}
-                    autoFocus
-                  />
-                  <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                  <button
-                      type="button"
-                      className="guest-btn"
-                      onClick={() => setShowGoalDialog(false)}
-                  >
-                      Cancel
-                  </button>
-                  <button type="submit" className="option-btn">
-                      Save Goal
-                  </button>
-                  </div>
-              </form>
-            </div>
+                <button
+                  type="button"
+                  className="guest-btn"
+                  onClick={() => setShowGoalDialog(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="option-btn">
+                  Save Goal
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-        )}
+      )}
 
       <div className="vp-columns">
+        {/* Badges (still mock data) */}
+        <ProfileBadges badges={badges} title="Your badges" />
 
-        {/* Badges
-        Call ProfileBadges component to display the badges */}
-        <ProfileBadges badges={badges} title = "Your badges"/>
-
-
-        {/* Recent Activity */}
+        {/* Recent Activity (now real, computed from attendance) */}
         <ProfileRecentActivity activities={recentActivity} />
-
       </div>
-      
     </main>
   );
 };
