@@ -81,9 +81,9 @@ const ManageEvent: React.FC = () => {
   }
 
   // Helper: fetch geofences for this event
-  async function loadGeofences(token: string, evId: string) {
+  async function loadGeofences(evId: string) {
     try {
-      const res = await EventService.fetchGeofences(token, evId);
+      const res = await EventService.fetchGeofences(evId);
       if (res.ok) {
         const data: GeofenceView[] = await res.json();
         setGeofences(data);
@@ -110,14 +110,14 @@ const ManageEvent: React.FC = () => {
       try {
         setLoading(true);
         // 1) Load all my events (withCounts) and find this one for quick info
-        const evRes = await EventService.fetchMyEvents(token);
+        const evRes = await EventService.fetchMyEvents();
         const evRows = evRes.ok ? await evRes.json() : [];
         const cleaned = EventHelper.cleanEvents(evRows, false);
         const found = cleaned.find((e: any) => e.id === eventId) || null;
         setInfo(found);
 
         // 2) Load applicants + accepted lists
-        const [appsRes, accRes] = await EventService.fetchApplicants(token, eventId);
+        const [appsRes, accRes] = await EventService.fetchApplicants(eventId);
         if (appsRes.status === 401 || accRes.status === 401) {
           alert("Session expired.");
           navigate("/User-login", { state: { role } });
@@ -134,7 +134,7 @@ const ManageEvent: React.FC = () => {
         await loadAcceptedAttendance(token, eventId, acc);
 
         // 4) Load geofences
-        await loadGeofences(token, eventId);
+        await loadGeofences(eventId);
       } catch (e) {
         console.error(e);
         alert(AlertHelper.EVENT_FETCH_ERROR);
@@ -152,7 +152,7 @@ const ManageEvent: React.FC = () => {
   const accept = async (userId: string) => {
     if(!eventId) return;
     const token = AuthService.getToken();
-    const res = await EventService.acceptApplicant(token, eventId, userId);
+    const res = await EventService.acceptApplicant(eventId, userId);
     if (res.status === 409) {
       alert(AlertHelper.CONFLICTING_EVENT_ERROR);
       return;
@@ -164,10 +164,10 @@ const ManageEvent: React.FC = () => {
 
     // Move user from applicants -> accepted locally
     setApplicants(a => a.filter(x => x.id !== userId));
-    
+
     // force-refresh the Accepted panel ---
-    
-    const accRes = await EventService.fetchAcceptedApplicants(token, eventId);
+
+    const accRes = await EventService.fetchAcceptedApplicants(eventId);
     if (accRes.ok) {
       const acc: Accepted[] = await accRes.json();
       setAccepted(acc);
@@ -177,8 +177,7 @@ const ManageEvent: React.FC = () => {
 
   const reject = async (userId: string) => {
     if(!eventId) return;
-    const token = AuthService.getToken();
-    const res = await EventService.rejectApplicant(token, eventId, userId);
+    const res = await EventService.rejectApplicant(eventId, userId);
     if (!res.ok) {
       alert(await res.text());
       return;
@@ -203,9 +202,8 @@ const ManageEvent: React.FC = () => {
   };
 
   const handleGeofencesChanged = () => {
-    const token = AuthService.getToken();
-    if (token && eventId) {
-      loadGeofences(token, eventId);
+    if (eventId) {
+      loadGeofences(eventId);
     }
   };
 

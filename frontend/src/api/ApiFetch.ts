@@ -1,54 +1,94 @@
 import * as AuthService from "../services/AuthService";
-import * as UserService from "../services/UserService";
 
-const API_URL = "http://localhost:4000";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
-async function refreshAccessToken() {
-  const res = await UserService.refreshToken();
+// Flag to prevent multiple simultaneous refresh attempts
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
 
-  if (!res.ok) return null;
-  const data = await res.json();
-  AuthService.setToken(data.access_token);
-  return data.access_token;
+async function refreshAccessToken(): Promise<string | null> {
+  // If already refreshing, wait for that to complete
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API_URL}/v1/auth/refresh`, {
+        method: "POST",
+        credentials: "include", // sends the HttpOnly refresh cookie
+      });
+
+      if (!res.ok) return null;
+
+      const data = await res.json();
+      AuthService.setToken(data.access_token);
+      return data.access_token;
+    } catch {
+      return null;
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 }
 
-// Wrapper for all authenticated requests
-export async function apiFetch(options: RequestInit = {}) {
-  let token = AuthService.getToken();
-  const headers = {
-    ...(options.headers || {}),
-    "Authorization": token ? `Bearer ${token}` : "",
-    "Content-Type": "application/json",
+/**
+ * Wrapper for all authenticated API requests.
+ * Automatically handles token refresh on 401 responses.
+ *
+ * @param url - API endpoint path (e.g., "/v1/events")
+ * @param options - fetch options (method, body, etc.)
+ */
+export async function apiFetch(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const token = AuthService.getToken();
+
+  // Build headers, preserving any custom headers passed in
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string> || {}),
   };
 
-  let res = await fetch(API_URL + "/v1/auth/me", {
+  // Add auth header if we have a token
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  // Add Content-Type for JSON if there's a body and no Content-Type set
+  if (options.body && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  // Make the initial request
+  let res = await fetch(`${API_URL}${url}`, {
     ...options,
     headers,
     credentials: "include",
   });
 
-  // If token expired → try refresh
+  // If 401, try to refresh the token
   if (res.status === 401) {
-    //  AuthService.clearLocalStorage();
-       return res; // or redirect to login
+    const newToken = await refreshAccessToken();
 
-    // const newToken = await refreshAccessToken();
+    if (!newToken) {
+      // Refresh failed - clear auth state
+      // Don't redirect here; let the calling code handle it
+      AuthService.logout();
+      return res;
+    }
 
-    // if (!newToken) {
-    //   // User must log in again
-    //   AuthService.clearLocalStorage();
-    //   return res; // or redirect to login
-    // }
-
-    // Retry the original request with new token
-    // res = await fetch(API_URL + url, {
-    //   ...options,
-    //   headers: {
-    //     ...headers,
-    //     "Authorization": `Bearer ${newToken}`,
-    //   },
-    //   credentials: "include",
-    // });
+    // Retry the original request with the new token
+    headers["Authorization"] = `Bearer ${newToken}`;
+    res = await fetch(`${API_URL}${url}`, {
+      ...options,
+      headers,
+      credentials: "include",
+    });
   }
 
   return res;

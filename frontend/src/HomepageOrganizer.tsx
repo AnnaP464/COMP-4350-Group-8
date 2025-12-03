@@ -93,8 +93,8 @@ const HomepageOrganizer: React.FC = () => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const response = await EventService.fetchMyEvents(token);
-        
+        const response = await EventService.fetchMyEvents();
+
         if (!response.ok) {
           return;
         }
@@ -127,14 +127,7 @@ const HomepageOrganizer: React.FC = () => {
       return;
     }
 
-    try { 
-      const token = AuthService.getToken();
-      if(!token){
-        alert(AlertHelper.SESSION_EXPIRE_ERROR);
-        navigate("/User-login", { state: { role } });
-        return;
-      }
-
+    try {
       // Convert local datetime-local values to ISO UTC strings
       const startDate = new Date(startTime)
       const endDate = new Date(endTime)
@@ -155,7 +148,7 @@ const HomepageOrganizer: React.FC = () => {
         description: description.trim(),
       };
 
-      const response = await EventService.createEvent(token, payload);
+      const response = await EventService.createEvent(payload);
     
       if (response.status === 401) { //auto-redirect if timed-out
         alert(AlertHelper.SESSION_EXPIRE_ERROR);

@@ -39,10 +39,7 @@ const MyRegistrations: React.FC = () => {
         return;
       }
 
-      //verify token before sending request off
-      //get token by user id
-
-      const response = await EventService.deregister(token, eventId);
+      const response = await EventService.deregister(eventId);
 
       if (!response.ok) {
         const err = await response.text();
@@ -79,7 +76,7 @@ const MyRegistrations: React.FC = () => {
     (async () => {
       try {
         // If your backend uses a different path, change it here (see backend snippet below)
-        const res = await EventService.fetchRegisteredEvents(token);
+        const res = await EventService.fetchRegisteredEvents();
 
         if (res.status === 401) {
           alert(AlertHelper.SESSION_EXPIRE_ERROR);

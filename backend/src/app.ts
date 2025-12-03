@@ -1,6 +1,7 @@
 import express from "express";
+import type { Request, Response, NextFunction } from "express";
 import cors from "cors";
-import "dotenv/config"; 
+import "dotenv/config";
 import cookieParser from "cookie-parser";
 import {eventsRouter} from "./composition/events.wiring";
 import {authRouter} from "./composition/auth.wiring";
@@ -38,23 +39,24 @@ app.use(userProfileRouter);
 //GLOBAL ERROR HANDLER
 // When req.body parsing fails, route handler is never called
 // it handles it and throws a custom 400 Invalid JSON paylod error
-app.use((err: any, _req, res, _next) => {
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof SyntaxError && "body" in err) {
     return res.status(400).json({ message: "Invalid JSON payload" });
   }
 
-  if (err instanceof AppError){
-    return res.status(err.status).json({message: err.message});
+  if (err instanceof AppError) {
+    return res.status(err.status).json({ message: err.message });
   }
 
   //default
+  console.error("Unhandled error:", err);
   return res.status(500).json({ message: "Internal server error" });
 });
 
 
 //app.use(authRouter);
 
-app.get("/health", (_req, res) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
@@ -62,6 +64,6 @@ app.get("/health", (_req, res) => {
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //raw JSON spec
-app.get('/api.json', (_req, res) => res.json(swaggerSpec));
+app.get("/api.json", (_req: Request, res: Response) => res.json(swaggerSpec));
 
 export default app;

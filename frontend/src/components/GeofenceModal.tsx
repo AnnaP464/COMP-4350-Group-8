@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import GeofenceMap from "./GeofenceMap";
 import type { Feature } from "geojson";
 import * as EventService from "../services/EventService";
-import * as AuthService from "../services/AuthService";
 
 export type GeofenceView = {
   id: string;
@@ -51,8 +50,7 @@ export default function GeofenceModal({
   const loadGeofences = async () => {
     setLoading(true);
     try {
-      const token = AuthService.getToken();
-      const res = await EventService.fetchGeofences(token, eventId);
+      const res = await EventService.fetchGeofences(eventId);
       if (res.ok) {
         const data = await res.json();
         setGeofences(data);
@@ -69,8 +67,7 @@ export default function GeofenceModal({
 
     setDeleting(geofenceId);
     try {
-      const token = AuthService.getToken();
-      const res = await EventService.deleteGeofence(token, geofenceId);
+      const res = await EventService.deleteGeofence(geofenceId);
       if (res.ok) {
         setGeofences((prev) => prev.filter((g) => g.id !== geofenceId));
         onGeofencesChanged();
@@ -88,12 +85,6 @@ export default function GeofenceModal({
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const token = AuthService.getToken();
-    if (!token) {
-      alert("Session expired. Please log in again.");
-      return;
-    }
 
     if (!gfName.trim()) {
       alert("Please provide a name for the geofence.");
@@ -131,7 +122,6 @@ export default function GeofenceModal({
         }
 
         res = await EventService.createCircleGeofence(
-          token,
           eventId,
           gfName.trim(),
           lat,
@@ -147,7 +137,6 @@ export default function GeofenceModal({
         }
 
         res = await EventService.createPolygonGeofence(
-          token,
           eventId,
           gfName.trim(),
           geom

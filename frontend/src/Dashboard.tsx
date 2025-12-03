@@ -100,14 +100,15 @@ const Dashboard: React.FC = () => {
 
     const fetchMyApplications = async () => {
       const token = AuthService.getToken();
-      
-      if (!token){      // not logged in -> no application status to render
+
+      if (!token) {
+        // not logged in -> no application status to render
         setApplications({});
-        return; 
+        return;
       }
 
       try {
-        const res = await EventService.fetchApplications(token);
+        const res = await EventService.fetchApplications();
 
         if (res.status === 401) {
           // token invalid/expired: surface it, don't silently ignore
@@ -133,11 +134,11 @@ const Dashboard: React.FC = () => {
         const map: AppMap = {};
         for (const row of list) {
           const eid = (row as any).eventId ?? (row as any).event_id;
-          if (eid) 
+          if (eid)
             map[eid] = row.status;
         }
         setApplications(map);
-        
+
       } catch (e) {
         console.warn("Failed to fetch my applications", e);
       }
@@ -190,17 +191,7 @@ const Dashboard: React.FC = () => {
 
   const handleApply = async (eventId: string) => {
     try {
-      const token = AuthService.getToken();
-      if (!token) {
-        alert(AlertHelper.SESSION_EXPIRE_ERROR);
-        navigate("/User-login", { state: { role } });
-        return;
-      }
-
-      //verify token before sending request off
-      //get token by user id
-
-      const response = await EventService.applyToEvent(token, eventId);
+      const response = await EventService.applyToEvent(eventId);
 
       //store the applied event in the applied list of applications
       setApplications(prev => ({ ...prev, [eventId]: "applied" }));

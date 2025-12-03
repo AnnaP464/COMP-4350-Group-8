@@ -153,7 +153,7 @@ const MyEventList: React.FC<MyEventListProps> = ({
         return;
       }
 
-      const res = await EventService.withdrawFromEvent(token, eventId);
+      const res = await EventService.withdrawFromEvent(eventId);
 
       if (!res.ok) {
         const err = await res.text();
