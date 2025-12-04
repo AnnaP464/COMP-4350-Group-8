@@ -281,7 +281,7 @@ describe("AttendanceService", () => {
       });
 
       expect(result.outcome).toBe("forbidden");
-      expect((result as any).message).toBe("You must be within the event geofence to sign in.");
+      expect((result as any).message).toBe("You're not at the event location yet. Please move closer to clock in.");
       // Should log the rejected attempt
       expect(mockAttendanceRepo.insertAction).toHaveBeenCalledWith({
         eventId: "evt-1",

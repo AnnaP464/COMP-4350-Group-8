@@ -49,8 +49,17 @@ export async function signInToEvent(
   });
 
   if (!res.ok) {
-    const msg = await res.text().catch(() => "");
-    throw new Error(msg || `Sign-in failed (${res.status})`);
+    // Try to parse JSON and extract message, fall back to generic error
+    let msg = `Sign-in failed (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.message) {
+        msg = data.message;
+      }
+    } catch {
+      // Response wasn't JSON, use default message
+    }
+    throw new Error(msg);
   }
   return res.json();
 }
@@ -65,8 +74,17 @@ export async function signOutFromEvent(
   });
 
   if (!res.ok) {
-    const msg = await res.text().catch(() => "");
-    throw new Error(msg || `Sign-out failed (${res.status})`);
+    // Try to parse JSON and extract message, fall back to generic error
+    let msg = `Sign-out failed (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.message) {
+        msg = data.message;
+      }
+    } catch {
+      // Response wasn't JSON, use default message
+    }
+    throw new Error(msg);
   }
   return res.json();
 }

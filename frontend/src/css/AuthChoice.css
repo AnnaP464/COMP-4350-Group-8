@@ -73,6 +73,7 @@
 .option-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 10px 16px;
   border-radius: 8px;
@@ -115,6 +116,9 @@
 }
 
 .guest-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: rgba(223, 242, 239, 0.68);
   color: #333;
 }

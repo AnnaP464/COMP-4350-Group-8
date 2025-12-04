@@ -32,6 +32,12 @@ type StatusEntry = {
 
 type StatusMap = Record<string, StatusEntry | undefined>;
 
+// Per-event error messages (for geofence failures, etc.)
+type ErrorMap = Record<string, string | undefined>;
+
+// Per-event success messages
+type SuccessMap = Record<string, string | undefined>;
+
 const MyAttendance: React.FC = () => {
   const loc = useLocation();
   const navigate = useNavigate();
@@ -48,6 +54,8 @@ const MyAttendance: React.FC = () => {
   const authStatus = useAuthGuard(role);
 
   const [statuses, setStatuses] = useState<StatusMap>({});
+  const [errors, setErrors] = useState<ErrorMap>({});
+  const [successes, setSuccesses] = useState<SuccessMap>({});
 
 
   // Global ticking clock for live display of minutes: mock the real hrs, no continuous fetching needed
@@ -173,12 +181,31 @@ const MyAttendance: React.FC = () => {
     return end < now;
   });
 
+  // Clear error for a specific event after a delay
+  const clearError = (evId: string, delay = 5000) => {
+    setTimeout(() => {
+      setErrors((prev) => ({ ...prev, [evId]: undefined }));
+    }, delay);
+  };
+
+  // Clear success message for a specific event after a delay
+  const clearSuccess = (evId: string, delay = 3000) => {
+    setTimeout(() => {
+      setSuccesses((prev) => ({ ...prev, [evId]: undefined }));
+    }, delay);
+  };
+
   //when Clock in/Clock out clicked, handleClock handles it
   const handleClock = (evId: string, entry?: StatusEntry) => {
     const current = entry?.data;
 
+    // Clear any previous error/success for this event
+    setErrors((prev) => ({ ...prev, [evId]: undefined }));
+    setSuccesses((prev) => ({ ...prev, [evId]: undefined }));
+
     if (!navigator.geolocation) {
-      alert("Geolocation not supported in this browser.");
+      setErrors((prev) => ({ ...prev, [evId]: "Geolocation is not supported in this browser." }));
+      clearError(evId);
       return;
     }
 
@@ -196,7 +223,7 @@ const MyAttendance: React.FC = () => {
           const updated = isSignedIn
             ? await signOutFromEvent(evId, body)
             : await signInToEvent(evId, body);
-          
+
            // Store the fresh AttendanceStatus for this event
           setStatuses((prev) => ({
             ...prev,
@@ -205,14 +232,27 @@ const MyAttendance: React.FC = () => {
               lastSyncedAt: Date.now(),
             },
           }));
+
+          // Show success message
+          const successMsg = isSignedIn
+            ? "You've clocked out. Great work!"
+            : "You're now clocked in. Have a great shift!";
+          setSuccesses((prev) => ({ ...prev, [evId]: successMsg }));
+          clearSuccess(evId);
         } catch (err: any) {
           console.error(err);
-          alert(err.message || "Clock-in/out failed.");
+          const message = err.message || "Clock-in/out failed. Please try again.";
+          setErrors((prev) => ({ ...prev, [evId]: message }));
+          clearError(evId);
         }
       },
       (err) => {
         console.error("Geolocation error:", err);
-        alert("Could not get your location. Please allow location access.");
+        setErrors((prev) => ({
+          ...prev,
+          [evId]: "Could not get your location. Please enable location access and try again."
+        }));
+        clearError(evId);
       }
     );
   };
@@ -251,6 +291,8 @@ return (
               const disabled = !!s && !s.rules.canSignIn && !s.rules.canSignOut;
 
               const reason = s?.rules.reason;
+              const errorMsg = errors[ev.id];
+              const successMsg = successes[ev.id];
               let displayMinutes = s?.status.totalMinutes ?? 0; // Base minutes from the backend (totalMinutes up to last sync)
               
               //If user is currently signed in, add extra minutes since last sync
@@ -267,28 +309,42 @@ return (
                   ev={ev}
                   variant="myEvents"
                   footer={
-                    <>
-                      <span className="status-line">
-                        {s
-                          ? s.status.isSignedIn
-                            ? "Currently signed in"
-                            : "Not signed in"
-                          : "Status unknown"}
-                        {s && ` · ${formatMinutes(displayMinutes)} tracked`}
-                      </span>
+                    <div className="footer-wrapper">
+                      <div className="footer-main">
+                        <span className="status-line">
+                          {s
+                            ? s.status.isSignedIn
+                              ? "Currently signed in"
+                              : "Not signed in"
+                            : "Status unknown"}
+                          {s && ` · ${formatMinutes(displayMinutes)} tracked`}
+                        </span>
 
-                      <button
-                        className="option-btn"
-                        type="button"
-                        disabled={disabled}
-                        onClick={() => handleClock(ev.id, entry)}
-                      >
-                        {label}
-                      </button>
+                        <button
+                          className="option-btn"
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => handleClock(ev.id, entry)}
+                        >
+                          {label}
+                        </button>
+                      </div>
                       {reason && (
                         <span className="reason-text">{reason}</span>
                       )}
-                    </>
+                      {errorMsg && (
+                        <div className="error-toast">
+                          <span className="error-icon">📍</span>
+                          <span>{errorMsg}</span>
+                        </div>
+                      )}
+                      {successMsg && (
+                        <div className="success-toast">
+                          <span className="success-icon">✓</span>
+                          <span>{successMsg}</span>
+                        </div>
+                      )}
+                    </div>
                   }
                 />
               );

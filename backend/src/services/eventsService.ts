@@ -375,7 +375,7 @@ export async function signInAttendanceService(
 
     return {
       outcome: "forbidden",
-      message: "You must be within the event geofence to sign in.",
+      message: "You're not at the event location yet. Please move closer to clock in.",
       status: statusBefore,
     };
   }

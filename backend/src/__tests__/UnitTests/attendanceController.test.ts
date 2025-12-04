@@ -127,7 +127,7 @@ describe("AttendanceController", () => {
 
       const mockResult = {
         outcome: "forbidden" as const,
-        message: "You must be within the event geofence to sign in.",
+        message: "You're not at the event location yet. Please move closer to clock in.",
         status: {
           status: { isSignedIn: false, totalMinutes: 0 },
           rules: { canSignIn: true, canSignOut: false },
@@ -139,7 +139,7 @@ describe("AttendanceController", () => {
 
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith({
-        message: "You must be within the event geofence to sign in.",
+        message: "You're not at the event location yet. Please move closer to clock in.",
         status: mockResult.status,
       });
     });
