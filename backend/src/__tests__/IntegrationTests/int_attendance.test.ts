@@ -159,7 +159,7 @@ describe("Attendance Integration: sign-in/sign-out flow", () => {
 
       expect(result.outcome).toBe("forbidden");
       if (result.outcome === "forbidden") {
-        expect(result.message).toContain("geofence");
+        expect(result.message).toContain("not at the event location");
       }
     });
 
