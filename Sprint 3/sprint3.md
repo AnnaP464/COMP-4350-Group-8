@@ -4,7 +4,7 @@
 
 ## Load Testing
 
-Using JMeter .jmx file [HERE]()
+Using JMeter, the .jmx file [HERE](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%203/HiveHand%20LoadTesting.jmx)
 
 ## Security Analysis
 
