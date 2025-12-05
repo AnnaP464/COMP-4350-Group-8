@@ -62,7 +62,27 @@ function GeomanHandler({ value, onChange }: GeofenceMapProps) {
     // If the parent passed an initial value, render it:
     clearLayers();
     if (value) {
-      L.geoJSON(value as any).addTo(map);
+      const props = value.properties || {};
+      const geom = value.geometry;
+
+      // Handle circle (stored as Point with _pmType and radius)
+      if (props._pmType === "Circle" && geom.type === "Point") {
+        const [lng, lat] = geom.coordinates as [number, number];
+        const radius = props.radius || props.radius_m || 100;
+        const circle = L.circle([lat, lng], { radius });
+        circle.addTo(map);
+        // Center map on the circle
+        map.setView([lat, lng], 15);
+      } else {
+        // Handle polygon/other shapes
+        const layer = L.geoJSON(value as any);
+        layer.addTo(map);
+        // Fit map to the shape bounds
+        const bounds = layer.getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, { padding: [50, 50] });
+        }
+      }
     }
 
     // When user finishes drawing a new shape
@@ -73,11 +93,17 @@ function GeomanHandler({ value, onChange }: GeofenceMapProps) {
       clearLayers();
       map.addLayer(layer);
 
-      // Convert to GeoJSON. For circles, Leaflet returns a Polygon approximation.
+      // Convert to GeoJSON
       const geojson = (layer as any).toGeoJSON();
 
-      // Sending this GeoJSON to the polygon endpoint
-      // Both Polygon and MultiPolygon work
+      // For circles, Leaflet-Geoman creates an L.Circle layer
+      // toGeoJSON() returns a Point (center), but we need to add radius
+      if (layer instanceof L.Circle) {
+        geojson.properties = geojson.properties || {};
+        geojson.properties._pmType = "Circle";
+        geojson.properties.radius = layer.getRadius();
+      }
+
       onChange(geojson);
     };
 

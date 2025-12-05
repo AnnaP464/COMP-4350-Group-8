@@ -17,6 +17,7 @@ export type ProfileTopBarProps = {
   city: string;
   memberSince: string;
   avatarInitials: string;
+  avatarUrl?: string; // If provided, shows image instead of initials
   buttons: TopBarButton[]; // e.g., [Back, Edit]
 };
 
@@ -26,14 +27,19 @@ const ProfileTopBar: React.FC<ProfileTopBarProps> = ({
   city,
   memberSince,
   avatarInitials,
+  avatarUrl,
   buttons,
 }) => {
   return (
     <section className="vp-hero card">
       <div className="vp-hero-left">
-        <div className="vp-avatar" aria-hidden>
-          {avatarInitials}
-        </div>
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={`${name}'s avatar`} className="vp-avatar vp-avatar-img" />
+        ) : (
+          <div className="vp-avatar" aria-hidden>
+            {avatarInitials}
+          </div>
+        )}
         <div className="vp-id">
           <h1 className="vp-name">
             <User size={18} aria-hidden /> {name}

@@ -39,6 +39,40 @@ export default function GeofenceModal({
   const [geofenceShape, setGeofenceShape] = useState<Feature | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Edit mode state - track which geofence is being viewed
+  const [selectedGeofenceId, setSelectedGeofenceId] = useState<string | null>(null);
+
+  // Convert GeofenceView to GeoJSON Feature for display on map
+  const geofenceToFeature = (gf: GeofenceView): Feature | null => {
+    // Circle geofence
+    if (gf.center_lat != null && gf.center_lon != null && gf.radius_m != null) {
+      return {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [gf.center_lon, gf.center_lat],
+        },
+        properties: {
+          _pmType: "Circle",
+          radius: gf.radius_m,
+        },
+      };
+    }
+    // Polygon geofence
+    if (gf.area_geojson_4326) {
+      return {
+        type: "Feature",
+        geometry: gf.area_geojson_4326 as Feature["geometry"],
+        properties: {},
+      };
+    }
+    return null;
+  };
+
+  // Get the currently selected geofence as a Feature
+  const selectedGeofence = geofences.find((gf) => gf.id === selectedGeofenceId);
+  const selectedFeature = selectedGeofence ? geofenceToFeature(selectedGeofence) : null;
+
   // Fetch existing geofences when modal opens in edit/delete mode
   useEffect(() => {
     if (!isOpen) return;
@@ -166,6 +200,7 @@ export default function GeofenceModal({
     setGfName("");
     setGeofenceShape(null);
     setGeofences([]);
+    setSelectedGeofenceId(null);
     onClose();
   };
 
@@ -239,8 +274,8 @@ export default function GeofenceModal({
           {mode === "edit" && (
             <div className="geofence-edit-container">
               <p className="geofence-modal-description">
-                Manage existing geofences for this event. You can delete
-                geofences and add new ones.
+                Manage existing geofences for this event. Click "View" to see
+                the geofence on the map.
               </p>
 
               {loading ? (
@@ -250,26 +285,54 @@ export default function GeofenceModal({
                   No geofences defined for this event.
                 </p>
               ) : (
-                <ul className="geofence-list">
-                  {geofences.map((gf) => (
-                    <li key={gf.id} className="geofence-list-item">
-                      <div className="geofence-info">
-                        <strong>{gf.name}</strong>
-                        <span className="geofence-type">
-                          {gf.center_lat != null ? "Circle" : "Polygon"}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        className="cancel-btn"
-                        onClick={() => handleDelete(gf.id)}
-                        disabled={deleting === gf.id}
+                <>
+                  <ul className="geofence-list">
+                    {geofences.map((gf) => (
+                      <li
+                        key={gf.id}
+                        className={`geofence-list-item ${selectedGeofenceId === gf.id ? "selected" : ""}`}
                       >
-                        {deleting === gf.id ? "Deleting..." : "Delete"}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                        <div className="geofence-info">
+                          <strong>{gf.name}</strong>
+                          <span className="geofence-type">
+                            {gf.center_lat != null ? "Circle" : "Polygon"}
+                          </span>
+                        </div>
+                        <div className="geofence-actions">
+                          <button
+                            type="button"
+                            className="option-btn"
+                            onClick={() =>
+                              setSelectedGeofenceId(
+                                selectedGeofenceId === gf.id ? null : gf.id
+                              )
+                            }
+                          >
+                            {selectedGeofenceId === gf.id ? "Hide" : "View"}
+                          </button>
+                          <button
+                            type="button"
+                            className="cancel-btn"
+                            onClick={() => handleDelete(gf.id)}
+                            disabled={deleting === gf.id}
+                          >
+                            {deleting === gf.id ? "Deleting..." : "Delete"}
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Show map when a geofence is selected */}
+                  {selectedFeature && (
+                    <div className="geofence-map-container">
+                      <GeofenceMap
+                        value={selectedFeature}
+                        onChange={() => {}}
+                      />
+                    </div>
+                  )}
+                </>
               )}
 
               <div className="geofence-modal-actions">

@@ -78,6 +78,11 @@
   letter-spacing: 0.5px;
 }
 
+.vp-avatar-img {
+  object-fit: cover;
+  background: none;
+}
+
 .vp-id .vp-name {
   display: inline-flex;
   gap: 8px;

@@ -26,6 +26,7 @@ type Me = {
 const OrganizerProfile: React.FC = () => {
   const navigate = useNavigate();
   const [me, setMe] = useState<Me | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -39,9 +40,10 @@ const OrganizerProfile: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        // Fetch identity + organizer stats in parallel
-        const [meRes, stats] = await Promise.all([
+        // Fetch identity, profile, + organizer stats in parallel
+        const [meRes, profileRes, stats] = await Promise.all([
           UserService.authMe(),
+          UserService.fetchProfile(),
           fetchOrganizerStats(),
         ]);
 
@@ -56,6 +58,12 @@ const OrganizerProfile: React.FC = () => {
         const data = await meRes.json();
         setMe(data);
         setOrgStats(stats);
+
+        // Set avatar URL if profile fetch succeeded
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setAvatarUrl(profileData.avatarUrl || undefined);
+        }
       } catch (e) {
         alert(AlertHelper.PROFILE_FETCH_ERROR);
         navigate("/Homepage-Organizer", { replace: true });
@@ -94,6 +102,7 @@ const OrganizerProfile: React.FC = () => {
         city={uiUser.city}
         memberSince={uiUser.memberSince}
         avatarInitials={uiUser.avatarInitials}
+        avatarUrl={avatarUrl}
         buttons={[
           {
             label: "Back to homepage",

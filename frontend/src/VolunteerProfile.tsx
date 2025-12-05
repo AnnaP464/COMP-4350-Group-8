@@ -32,6 +32,7 @@ const VolunteerProfile: React.FC = () => {
   const [goalInput, setGoalInput] = useState<string>("");
 
   const [me, setMe] = useState<Me | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [stats, setStats] = useState<VolunteerStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,9 +52,10 @@ const VolunteerProfile: React.FC = () => {
 
     (async () => {
       try {
-        // Fetch user info and computed stats in parallel
-        const [meRes, statsData] = await Promise.all([
+        // Fetch user info, profile, and computed stats in parallel
+        const [meRes, profileRes, statsData] = await Promise.all([
           UserService.authMe(),
+          UserService.fetchProfile(),
           fetchVolunteerStats(),
         ]);
 
@@ -66,6 +68,12 @@ const VolunteerProfile: React.FC = () => {
         const meData = await meRes.json();
         setMe(meData);
         setStats(statsData);
+
+        // Set avatar URL if profile fetch succeeded
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setAvatarUrl(profileData.avatarUrl || undefined);
+        }
       } catch (e) {
         alert(AlertHelper.PROFILE_FETCH_ERROR);
         navigate("/Dashboard", { replace: true, state: { role } });
@@ -114,6 +122,7 @@ const VolunteerProfile: React.FC = () => {
         city={user.city}
         memberSince={user.memberSince}
         avatarInitials={user.avatarInitials}
+        avatarUrl={avatarUrl}
         buttons={[
           {
             label: "Back to dashboard",
