@@ -1,22 +1,7 @@
 import React from "react";
 import { Clock, MapPin } from "lucide-react";
-// import "../css/Homepage.css"; 
-// import "../css/EventList.css";  // for .myreg-* styles
 import "../css/EventCard.css";
 import type { CleanEvent } from "../helpers/EventHelper";
-
-// interface EventPost {
-//   id: string;
-//   jobName: string;
-//   startDate: string;
-//   endDate: string;
-//   startTime: string;
-//   endTime: string;
-//   location: string;
-//   description: string;
-//   createdAtDate: string;
-//   createdAtTime: string;
-// }
 
 type EventPost = CleanEvent;
 
@@ -39,6 +24,10 @@ interface EventCardProps {
   onClockOut?: () => void;
 }
 
+function getClockButtonLabel(clockState: string) {
+  return clockState === "not-in-fence" ? "Not in geofence" : "Clock in";
+}
+
 const EventCard: React.FC<EventCardProps> = ({
   ev,
   onClick,
@@ -54,6 +43,7 @@ const EventCard: React.FC<EventCardProps> = ({
   const rootClass = isMyEvents ? "myreg-card" : "event-info-box";
   const headerClass = isMyEvents ? "myreg-card-head" : "event-header";
   const timesClass = isMyEvents ? "job-time-location" : "job-start-end-times";
+  const isDisabled = ["too-early", "event-ended"].includes(clockState);
 
   return (
     <article
@@ -137,9 +127,9 @@ const EventCard: React.FC<EventCardProps> = ({
             <button
               className="option-btn"
               onClick={onClockIn}
-              disabled={clockState === "too-early" || clockState === "event-ended"}
+              disabled={isDisabled}
             >
-              {clockState === "not-in-fence" ? "Not in geofence" : "Clock in"}
+              {getClockButtonLabel(clockState)}
             </button>
           )}
         </div>
