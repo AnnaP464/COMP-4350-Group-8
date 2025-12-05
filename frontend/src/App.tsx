@@ -1,4 +1,4 @@
-import React from "react";
+// React is used by JSX transform
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RoleChoice from './RoleChoice.tsx'
 import AuthChoice from './AuthChoice.tsx';

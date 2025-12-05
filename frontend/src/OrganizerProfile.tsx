@@ -120,7 +120,6 @@ const OrganizerProfile: React.FC = () => {
         <ProfilePreviewDialog
           open={showEditDialog}
           onClose={() => setShowEditDialog(false)}
-          user={me}
         />
       )}
 

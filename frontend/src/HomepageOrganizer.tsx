@@ -31,7 +31,6 @@ type EventDraft = {
 
 const HomepageOrganizer: React.FC = () => {
   const [events, setEvents] = useState<EventHelper.CleanEvent[]>([]);
-  const [showProfile, setShowProfile] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
 
   // Wizard step: "event" -> create event, "geofence" -> optional geofence
@@ -52,7 +51,7 @@ const HomepageOrganizer: React.FC = () => {
   const authStatus = useAuthGuard();
   const [user, setUser] = React.useState<PublicUser | null>(null);
 
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const locationState = useLocation();

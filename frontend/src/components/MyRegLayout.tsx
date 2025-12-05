@@ -1,7 +1,7 @@
 /*-----------------------------------------------------
 Used by components/MyEventList and MyAttendance
-import React, { type CSSProperties } from "react";
 -----------------------------------------------------*/
+import React, { type CSSProperties } from "react";
 
 interface MyRegContainerProps {
   children: React.ReactNode;

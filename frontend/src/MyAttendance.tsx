@@ -67,9 +67,7 @@ const MyAttendance: React.FC = () => {
     async function load() {
       const next: StatusMap = {};
 
-      //??? Is this the best way to check for user?
-      const rawUser = localStorage.getItem("user");
-      const userId = rawUser ? JSON.parse(rawUser)?.id : null;
+      // Note: userId check removed - attendance status is fetched per-event
 
       for (const event of items) {
         const startTime = event.startTimestamp;
@@ -280,7 +278,6 @@ return (
             {upcomingOrActive.map((ev: EventWithStatus) => {
               const entry = statuses[ev.id];
               const s = entry?.data;
-              const lastSyncedAt = entry?.lastSyncedAt ?? 0;
 
               const label = !s
                 ? "Check status"

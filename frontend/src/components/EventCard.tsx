@@ -2,6 +2,7 @@ import React from "react";
 import { Clock, MapPin } from "lucide-react";
 import "../css/EventCard.css";
 import type { CleanEvent } from "../helpers/EventHelper";
+import type { AttendanceState } from "../helpers/AttendanceHelper";
 
 type EventPost = CleanEvent;
 
@@ -43,7 +44,7 @@ const EventCard: React.FC<EventCardProps> = ({
   const rootClass = isMyEvents ? "myreg-card" : "event-info-box";
   const headerClass = isMyEvents ? "myreg-card-head" : "event-header";
   const timesClass = isMyEvents ? "job-time-location" : "job-start-end-times";
-  const isDisabled = ["too-early", "event-ended"].includes(clockState);
+  const isDisabled = clockState ? ["too-early", "event-ended"].includes(clockState) : false;
 
   return (
     <article
@@ -129,7 +130,7 @@ const EventCard: React.FC<EventCardProps> = ({
               onClick={onClockIn}
               disabled={isDisabled}
             >
-              {getClockButtonLabel(clockState)}
+              {getClockButtonLabel(clockState ?? "none")}
             </button>
           )}
         </div>

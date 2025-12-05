@@ -3,7 +3,7 @@ import "./css/Homepage.css";
 import "./css/AuthChoice.css";
 import "./css/EventList.css";
 
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { cleanEvents, type CleanEvent} from "./helpers/EventHelper";
 import HomepageHeader from "./components/HomepageHeader";
 import EventList from "./components/EventList";
@@ -19,9 +19,6 @@ type EventPost = CleanEvent;
 
 type AppStatus = "applied" | "accepted" | "rejected";
 type AppMap = Record<string, AppStatus>;
-const loginStatusChecking = "checking"
-const loginStatusUnauthorized = "unauthorized"
-const loginStatusAuthorized = "authorized"
 
 
 const Dashboard: React.FC = () => {
@@ -38,12 +35,7 @@ const Dashboard: React.FC = () => {
 
   //map of eventId -> status so we can render the correct button state
   const [applications, setApplications] = useState<AppMap>({});
-  // Start with dummy placeholder events
-  const [events, setEvents] = useState<EventPost[]>([
-    { id: "1", jobName: "Beach Cleanup", startDate: "Oct 28, 2025", startTime: "11:00 AM", endDate: "2025-10-20", endTime: "12:00 PM", location: "Grand Beach", description: "cleaning up trash and zebra mussels", createdAtDate: "Oct 22", createdAtTime: "9:00AM" },
-    { id: "2", jobName: "Food Drive", startDate: "Oct 28, 2025", startTime: "1:00 PM", endDate: "2025-10-20", endTime: "3:00 PM", location: "City Hall", description: "cleaning up trash and zebra mussels", createdAtDate: "Oct 22", createdAtTime: "9:00AM" },
-    { id: "3", jobName: "Tree Planting", startDate: "Oct 28, 2025", startTime: "5:00 PM", endDate: "2025-10-20", endTime: "8:00 PM", location: "Assiniboine Park", description: "cleaning up trash and zebra mussels", createdAtDate: "Oct 22", createdAtTime: "9:00AM" },
-  ]);
+  const [events, setEvents] = useState<EventPost[]>([]);
   
   // Build the two events lists:
   //Accepted List & AppliedOrRejectedList

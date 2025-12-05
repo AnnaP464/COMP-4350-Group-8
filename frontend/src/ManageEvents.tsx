@@ -17,7 +17,7 @@ import useAuthGuard from "./hooks/useAuthGuard";
 import formatMinutes from "./helpers/FormatMinutes";
 import type { AttendanceStatus } from "./api/AttendanceApiFetch";
 
-const API_URL = "http://localhost:4000";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
 type Applicant = { id: string; username: string; email: string; applied_at: string };
 type Accepted  = { id: string; username: string; email: string; registered_at: string; decided_at: string };

@@ -20,12 +20,15 @@ app.use(cookieParser());
 app.use("/uploads", express.static(path.resolve("/uploads")));
 
 //CORS: allow frontend server to call the backend server with cookies/refresh token
-const CORS_ORIGIN = "http://localhost:5173";
+const CORS_ORIGINS = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(",").map(s => s.trim())
+  : ["http://localhost:5173"];
+
 const corsOptions = {
-  origin: CORS_ORIGIN,
+  origin: CORS_ORIGINS,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // not using cookies for access tokens
+  credentials: true,
 };
 app.use(cors(corsOptions));
 

@@ -1,0 +1,48 @@
+# Production Dockerfile for Backend
+# Multi-stage build to keep final image small
+# NOTE: Build from repo root with: docker build -f backend/Dockerfile.prod .
+
+# Stage 1: Build
+FROM node:20 AS builder
+
+WORKDIR /app
+
+# Copy root package files (workspace setup)
+COPY package*.json ./
+COPY backend/package.json ./backend/
+
+# Install ALL dependencies (need TypeScript for build)
+RUN npm ci --workspace=backend
+
+# Copy backend source
+COPY backend ./backend
+
+# Build TypeScript → JavaScript
+WORKDIR /app/backend
+RUN npm run build
+
+# Stage 2: Production
+FROM node:20
+
+WORKDIR /app
+
+# Copy root package files (workspace setup)
+COPY package*.json ./
+COPY backend/package.json ./backend/
+
+# Install production dependencies only
+RUN npm ci --workspace=backend --omit=dev
+
+WORKDIR /app/backend
+
+# Copy compiled JavaScript from builder stage
+COPY --from=builder /app/backend/dist ./dist
+
+# Copy any other needed files (like spec files if needed at runtime)
+COPY --from=builder /app/backend/src/spec ./src/spec
+
+# Expose port
+EXPOSE 4000
+
+# Run the compiled JavaScript
+CMD ["npm", "start"]

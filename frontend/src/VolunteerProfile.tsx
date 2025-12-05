@@ -140,7 +140,6 @@ const VolunteerProfile: React.FC = () => {
         <ProfilePreviewDialog
           open={showEditDialog}
           onClose={() => setShowEditDialog(false)}
-          user={me}
         />
       )}
 
