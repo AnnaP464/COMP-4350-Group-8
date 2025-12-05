@@ -16,9 +16,11 @@ jest.mock("react-router-dom", () => {
 
 // Mock UserService
 const mockAuthMe = jest.fn();
+const mockFetchProfile = jest.fn();
 jest.mock("../services/UserService", () => ({
   __esModule: true,
   authMe: (...args) => mockAuthMe(...args),
+  fetchProfile: (...args) => mockFetchProfile(...args),
 }));
 
 // Mock AttendanceService (fetchVolunteerStats now lives here)
@@ -87,6 +89,11 @@ describe("VolunteerProfile", () => {
       status: 401,
       json: async () => ({}),
     });
+    // Mock fetchProfile
+    mockFetchProfile.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({}),
+    });
     // fetchVolunteerStats returns stats directly (not a Response)
     mockFetchVolunteerStats.mockResolvedValueOnce({
       totalHours: 0,
@@ -113,6 +120,11 @@ describe("VolunteerProfile", () => {
         role: "Volunteer",
         createdAt: "2025-01-01T00:00:00Z",
       }),
+    });
+    // Mock fetchProfile
+    mockFetchProfile.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ avatarUrl: null }),
     });
     // fetchVolunteerStats returns stats directly (not a Response)
     mockFetchVolunteerStats.mockResolvedValueOnce({
@@ -166,6 +178,11 @@ describe("VolunteerProfile", () => {
         role: "Volunteer",
         createdAt: "2025-01-01T00:00:00Z",
       }),
+    });
+    // Mock fetchProfile
+    mockFetchProfile.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ avatarUrl: null }),
     });
     // fetchVolunteerStats returns stats directly (not a Response)
     mockFetchVolunteerStats.mockResolvedValueOnce({

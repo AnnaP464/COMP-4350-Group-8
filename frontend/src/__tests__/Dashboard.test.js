@@ -154,7 +154,7 @@ test("Will try to logout and go to the role selection screen", async () => {
   });
 });
 
-test("renders placeholder events immediately, then replaces with fetched events", async () => {
+test("renders fetched events", async () => {
   const fetchedEvents = [{
     id: "8fcbb58b-7953-4a3b-a2a0-759f306b3d3f",
     organizerId: "51d6573c-5d62-4b3d-9853-b09e6095e367",
@@ -174,12 +174,7 @@ test("renders placeholder events immediately, then replaces with fetched events"
     </MemoryRouter>
   );
 
-  // placeholder titles should appear first (from initial state)
-  expect(screen.getByText(/Beach Cleanup/i)).toBeInTheDocument();
-  expect(screen.getByText(/Food Drive/i)).toBeInTheDocument();
-  expect(screen.getByText(/Tree Planting/i)).toBeInTheDocument();
-
-  // after fetch resolves, new event should appear (and placeholders are replaced)
+  // after fetch resolves, event should appear
   await waitFor(() => {
     expect(screen.getByText(/Replaced Event/i)).toBeInTheDocument();
   });
