@@ -22,15 +22,33 @@ const SignupUser: React.FC = () => {
 
   const navigate = useNavigate();
 
+  function inputIsValid(){
+    let inputIsValid = true;
+    if (!username.trim()) {
+      setErrorMsg(AlertHelper.NAME_ERROR);
+      inputIsValid = false;
+    }
+    if (!email.trim()) { 
+      setErrorMsg(AlertHelper.EMAIL_ERROR);
+      inputIsValid = false;
+    }
+    if (!password.trim()) {
+      setErrorMsg(AlertHelper.PASSWORD_ERROR);
+      inputIsValid = false;
+    }
+    if (password !== confirmPassword) {
+      setErrorMsg(AlertHelper.CONFIRM_PASSWORD_ERROR);
+      inputIsValid = false;
+    }
+    return inputIsValid;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setErrorMsg("");
 
-    if (!username.trim()) return setErrorMsg(AlertHelper.NAME_ERROR);
-    if (!email.trim()) return setErrorMsg(AlertHelper.EMAIL_ERROR);
-    if (!password.trim()) return setErrorMsg(AlertHelper.PASSWORD_ERROR);
-    if (password !== confirmPassword) return setErrorMsg(AlertHelper.CONFIRM_PASSWORD_ERROR);
+    if(!inputIsValid()) return;
     try {
       const response = await UserService.register(username, email, password, role);
 
