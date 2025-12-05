@@ -4,10 +4,8 @@ import { validateRequest } from "../middleware/validateRequest";
 import { schemas} from "../spec/zod";
 
 import type { GeofencesController } from "../contracts/geofences.ctrl.contracts";
-//import type { AttendanceController } from "../contracts/attendance.ctrl.contracts";
 
 import { createEventGeofencesRoutes } from "./geofenceRoutes";
-//import { createEventAttendanceRoutes } from "./attendanceRoutes";
 
 
 import {

@@ -7,10 +7,8 @@ import LoginUser from './LoginUser';
 import HomepageOrganizer from "./HomepageOrganizer.tsx";
 import Dashboard from "./Dashboard.tsx";
 import VolunteerProfile from "./VolunteerProfile.tsx";
-// import VolunteerRegisteredEvents from "./VolunteerRegisteredEvents.tsx";
 import MyApplications from "./MyApplications.tsx";
 import OrganizerProfile from "./OrganizerProfile.tsx";
-// import MyRegisteredEvents from "./MyRegisteredEvents.tsx";
 import ManageEvent from "./ManageEvents.tsx";
 import MyAttendance from "./MyAttendance";
 

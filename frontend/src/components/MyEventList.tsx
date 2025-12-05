@@ -161,11 +161,6 @@ const MyEventList: React.FC<MyEventListProps> = ({
     }
   };
 
-
-  
-
-
-
   return (
     <MyRegContainer>
       <MyRegSection

@@ -9,7 +9,23 @@ Using JMeter
 ## Security Analysis
 
 We used SonarQube to run the security analysis. 
-In terms of Security vulnurabilites none were found. It did highlight many maintainance 
+In terms of Security vulnurabilites none were found. It did highlight many maintainance & reliability issues.
+
+Overall Report:
+
+![alt text](SonarQubeReport.png)
+
+All Security Hotspot issues are the hardcoded passwords in the test suite that are used for login.
+
+Coverage does not register due to unknown reasons even though the coverage folder has been updated with the latest test, this is also the reason the overall assessment is set to Failed.
+
+Before removing comments:
+
+![alt text](WithComments.png)
+
+After:
+
+![alt text](WithoutComments.png)
 
 ## Continuous Integration & Deployment
 

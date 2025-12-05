@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from "react";
-// import "./css/Dashboard.css";
 import "./css/Homepage.css";
 import "./css/AuthChoice.css";
 import "./css/EventList.css";
@@ -28,9 +27,6 @@ const loginStatusAuthorized = "authorized"
 const Dashboard: React.FC = () => {
 
   const navigate = useNavigate();
-  // const location = useLocation();
-  // const state = location.state;
-  // const role = state?.role;
 
   //read user from localStorage to get role
   //role is only needed when redirecting them to Volunteer Login page when session expires/logs out
@@ -166,7 +162,7 @@ const Dashboard: React.FC = () => {
         } catch (error) {
           console.error("Unexpected JSON package", error);
         }
-      }//alert(`Log-out successful! Token: ${data.token}`);
+      }
 
       //log out success
       navigate("/", { replace: true });

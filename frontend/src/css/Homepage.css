@@ -9,12 +9,10 @@ CSS for Volunteer Dashboard & Organizer-Homepage
   align-items: center;
 }
 
-
 /* Centered column with max width */
 .navigation-box {
   width: 100%;
 }
-
 
 .navigation-header {
   display: flex;
@@ -74,22 +72,6 @@ CSS for Volunteer Dashboard & Organizer-Homepage
   }
 }
 
-
-
-/* .content-box {
-  display: grid;
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.feed-box {
-  background: rgb(18, 17, 17);
-  border-radius: 12px;
-  padding: 16px;
-  min-height: 260px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-} */
-
 .empty-postings-box {
   border: 1px dashed #cfcfcf;
   border-radius: 12px;
@@ -97,35 +79,6 @@ CSS for Volunteer Dashboard & Organizer-Homepage
   text-align: center;
   color: #777;
 }
-
-/* .event-info-box {
-  background: linear-gradient(180deg, #f1f6f4, #ccf0db);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-} */
-
-/* .event-info-box:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
-  cursor: pointer;
-}
-
-.event-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.job-start-end-times {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 20px;
-  color: #555;
-  font-size: 0.95rem
-} */
 
 .profile-box {
   background: white;
@@ -164,30 +117,6 @@ CSS for Volunteer Dashboard & Organizer-Homepage
 .dashboard-container {
   padding: 1.5rem 2rem;
 }
-
-/* .section-title {
-  margin-top: 2rem;
-}
-
-.events-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.event-box {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 1rem;
-  background-color: black;
-}
-
-/* hover effect to make it feel interactive */
-/* .event-box:hover {
-  background-color: #242424;
-  transition: background-color 0.2s ease-in-out;
-} */
 
 /* Shared style for all status/apply buttons */
 .apply-button {
