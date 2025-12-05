@@ -28,7 +28,6 @@ describe("sessions repository (integration)", () => {
   
   afterEach(async () => {
     await query("DELETE FROM refresh_tokens");
-   // await query("DELETE FROM users");
   });
   
 

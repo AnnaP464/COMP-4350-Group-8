@@ -15,7 +15,6 @@ import path from "path"; //for picture uploads
 const app = express();
 
 app.use(express.json());
-// app.use(cors());
 
 app.use(cookieParser());
 app.use("/uploads", express.static(path.resolve("/uploads")));
@@ -29,7 +28,6 @@ const corsOptions = {
   credentials: true, // not using cookies for access tokens
 };
 app.use(cors(corsOptions));
-//app.options("*", cors(corsOptions)); // <-- crucial for Authorization preflight
 
 // Mount the router
 app.use("/v1/events", eventsRouter);
@@ -52,9 +50,6 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error("Unhandled error:", err);
   return res.status(500).json({ message: "Internal server error" });
 });
-
-
-//app.use(authRouter);
 
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });

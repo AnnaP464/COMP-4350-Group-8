@@ -6,8 +6,6 @@ import { makeGeofencesService } from "../services/geofencesService";  // domain/
 import { makeGeofencesController } from "../controllers/geofenceController"; // controller
 
 import { attendanceRepo } from "../db/attendance";
-// import { makeAttendanceService } from "../services/attendanceService";
-//import { makeAttendanceController } from "../controllers/attendanceController";
 
 //  Events router (top layer). It accepts DI (geofencesController) and internally
 //  composes the geofence route file so all event paths are authored here.
@@ -22,7 +20,6 @@ const geofencesService = makeGeofencesService({ repo: geofences });
 
 // 1b) Build the controller with the service
 const geofencesController = makeGeofencesController({ service: geofencesService });
-
 
 // 2) Attendance wiring
 // 2a) Build the service with its dependecy

@@ -121,7 +121,7 @@ export async function countCompletedEventsForUser(userId: string): Promise<numbe
     `,
     [userId]
   );
-  return parseInt(rows[0]?.count ?? "0", 10);
+  return Number.parseInt(rows[0]?.count ?? "0", 10);
 }
 
 /**
@@ -139,7 +139,7 @@ export async function countUpcomingEventsForUser(userId: string): Promise<number
     `,
     [userId]
   );
-  return parseInt(rows[0]?.count ?? "0", 10);
+  return Number.parseInt(rows[0]?.count ?? "0", 10);
 }
 
 export const attendanceRepo: AttendanceRepo = {

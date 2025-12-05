@@ -8,7 +8,8 @@ Using JMeter
 
 ## Security Analysis
 
-
+We used SonarQube to run the security analysis. 
+In terms of Security vulnurabilites none were found. It did highlight many maintainance 
 
 ## Continuous Integration & Deployment
 

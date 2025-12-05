@@ -97,7 +97,6 @@ describe("GeofencesController", () => {
   test("remove: returns 204", async () => {
     const req: any = { params: { id: "x" } };
     const res = mockRes();
-    //service.remove.mockResolvedValue();
 
     await ctrl.remove(req, res);
 
