@@ -80,7 +80,6 @@ export type UserProfileUpdatePayload = {
   contactPref?: ContactPref;
 };
 
-
 export function updateProfile(payload: UserProfileUpdatePayload): Promise<Response> {
   return apiFetch("/v1/users/me/profile", {
     method: "PATCH",
@@ -90,8 +89,6 @@ export function updateProfile(payload: UserProfileUpdatePayload): Promise<Respon
     body: JSON.stringify(payload),
   });
 }
-
-
 
 export type VolunteerStats = {
   totalMinutes: number;

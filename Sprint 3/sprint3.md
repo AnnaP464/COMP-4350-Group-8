@@ -1,6 +1,6 @@
 # Sprint 3 Worksheet
 
-# [HiveHand] ()
+# [HiveHand] (https://hivehand-frontend.ambitiousflower-23c258c4.westus2.azurecontainerapps.io/)
 
 ## Load Testing
 
@@ -27,9 +27,15 @@ After:
 
 ![alt text](WithoutComments.png)
 
+Here are the commits for resolving said comment issues
+
+[Commit 1](https://github.com/AnnaP464/COMP-4350-Group-8/commit/16876c7122542fc2ae431547e03511a6b4a35c60) & [Commit 2](https://github.com/AnnaP464/COMP-4350-Group-8/actions/runs/19971862935)
+
+And here is a fix for cognitive complexity being evaluated as too high for a function.
+
+[Commit](https://github.com/AnnaP464/COMP-4350-Group-8/commit/f67385704308405a9387f131b9bfc399bdb7f7db)
+
 ## Continuous Integration & Deployment
-
-
 
 ## Reflections
 
