@@ -30,7 +30,7 @@ Overall Report:
 
 ![alt text](SonarQubeReport.png)
 
-All Security Hotspot issues are the hardcoded passwords in the test suite that are used for login.
+All Security Hotspot issues are the hardcoded passwords in the test suite that are used for login, in the app itself there aren't any hardcoded passwords.
 
 Coverage does not register due to unknown reasons even though the coverage folder has been updated with the latest test, this is also the reason the overall assessment is set to Failed.
 
