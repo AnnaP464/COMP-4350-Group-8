@@ -58,7 +58,7 @@ For CD
 
 [Continous Integration](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/.github/workflows/main.yml)
 
-[Continous Deployment]()
+[Continous Deployment](https://github.com/AnnaP464/COMP-4350-Group-8/actions/runs/19983290999)
 
 ## Reflections
 
