@@ -1,3 +1,4 @@
+// @ts-expect-error React is needed for Jest but not Vite's JSX transform
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RoleChoice from './RoleChoice.tsx'
