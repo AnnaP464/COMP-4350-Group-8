@@ -52,6 +52,14 @@ And here is a fix for cognitive complexity being evaluated as too high for a fun
 
 ## Continuous Integration & Deployment
 
+For CI we use github actions to check out the front or backend and then the tests are run using the same commands as if you were running the tests locally. For the sake of integration tests the backend is loaded with a postgis docker image to simulate the database. For our acceptance tests that run on playwright the entire system is setup inlcuding database backend and frontend and then playwright clicks through the application.
+
+For CD
+
+[Continous Integration](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/.github/workflows/main.yml)
+
+[Continous Deployment]()
+
 ## Reflections
 
 ### Design Changes
