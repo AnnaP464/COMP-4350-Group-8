@@ -1,6 +1,6 @@
-# HiveHand
+# [HiveHand](https://hivehand-frontend.ambitiousflower-23c258c4.westus2.azurecontainerapps.io/)
 
-HiveHand is a platform for hosting and finding volunteering oppertunities. Volunteers will see a selection of events they can choose to lend a helping hand at. Organizers will recieve lots of customization options for their events to attract just the right people. The experience will be gameafied to make it more exciting by tracking hours volunteered and keeping score.
+HiveHand is a platform for hosting and finding volunteering oppertunities. Volunteers will see a selection of events they can choose to lend a helping hand at. Organizers will be able to create events to attract volunteers. The volunteering hours will be tracked for both Organizers & Volunteers, helping Organizers to track their workforce and to allow Volunteers an easier time keeping track of total hours worked.
 
 ## Acknowledgements
 
@@ -8,13 +8,15 @@ HiveHand is a platform for hosting and finding volunteering oppertunities. Volun
  - Noah McInnes
  - Sudipta Sarker
 
-## Setting up the Project
+## Setting up the Project 
+
+### Locally
+
 Our project is built to run on Windows and Apple OS. 
 To run our project you will need a few downloads
 1) Node.js + npm which powers our React typescript environment [download here](https://nodejs.org)
 2) PostgreSQL for the database, when setting up the database be sure to set a password you can easily recall [download here](https://www.postgresql.org/download/windows/)
-3) PostGIS for the geospacial data [download here](https://postgis.net/documentation/getting_started/)
-4) Git to run the setup script, optional if you are ok with manually running the setup commands [download here](https://git-scm.com/downloads/win)
+3) Docker App - we use docker containers to run our tests and locally host the app. Make sure the app is running before running the setup command [download here](https://www.docker.com/products/docker-desktop/)
 
 ## Getting Docker Images Setup
 
@@ -48,7 +50,7 @@ Node.js
 Express.js
 - Lightweight and unopinionated, so we can ship quickly: define REST endpoints, and keep clear “routes -> logic ->  DB” structure.
 ##### Database
-PostgreSQL 
+PostgreSQL
 - We anticipate rich relationships in our data (volunteers -> shifts -> events -> organizers). We get constraints (e.g., capacity limits), transactions (no race conditions), and powerful queries for search/reporting.
 
 PostGIS 

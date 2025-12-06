@@ -56,21 +56,9 @@ And here is a fix for cognitive complexity being evaluated as too high for a fun
 
 ### Design Changes
 
-  In one paragraph (as a group): What would you change about the design of your project now that you’ve been through development?
-
-Im not sure what to speak on in terms of big changes?
-
-Anna P - I think mapping out the frontend structure before beginning of development would have prevented the need for the refactors that came later.
+Mapping out the User Interface before beginning of development would have prevented the need for the refactors that came later. If the structure of the frontend was determined before it came time to implement the endpoints we could have agreed on a universal design for our app that used and reused the same ui elements between the Organizer and Volunteer pages in a way that didnt require much modification from one to the other. We had to dedicate an effort towards refactoring the frontend flow in sprint 2 and in sprint 3 due to feedback we recieved in our 2nd Demo and general reworking of the HomepageOrganizer & Dashboard pages to be more similar in layout, to prevent users needing to relearn the flow of the app if they happen to be both a Organizer and a Volunteer.
 
 ### Project Setup Changes
-
-In one paragraph (as a group): What would you change about the course/project setup?
-
-  Requirements?
-
-  Check-ins?
-
-  Process changes?
 
 Our work setup has always relied on in person or discord meetings to assign tasks and summarize the state of the repo. The Largest changes to the project's scope came after sprint 1 when we scaled back the feature set quite a bit to rely less on third party technology like blockchain and to focus on building the skeleton of the app first and foremost.
 
@@ -87,4 +75,4 @@ Required: one clearly labeled paragraph per team member, even if you did not use
   Length guideline: approximately 5–8 sentences. Focus only on your own actions and understanding.
 
 #### Anna P
-The AI I used is ChatGPT 5.0, I relied on AI to help me learn how to create the .yml files for CI using Github Actions. The code it produced can be seen in out technique sharing seminar and overall it made tons of assumptions about the structure of our code that were not supported by anything, including assuming the paths that it chose to ping, the way that it eventually sudgested caching of an install of Playwright on a docker image in CI. and similar changes that did not help with the real issue of it trying to ping a path that did not exist. The second attempt at fixing the .yml file was much more fruitful due to writing the file myself and arranging all of the pieces of the workflow myself and only using AI to help parse Azure Server's Error messages, along with minor code sudgestions. The second attempt was a lot faster due to becoming familiar with Docker, I think AI cant bridge this knowledge gap due to how opaque the project is to it, not unless I were to dump the entire repository into the chat window.
+The AI I used is ChatGPT 5.0, I relied on it to help me learn how to create the .yml files for CI using Github Actions. The code it produced can be seen in out technique sharing seminar and overall it made tons of assumptions about the structure of our code that were not supported by anything concrete, it assumed the paths that it chose to ping, it eventually sudgested caching of an install of Playwright on a docker image in CI, and similar changes that did not help with the real issue of it trying to ping a path that did not exist. The second attempt at fixing the .yml file was much more fruitful due to writing the file myself and arranging all of the pieces of the workflow myself and only using AI to help parse Azure Server's Error messages, along with minor code sudgestions. The second attempt was a lot faster due to becoming familiar with Docker, I think AI cant bridge this knowledge gap due to how opaque the project is to it, not unless I were to paste the entire repository into the chat window.
