@@ -1,6 +1,6 @@
 # Sprint 3 Worksheet
 
-# [HiveHand] (https://hivehand-frontend.ambitiousflower-23c258c4.westus2.azurecontainerapps.io/)
+# [HiveHand](https://hivehand-frontend.ambitiousflower-23c258c4.westus2.azurecontainerapps.io)
 
 ## Load Testing
 
