@@ -83,4 +83,56 @@ Required: one clearly labeled paragraph per team member, even if you did not use
   Length guideline: approximately 5–8 sentences. Focus only on your own actions and understanding.
 
 #### Anna P
-The AI I used is ChatGPT 5.0, I relied on it to help me learn how to create the .yml files for CI using Github Actions. The code it produced can be seen in out technique sharing seminar and overall it made tons of assumptions about the structure of our code that were not supported by anything concrete, it assumed the paths that it chose to ping, it eventually sudgested caching of an install of Playwright on a docker image in CI, and similar changes that did not help with the real issue of it trying to ping a path that did not exist. The second attempt at fixing the .yml file was much more fruitful due to writing the file myself and arranging all of the pieces of the workflow myself and only using AI to help parse Azure Server's Error messages, along with minor code sudgestions. The second attempt was a lot faster due to becoming familiar with Docker, I think AI cant bridge this knowledge gap due to how opaque the project is to it, not unless I were to paste the entire repository into the chat window.
+The AI I used is ChatGPT 5.0, I relied on AI to help me learn how to create the .yml files for CI using Github Actions. The code it produced can be seen in out technique sharing seminar and overall it made tons of assumptions about the structure of our code that were not supported by anything, including assuming the paths that it chose to ping, the way that it eventually sudgested caching of an install of Playwright on a docker image in CI. and similar changes that did not help with the real issue of it trying to ping a path that did not exist. The second attempt at fixing the .yml file was much more fruitful due to writing the file myself and arranging all of the pieces of the workflow myself and only using AI to help parse Azure Server's Error messages, along with minor code sudgestions. The second attempt was a lot faster due to becoming familiar with Docker, I think AI cant bridge this knowledge gap due to how opaque the project is to it, not unless I were to dump the entire repository into the chat window.
+
+#### Noah M
+I think the best way to summarize my AI usage is to have the custom ChatGPT(5.0) that I used throughout the entirety of the project someup how it thinks I used it as there has been a nearly 3 month long development process. I will then give my perspective.
+
+##### From ChatGPT's Perspective:
+
+> Throughout this project, AI (ChatGPT) was used as a technical assistant, functioning similarly to a senior developer available for consultation. The AI did not write the project; rather, it supported debugging, clarified unfamiliar concepts, and collaborated on solving difficult engineering problems.
+>
+> Here are the main areas where AI was involved:
+>
+> ⸻
+>
+> React / Frontend
+>
+> - Explaining core React concepts:
+>   - Hooks, effects, refs
+>   - Parent → child prop flows
+> - Component lifecycle and state flow
+> - Passing GeoJSON from the map into the UI and then to the backend
+> - Resolving TypeScript issues with react-leaflet
+> - Understanding API differences:
+>   - useMap vs. whenCreated
+>   - Correct patterns for attaching event listeners
+>
+> ⸻
+>
+> Backend
+>
+> - Converting frontend GeoJSON to PostGIS geometries
+> - Understanding and correcting PostGIS spatial queries:
+>   - ST_Contains, ST_DWithin, ST_Transform, etc.
+> - Clarifying TypeScript backend patterns:
+>   - Service layers
+>   - Controller structure
+> - Zod validators, swagger blocks
+
+##### My Perspective:
+
+> I believe I used AI to generate code more often than ChatGPT suggests, but I agree that most of the workflow resembled having a senior engineer guiding me through the process rather than producing the full implementation.
+>
+> A typical pattern of usage was:
+>
+> 1. AI provides a design idea or architectural suggestion in response to a problem.
+> 2. I ask follow-up questions:
+>    - to understand how and why that design works,
+>    - to challenge decisions or propose alternatives.
+> 3. I verify engineering principles:
+>    - safety, correctness, maintainability, and conceptual soundness.
+> 4. I implement the solution, then ask AI to review for potential issues or misconceptions.
+>
+> When AI generated code, I would always request a line-by-line explanation of the logic and reasoning to ensure technical understanding before using it.
+> I attribute the lack of any real issues in AI-Generated code to this practice. Since Glaring issues would be caught prior to implementation.
