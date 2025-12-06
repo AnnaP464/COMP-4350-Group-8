@@ -4,7 +4,20 @@
 
 ## Load Testing
 
-Using JMeter, the .jmx file [HERE](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%203/HiveHand%20LoadTesting.jmx)
+Using JMeter, the .jmx file [HERE](https://github.com/AnnaP464/COMP-4350-Group-8/blob/main/Sprint%203/DeployedURLReal.jmx)
+
+This profiler covers an organizer creating an event and then accepting volunteers for it. The event does not start, however the applicants are all registered and are ready to start the event.
+
+Report for 1 Organizer creating 1 event and 200 volunteers all applying to it. A baseline to see how the end points behave with 1 request at a time.
+
+![alt text](SequentialTest.png)
+
+Report for 10 organizers creating 10 events with 50 volunteers applying to each.
+A more realistic usecase in case of a traffic surge.
+
+![alt text](ParallelReal.png)
+
+The overall profile is quite flat, though the registration endpoint does acrew an incredibly high 1st entry due to having to wait for a connection to be established to the server.
 
 ## Security Analysis
 
