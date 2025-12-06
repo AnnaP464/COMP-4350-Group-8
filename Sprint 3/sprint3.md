@@ -17,7 +17,9 @@ A more realistic usecase in case of a traffic surge.
 
 ![alt text](ParallelReal.png)
 
-The overall profile is quite flat, though the registration endpoint does acrew an incredibly high 1st entry due to having to wait for a connection to be established to the server.
+The overall profile is quite flat, though the registration endpoint does acrew an incredibly high 1st entry due to having to wait for a connection to be established to the server. Most of the information being sent is simple strings for tokens, email, password and username, all end points perform similarly due to lack of complex queries behind each individual endpoint.
+
+These results show that we do meet the functional requirements as the throughput of the endpoints falls with-in the established goal of 20 users with a total of 200 requests per minute concurrently.
 
 ## Security Analysis
 
