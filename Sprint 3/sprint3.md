@@ -138,3 +138,9 @@ I think the best way to summarize my AI usage is to have the custom ChatGPT(5.0)
 >
 > When AI generated code, I would always request a line-by-line explanation of the logic and reasoning to ensure technical understanding before using it.
 > I attribute the lack of any real issues in AI-Generated code to this practice. Since Glaring issues would be caught prior to implementation.
+
+
+#### Sudipta S
+
+I used ChatGPT as a coding assistant throughout this project. I relied on it to help me reason through how to compute derived stats like hours, upcoming events, and recent activity from the database and write complex sql queries.
+Further, I used it as a coding assistant to get feedback on my implementation choices and align them more closely with common industry and professional best practices. Not to mention, whenever there is an error, I paste it in chatgpt and it tells me what exactly the error is which saves me a lot of time debugging.
